@@ -34,7 +34,7 @@
     "env-cmd": "^10.1.0",
     "fs-extra": "^9.0.0",
     "moment": "^2.27.0",
-    "obs-node": "git+https://github.com/MengLi619/obs-node.git#v1.0.22",
+    "obs-node": "git+https://github.com/BICBT/obs-node.git#v1.0.26",
     "react": "^16.13.1",
     "react-data-table-component": "^6.11.0",
     "react-dom": "^16.13.1",
@@ -123,10 +123,10 @@
         "provider": "custom",
         "providerName": "alioss",
         "path": "/${name}/${os}/${productName}-${version}.${env.PUBLISH_FILE_EXT}",
-        "bucket": "${env.PUBLISH_BUCKET}",
-        "region": "${env.PUBLISH_REGION}",
-        "accessKeyId": "${env.PUBLISH_ACCESS_KEY_ID}",
-        "accessKeySecret": "${env.PUBLISH_ACCESS_KEY_SECRET}",
+        "bucket": "${env.DESKTOP_OSS_BUCKET}",
+        "region": "${env.DESKTOP_OSS_REGION}",
+        "accessKeyId": "${env.ALICLOUD_ACCESS_KEY}",
+        "accessKeySecret": "${env.ALICLOUD_KEY_SECRET}",
         "resumable": true,
         "timeout": 3600000
       }
