@@ -34,7 +34,6 @@ async function startApp() {
   // Main window
   mainWindow = new BrowserWindow({
     maximizable: true,
-    fullscreen: true,
     webPreferences: {
       nodeIntegration: true,
       enableRemoteModule: true,
@@ -42,16 +41,30 @@ async function startApp() {
   });
   mainWindow.removeMenu();
   mainWindow.loadURL(`${loadUrl}?window=main`);
+  mainWindow.setFullScreen(true);
   mainWindow.on('closed', () => {
     obsService.close();
     app.exit(0);
   });
 
+  // shortcuts
+  mainWindow.webContents.on('before-input-event', (event, input) => {
+    ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '='].forEach((key, index) => {
+      if (input.key === key) {
+        if (input.control) {
+          sourceService.previewByIndex(index);
+        } else {
+          sourceService.takeByIndex(index);
+        }
+      }
+    });
+  });
+
   // Dialog window
   dialogWindow = new BrowserWindow({
+    parent: mainWindow,
     modal: true,
     frame: false,
-    fullscreenable: false,
     titleBarStyle: 'hidden',
     show: false,
     webPreferences: {
@@ -95,7 +108,9 @@ ipcMain.on('logMsg', (event, level, message, ...args) => {
 
 // Dialog
 ipcMain.on('showDialog', (event, sessionId, options, defaultValue) => {
-  dialogWindow?.webContents.send('showDialog', sessionId, options, defaultValue);
+  if (dialogWindow) {
+    dialogWindow.webContents.send('showDialog', sessionId, options, defaultValue);
+  }
 });
 
 ipcMain.on('dialogClosed', (event, sessionId, result) => {

@@ -57,6 +57,20 @@ export class SourceService {
     this.broadcastMessage('programChanged', this.programTransition);
   }
 
+  public previewByIndex(index: number) {
+    const source = this.sources[index];
+    if (source) {
+      this.preview(source);
+    }
+  }
+
+  public async takeByIndex(index: number, transitionType: TransitionType = TransitionType.Cut, transitionDurationMs: number = 1000) {
+    const source = this.sources[index];
+    if (source) {
+      await this.take(source, transitionType, transitionDurationMs);
+    }
+  }
+
   public updateLiveUrl(url: string) {
     if (url === this.liveSource?.url) {
       return;
