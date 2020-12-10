@@ -126,7 +126,7 @@
         "bucket": "${env.DESKTOP_OSS_BUCKET}",
         "region": "${env.DESKTOP_OSS_REGION}",
         "accessKeyId": "${env.ALICLOUD_ACCESS_KEY}",
-        "accessKeySecret": "${env.ALICLOUD_KEY_SECRET}",
+        "accessKeySecret": "${env.ALICLOUD_SECRET_KEY}",
         "resumable": true,
         "timeout": 3600000
       }
