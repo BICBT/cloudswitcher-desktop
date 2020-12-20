@@ -1,4 +1,4 @@
-import { remote } from 'electron';
+import { remote, webContents } from 'electron';
 
 export function isMainWindow() {
   const url = new URL(window.location.href);
@@ -47,4 +47,10 @@ export function replaceUrlParams(url: string, params: object) {
     url = url.replace(`:${key}`, value);
   });
   return url;
+}
+
+export function broadcastMessage(channel: string, ...args: any[]) {
+  webContents.getAllWebContents().forEach(webContents => {
+    webContents.send(channel, ...args);
+  });
 }

@@ -1,6 +1,6 @@
 import { Container, Service } from 'typedi';
 import { SourceService } from './sourceService';
-import { TransitionType } from '../../types/obs';
+import { TransitionType } from '../../common/types';
 
 const Atem = require('atem'); // TODO: Add type declaration
 

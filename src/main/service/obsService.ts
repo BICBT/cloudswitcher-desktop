@@ -1,7 +1,7 @@
 import { Service } from 'typedi';
 import * as obs from 'obs-node';
-import { BrowserWindow, ipcMain } from 'electron';
-import { Source, Transition, TransitionType } from '../../types/obs';
+import { BrowserWindow, ipcMain, webContents } from 'electron';
+import { Audio, Source, Transition, TransitionType, UpdateAudioRequest, UpdateSourceRequest } from '../../common/types';
 
 const OBS_VIDEO_SETTINGS: obs.VideoSettings = {
   baseWidth: 640,
@@ -14,7 +14,7 @@ const OBS_VIDEO_SETTINGS: obs.VideoSettings = {
 
 const OBS_AUDIO_SETTINGS: obs.AudioSettings = {
   sampleRate: 44100,
-}
+};
 
 @Service()
 export class ObsService {
@@ -28,6 +28,12 @@ export class ObsService {
     ipcMain.on('moveOBSDisplay', (event, name: string, x: number, y: number, width: number, height: number) =>
       event.returnValue = this.moveOBSDisplay(name, x, y, width, height));
     ipcMain.on('destroyOBSDisplay', (event, name: string) => event.returnValue = this.destroyOBSDisplay(name));
+
+    obs.addVolmeterCallback((sceneId: string, sourceId: string, channels: number, magnitude: number[], peak: number[], input_peak: number[]) => {
+      webContents.getAllWebContents().forEach(webContents => {
+        webContents.send('volmeterChanged', sceneId, sourceId, channels, magnitude, peak, input_peak);
+      });
+    });
   }
 
   public createSource(source: Source): void {
@@ -35,8 +41,10 @@ export class ObsService {
     obs.addSource(source.sceneId, source.id, 'MediaSource', source.previewUrl as string);
   }
 
-  public updateSourceUrl(source: Source): void {
-    obs.updateSource(source.sceneId, source.id, source.previewUrl as string);
+  public updatePreviewUrl(source: Source): void {
+    obs.updateSource(source.sceneId, source.id, {
+      url: source.previewUrl,
+    });
   }
 
   public createOBSDisplay(name: string, electronWindowId: number, scaleFactor: number, sourceId: string): void {
@@ -58,15 +66,21 @@ export class ObsService {
       id: transitionType,
       type: transitionType,
       source: to,
-    }
+    };
   }
 
-  public muteSource(source: Source, mute: boolean) {
-    obs.muteSource(source.sceneId, source.id, mute);
-  }
-
-  public restart(source: Source) {
+  public restart(source: Source): void {
     obs.restartSource(source.sceneId, source.id);
+  }
+
+  public updateAudio(request: UpdateAudioRequest) {
+    obs.updateAudio({
+      audioWithVideo: request.audioWithVideo,
+    });
+  }
+
+  public updateSource(source: Source, request: UpdateSourceRequest): void {
+    obs.updateSource(source.sceneId, source.id, request);
   }
 
   public close() {

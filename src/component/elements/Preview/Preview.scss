@@ -10,9 +10,8 @@
     border-color: var(--preview);
   }
 
-  .display-container {
+  .DisplayView-container {
     @include aspect-ratio(16, 9);
-    background-color: var(--display-bg);
   }
 
   .toolbar {

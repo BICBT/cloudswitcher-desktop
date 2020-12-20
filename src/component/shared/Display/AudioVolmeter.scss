@@ -1,0 +1,12 @@
+.AudioVolmeter {
+  position: relative;
+
+  .volmeter {
+    position: absolute;
+    overflow: hidden;
+  }
+
+  .volmeter-spacer {
+    min-width: 8px;
+  }
+}

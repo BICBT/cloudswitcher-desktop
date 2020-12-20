@@ -1,7 +1,7 @@
 $teal: #31C3A2;
 $teal-semi: rgba(49, 195, 162, 0.08);
 $purple: #8736E0;
-$blue: #36ADE0;
+$blue: #36ade0;
 $purple-semi: rgba(135, 54, 224, 0.08);
 $red: #F85640;
 $red-semi: rgba(248, 86, 64, 0.08);
@@ -17,14 +17,14 @@ $green: #31C3A2;
 $light-1: #ffffff;
 $light-2: #F5F8FA;
 $light-3: #E3E8EB;
-$light-4: #BDC2C4;
+$light-4: #bdc2c4;
 $light-5: #91979A;
 
 $dark-1: #050d12;
 $dark-2: #09161d;
 $dark-3: #17242d;
 $dark-4: #2b383f;
-$dark-5: #4F5E65;
+$dark-5: #4f5e65;
 
 // Variables for use
 :root {
@@ -115,4 +115,5 @@ $dark-5: #4F5E65;
   --button-key: #{$light-1};
   --preview: #{$green};
   --program: #{$red};
+  --action-icon-button: #{$blue}
 }

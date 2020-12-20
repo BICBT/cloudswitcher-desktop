@@ -3,7 +3,7 @@ import React from 'react';
 import { KeyView } from './KeyView';
 import { Container } from 'typedi';
 import { SourceService } from '../../../service/sourceService';
-import { Source } from '../../../types/obs';
+import { Source } from '../../../common/types';
 
 const keyNames = [
   '1', '2', '3', '4', '5', '6', '7', '8', '9',

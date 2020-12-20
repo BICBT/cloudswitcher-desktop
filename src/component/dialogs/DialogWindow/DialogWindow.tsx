@@ -3,9 +3,9 @@ import React, { ComponentType } from 'react';
 import { TitleBar } from '../../shared/TitleBar/TitleBar';
 import { DialogService } from '../../../service/dialogService';
 import { Container } from 'typedi';
-import { DialogComponent, DialogProps } from '../../../types/dialog';
 import { AddSourceDialog } from '../AddSourceDialog/AddSourceDialog';
 import { OutputSettingDialog } from '../OutputSettingDialog/OutputSettingDialog';
+import { DialogComponent, DialogProps } from '../../../common/types';
 
 const dialogComponents: Record<DialogComponent, ComponentType<DialogProps<any>>> = {
   'AddSourceDialog': AddSourceDialog,

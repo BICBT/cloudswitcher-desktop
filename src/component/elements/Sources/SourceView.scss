@@ -5,15 +5,14 @@
   flex: 1;
   flex-direction: column;
 
-  .display-container {
-    flex: 1;
+  .DisplayView-container {
     @include aspect-ratio(16, 9);
-    background-color: var(--display-bg);
   }
 
   .toolbar {
     display: flex;
     flex-direction: row;
+    align-items: center;
     padding: 2px 4px;
     background: var(--titlebar);
 

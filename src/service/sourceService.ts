@@ -1,7 +1,7 @@
-import { Service } from 'typedi';
-import { Source, Transition, TransitionType } from '../types/obs';
-import { SimpleEvent } from '../common/event';
 import { ipcRenderer } from 'electron';
+import { Service } from 'typedi';
+import { SimpleEvent } from '../common/event';
+import { Source, Transition, TransitionType, UpdateSourceRequest } from '../common/types';
 
 @Service()
 export class SourceService {
@@ -9,8 +9,8 @@ export class SourceService {
   public previewChanged = new SimpleEvent<Source>();
   public programChanged = new SimpleEvent<Transition>();
   public liveChanged = new SimpleEvent<Source | undefined>();
-  public sourceMuteChanged = new SimpleEvent<Source>();
   public sourceRestarted = new SimpleEvent<Source>();
+  public sourceChanged = new SimpleEvent<Source>();
 
   public initialize(): void {
     ipcRenderer.on('sourcesChanged', (event, sources: Record<number, Source>) => {
@@ -25,11 +25,11 @@ export class SourceService {
     ipcRenderer.on('liveChanged', (event, source: Source) => {
       this.liveChanged.emit(source);
     });
-    ipcRenderer.on('sourceMuteChanged', (event, source: Source) => {
-      this.sourceMuteChanged.emit(source);
-    });
     ipcRenderer.on('sourceRestarted', (event, source: Source) => {
       this.sourceRestarted.emit(source);
+    });
+    ipcRenderer.on('sourceChanged', (event, source: Source) => {
+      this.sourceChanged.emit(source);
     });
   }
 
@@ -49,10 +49,6 @@ export class SourceService {
     return ipcRenderer.sendSync('getLiveSource');
   }
 
-  public muteSource(source: Source, mute: boolean): void {
-    ipcRenderer.send('muteSource', source, mute);
-  }
-
   public restart(source: Source): void {
     ipcRenderer.send('restart', source);
   }
@@ -67,5 +63,9 @@ export class SourceService {
 
   public updateLiveUrl(url: string): void {
     ipcRenderer.send('updateLiveUrl', url);
+  }
+
+  public updateSource(source: Source, request: UpdateSourceRequest) {
+    ipcRenderer.send('updateSource', source, request);
   }
 }

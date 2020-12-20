@@ -1,0 +1,10 @@
+@import '../../../styles/index';
+
+.DisplayView {
+  display: flex;
+  flex-direction: row;
+
+  .Display {
+    flex: 1;
+  }
+}

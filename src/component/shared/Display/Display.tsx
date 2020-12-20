@@ -5,10 +5,10 @@ import { remote } from "electron";
 import { getScaleFactor, isMac } from '../../../common/util';
 import { Container } from 'typedi';
 import { DisplayService } from '../../../service/displayService';
-import { Bounds } from "../../../types/obs";
+import { Bounds } from '../../../common/types';
 
 type DisplayProps = {
-  sourceId: string;
+  displayId: string;
 }
 
 const DISPLAY_ELEMENT_POLLING_INTERVAL = 500;
@@ -30,7 +30,7 @@ export class Display extends React.Component<DisplayProps> {
   public componentDidMount() {
     if (this.ref.current) {
       const scaleFactor = getScaleFactor();
-      this.displayService.createOBSDisplay(this.name, this.electronWindowId, scaleFactor, this.props.sourceId);
+      this.displayService.createOBSDisplay(this.name, this.electronWindowId, scaleFactor, this.props.displayId);
       this.trackElement(this.ref.current);
     }
   }
@@ -44,7 +44,9 @@ export class Display extends React.Component<DisplayProps> {
 
   public render() {
     return (
-      <div className="Display" ref={this.ref} />
+      <div className="Display">
+        <div className="Display-content content" ref={this.ref} />
+      </div>
     );
   }
 

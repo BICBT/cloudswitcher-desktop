@@ -1,6 +1,6 @@
 import * as Store from 'electron-store';
 import { Service } from 'typedi';
-import { Source } from '../../types/obs';
+import { Source } from '../../common/types';
 
 const STORAGE_KEY_SOURCES = 'sources';
 const STORAGE_KEY_OUTPUT_URL = 'outputUrl';

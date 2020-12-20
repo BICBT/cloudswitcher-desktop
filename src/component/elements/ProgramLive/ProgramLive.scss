@@ -6,9 +6,8 @@
   flex-direction: column;
   border: 1px solid var(--border);
 
-  .display-container {
+  .DisplayView-container {
     @include aspect-ratio(16, 9);
-    background-color: var(--display-bg);
   }
 
   .toolbar {

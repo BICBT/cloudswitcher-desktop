@@ -15,18 +15,42 @@
   }
 
   .bottom {
+    flex: 1;
     display: flex;
     flex-direction: row;
-    flex: 1;
-  }
 
-  .Switcher-container {
-    width: 50%;
-    display: flex;
-  }
+    .Switcher-tabs {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
 
-  .PlayList-container {
-    width: 50%;
-    display: flex;
+      .Switcher-tab {
+        color: var(--paragraph);
+        background: var(--background);
+        border: 1px solid #2B383F;
+
+        &[aria-selected=true] {
+          border-color: #BDC2C4;
+        }
+      }
+
+      .Switcher-tabpanels {
+        flex: 1;
+        display: flex;
+      }
+
+      .Switcher-tabpanel {
+        flex: 1;
+        padding: 0;
+      }
+
+      .Switcher {
+        height: 100%;
+      }
+
+      .AudioMixer {
+        height: 100%;
+      }
+    }
   }
 }
