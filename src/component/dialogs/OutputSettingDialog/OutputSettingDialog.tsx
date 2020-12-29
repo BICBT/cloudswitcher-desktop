@@ -1,7 +1,7 @@
 import './OutputSettingDialog.scss';
 import React from 'react';
-import { DialogProps } from '../../../types/dialog';
 import { ModalLayout } from '../../shared/ModalLayout/ModalLayout';
+import { DialogProps } from '../../../common/types';
 
 export type OutputSetting = {
   url: string;

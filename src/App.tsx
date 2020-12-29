@@ -6,6 +6,7 @@ import { SourceService } from './service/sourceService';
 import { DialogWindow } from './component/dialogs/DialogWindow/DialogWindow';
 import { isDialogWindow, isExternalWindow } from './common/util';
 import { ExternalWindow } from './component/screens/ExternalWindow/ExternalWindow';
+import { AudioService } from './service/audioService';
 
 type AppState = {
   initialized: boolean;
@@ -13,6 +14,7 @@ type AppState = {
 
 export class App extends React.Component<{}, AppState> {
   private readonly sourceService = Container.get(SourceService);
+  private readonly audioService = Container.get(AudioService);
 
   constructor(props: {}) {
     super(props);
@@ -23,6 +25,7 @@ export class App extends React.Component<{}, AppState> {
 
   async componentDidMount() {
     this.sourceService.initialize();
+    this.audioService.initialize();
     this.setState({
       initialized: true,
     });

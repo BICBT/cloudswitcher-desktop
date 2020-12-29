@@ -1,0 +1,20 @@
+.AudioMixer {
+  display: flex;
+  flex-direction: column;
+
+  .AudioWithVideo {
+    padding: 10px 20px;
+  }
+
+  .AudioMixerItems {
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+
+    .MixerItem {
+      flex: 1;
+    }
+  }
+}

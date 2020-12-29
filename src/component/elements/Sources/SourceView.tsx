@@ -1,9 +1,9 @@
 import './SourceView.scss';
 import React from 'react';
-import { Display } from '../../shared/Display/Display';
-import { Source } from '../../../types/obs';
 import { Container } from 'typedi';
 import { SourceService } from '../../../service/sourceService';
+import { DisplayView } from '../../shared/Display/DisplayView';
+import { Source } from '../../../common/types';
 
 export type SourceViewProps = {
   index: number;
@@ -26,7 +26,7 @@ export class SourceView extends React.Component<SourceViewProps, SourceViewState
   }
 
   public componentDidMount() {
-    this.sourceService.sourceMuteChanged.on(this, source => {
+    this.sourceService.sourceChanged.on(this, source => {
       if (source.id === this.state.source?.id) {
         this.setState({
           source: source,
@@ -46,16 +46,22 @@ export class SourceView extends React.Component<SourceViewProps, SourceViewState
   }
 
   componentWillUnmount() {
-    this.sourceService.sourceMuteChanged.off(this);
+    this.sourceService.sourceChanged.off(this);
     this.sourceService.sourceRestarted.off(this);
   }
 
   public render() {
     return (
       <div className='SourceView'>
-        <div className='display-container'>
+        <div className='DisplayView-container'>
           <div className='content'>
-            { this.state.source && <Display sourceId={this.state.source.id} /> }
+            {
+              this.state.source &&
+              <DisplayView
+                source={this.state.source}
+                displayId={this.state.source.id}
+              />
+            }
           </div>
         </div>
         <div className='toolbar'>
@@ -65,18 +71,11 @@ export class SourceView extends React.Component<SourceViewProps, SourceViewState
             !this.props.hideSetting &&
             <>
               <i className="icon-reset icon-button" onClick={() => this.onRestartClicked()} />
-              <i className={`${!this.state.source || this.state.source.muted ? 'icon-mute' : 'icon-audio'} icon-button`} onClick={() => this.onMuteClicked()} />
             </>
           }
         </div>
       </div>
     );
-  }
-
-  private onMuteClicked() {
-    if (this.state.source) {
-      this.sourceService.muteSource(this.state.source, !this.state.source.muted);
-    }
   }
 
   private onRestartClicked() {

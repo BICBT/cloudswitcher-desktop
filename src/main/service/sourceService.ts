@@ -1,12 +1,11 @@
 import { Container, Service } from 'typedi';
-import { Source, Transition, TransitionType } from '../../types/obs';
 import * as uuid from 'uuid';
 import { ObsService } from './obsService';
 import { ObsHeadlessService } from './obsHeadlessService';
-import { ipcMain, webContents } from 'electron';
+import { ipcMain } from 'electron';
 import { StorageService } from './storageService';
-
-const DEFAULT_MUTED = true;
+import { broadcastMessage } from '../../common/util';
+import { Source, Transition, TransitionType, UpdateSourceRequest } from '../../common/types';
 
 @Service()
 export class SourceService {
@@ -36,8 +35,8 @@ export class SourceService {
     ipcMain.on('preview', (event, source: Source) => this.preview(source));
     ipcMain.on('take', (event, source: Source, transitionType: TransitionType, transitionDurationMs: number) => this.take(source, transitionType, transitionDurationMs));
     ipcMain.on('updateLiveUrl', (event, url: string) => this.updateLiveUrl(url));
-    ipcMain.on('muteSource', (event, source: Source, mute: boolean) => this.muteSource(source, mute));
     ipcMain.on('restart', (event, source: Source) => this.restart(source));
+    ipcMain.on('updateSource', (event, source: Source, request: UpdateSourceRequest) => this.updateSource(source, request));
 
     ipcMain.on('getSources', event => event.returnValue = this.sources);
     ipcMain.on('getPreviewSource', event => event.returnValue = this.previewSource);
@@ -47,14 +46,14 @@ export class SourceService {
 
   public preview(source: Source) {
     this.previewSource = source;
-    this.broadcastMessage('previewChanged', source);
+    broadcastMessage('previewChanged', source);
   }
 
   public async take(source: Source, transitionType: TransitionType, transitionDurationMs: number) {
     const transition = await this.obsService.switchSource(this.programTransition?.source, source, transitionType, transitionDurationMs);
     await this.obsHeadlessService.switchSource(source, transitionType, transitionDurationMs);
     this.programTransition = transition;
-    this.broadcastMessage('programChanged', this.programTransition);
+    broadcastMessage('programChanged', this.programTransition);
   }
 
   public previewByIndex(index: number) {
@@ -78,38 +77,41 @@ export class SourceService {
     if (this.liveSource) {
       this.liveSource.url = url;
       this.liveSource.previewUrl = url;
-      this.obsService.updateSourceUrl(this.liveSource);
+      this.obsService.updatePreviewUrl(this.liveSource);
     } else {
       this.liveSource = {
         id: 'output',
         name: 'Output',
         url: url,
         previewUrl: url,
-        muted: DEFAULT_MUTED,
         sceneId: uuid.v4(),
-        channel: 63, // output channel
+        volume: 0,
+        audioLock: false,
+        audioMonitor: false,
       };
       this.obsService.createSource(this.liveSource);
     }
-    this.broadcastMessage('liveChanged', this.liveSource);
+    broadcastMessage('liveChanged', this.liveSource);
     this.storageService.saveOutputUrl(url);
-  }
-
-  private muteSource(source: Source, mute: boolean) {
-    this.obsService.muteSource(source, mute);
-    source.muted = mute;
-    this.broadcastMessage('sourceMuteChanged', source);
   }
 
   private async restart(source: Source) {
     this.obsService.restart(source);
     await this.obsHeadlessService.restart(source);
-    this.broadcastMessage('sourceRestarted', source);
+    broadcastMessage('sourceRestarted', source);
   }
 
-  private broadcastMessage(channel: string, ...args: any[]) {
-    webContents.getAllWebContents().forEach(webContents => {
-      webContents.send(channel, ...args);
-    });
+  private async updateSource(source: Source, request: UpdateSourceRequest) {
+    const existing = this.findSource(source.sceneId, source.id);
+    if (existing) {
+      await this.obsHeadlessService.updateSource(existing, request);
+      this.obsService.updateSource(existing, request);
+      Object.assign(existing, request);
+      broadcastMessage('sourceChanged', existing);
+    }
+  }
+
+  private findSource(sceneId: string, sourceId: string): Source | undefined {
+    return Object.values(this.sources).find(s => s.sceneId === sceneId && s.id === sourceId);
   }
 }

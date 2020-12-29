@@ -3,7 +3,7 @@ import React from 'react';
 import Dropdown, { Option } from 'react-dropdown';
 import { Container } from 'typedi';
 import { SourceService } from '../../../service/sourceService';
-import { TransitionType } from '../../../types/obs';
+import { TransitionType } from '../../../common/types';
 
 const transitions = [
   { value: TransitionType.Fade, label: '淡入淡出' },

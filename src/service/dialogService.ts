@@ -1,9 +1,9 @@
 import { ipcRenderer, remote } from 'electron';
 import * as uuid from 'uuid';
 import { Service } from 'typedi';
-import { DialogComponent, DialogOptions } from '../types/dialog';
 import { isDialogWindow, isMainWindow } from '../common/util';
 import { SimpleEvent } from '../common/event';
+import { DialogComponent, DialogOptions } from '../common/types';
 
 export type SessionId = string;
 type Resolver = (result: any) => void;

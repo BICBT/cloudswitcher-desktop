@@ -1,10 +1,10 @@
 import './Sources.scss';
 import React from 'react';
-import { Source, Transition } from '../../../types/obs';
 import { Container } from 'typedi';
 import { sequence } from '../../../common/util';
 import { SourceView } from './SourceView';
 import { SourceService } from '../../../service/sourceService';
+import { Source, Transition } from '../../../common/types';
 
 type SourcesProps = {
   rows: number;
@@ -37,11 +37,9 @@ export class Sources extends React.Component<SourcesProps, SourcesState> {
       previewSource: this.sourceService.previewSource,
       programTransition: this.sourceService.programTransition,
     };
-    console.log(`Sources constructor called`);
   }
 
   public componentDidMount() {
-    console.log(`Sources componentDidMount called`);
     this.sourceService.sourcesChanged.on(this, sources => {
       this.setState({
         sources: sources

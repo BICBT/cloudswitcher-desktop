@@ -1,9 +1,9 @@
 import './ProgramLive.scss';
 import React from 'react';
-import { Display } from '../../shared/Display/Display';
 import { Container } from 'typedi';
 import { SourceService } from '../../../service/sourceService';
-import { Source } from '../../../types/obs';
+import { DisplayView } from '../../shared/Display/DisplayView';
+import { Source } from '../../../common/types';
 
 type ProgramLiveState = {
   liveSource?: Source;
@@ -26,13 +26,6 @@ export class ProgramLive extends React.Component<{}, ProgramLiveState> {
         liveSource: source,
       });
     });
-    this.sourceService.sourceMuteChanged.on(this, source => {
-      if (source.id === this.state.liveSource?.id) {
-        this.setState({
-          liveSource: source,
-        });
-      }
-    });
   }
 
   public componentWillUnmount() {
@@ -42,29 +35,22 @@ export class ProgramLive extends React.Component<{}, ProgramLiveState> {
   public render() {
     return (
       <div className='ProgramLive'>
-        <div className='display-container'>
+        <div className='DisplayView-container'>
           <div className='content'>
             {
               this.state.liveSource &&
-              <Display
+              <DisplayView
                 key={this.state.liveSource.url}
-                sourceId={this.state.liveSource.id}
+                source={this.state.liveSource}
+                displayId={this.state.liveSource.id}
               />
             }
           </div>
         </div>
         <div className='toolbar'>
           <h2>LIVE输出</h2>
-          <i className={`${!this.state.liveSource || this.state.liveSource.muted ? 'icon-mute' : 'icon-audio'} icon-button`}
-             onClick={() => this.onMuteClicked()} />
         </div>
       </div>
     );
-  }
-
-  private onMuteClicked() {
-    if (this.state.liveSource) {
-      this.sourceService.muteSource(this.state.liveSource, !this.state.liveSource.muted);
-    }
   }
 }

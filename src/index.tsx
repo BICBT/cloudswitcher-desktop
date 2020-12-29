@@ -7,6 +7,7 @@ import ReactDOM from 'react-dom';
 import { ipcRenderer } from 'electron';
 import * as serviceWorker from './serviceWorker';
 import { App } from './App';
+import { ChakraProvider } from '@chakra-ui/react';
 
 // wrap control log
 ['log', 'debug', 'info', 'warn', 'errpr'].forEach(level => {
@@ -18,7 +19,9 @@ import { App } from './App';
 });
 
 ReactDOM.render(
-  <App />,
+  <ChakraProvider>
+    <App/>
+  </ChakraProvider>,
   document.getElementById('root')
 );
 

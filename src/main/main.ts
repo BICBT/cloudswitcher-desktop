@@ -15,11 +15,13 @@ import { SourceService } from './service/sourceService';
 import { AtemService } from './service/atemService';
 import { ATEM_DEVICE_IP, ENABLE_ATEM } from '../common/constant';
 import { ObsService } from './service/obsService';
+import { AudioService } from './service/audioService';
 
 const loadUrl = isDev ? 'http://localhost:3000' : `file://${path.join(__dirname, '../index.html')}`;
 const sourceService = Container.get(SourceService);
 const atemService = Container.get(AtemService);
 const obsService = Container.get(ObsService);
+const audioService = Container.get(AudioService);
 
 let mainWindow: BrowserWindow | undefined;
 let dialogWindow: BrowserWindow | undefined;
@@ -27,6 +29,7 @@ let externalWindow: BrowserWindow | undefined;
 
 async function startApp() {
   await sourceService.initialize();
+  await audioService.initialized();
   if (ENABLE_ATEM) {
     await atemService.initialize(ATEM_DEVICE_IP);
   }
