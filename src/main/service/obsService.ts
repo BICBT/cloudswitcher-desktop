@@ -1,7 +1,7 @@
 import { Service } from 'typedi';
 import * as obs from 'obs-node';
 import { BrowserWindow, ipcMain, webContents } from 'electron';
-import { Audio, Source, Transition, TransitionType, UpdateAudioRequest, UpdateSourceRequest } from '../../common/types';
+import { Source, Transition, TransitionType, UpdateAudioRequest, UpdateSourceRequest } from '../../common/types';
 
 const OBS_VIDEO_SETTINGS: obs.VideoSettings = {
   baseWidth: 640,
@@ -38,7 +38,13 @@ export class ObsService {
 
   public createSource(source: Source): void {
     obs.addScene(source.sceneId);
-    obs.addSource(source.sceneId, source.id, 'MediaSource', source.previewUrl as string);
+    obs.addSource(source.sceneId, source.id, {
+      isFile: false,
+      type: 'MediaSource',
+      url: source.previewUrl,
+      hardwareDecoder: false,
+      startOnActive: false,
+    });
   }
 
   public updatePreviewUrl(source: Source): void {

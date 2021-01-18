@@ -1,7 +1,5 @@
 import './Switcher.scss'
 import React from 'react';
-import { PVWKeyboard } from './PVWKeyboard';
-import { PGMSKeyboard } from './PGMKeyboard';
 import { TransitionView } from './TransitionView';
 import { CGTable } from './CGTable';
 import { DDRTable } from './DDRTable';
