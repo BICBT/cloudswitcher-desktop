@@ -6,6 +6,17 @@ import { ipcMain } from 'electron';
 import { StorageService } from './storageService';
 import { broadcastMessage } from '../../common/util';
 import { Source, Transition, TransitionType, UpdateSourceRequest } from '../../common/types';
+import {SimpleEvent} from "../../common/event";
+
+export interface ProgramChangedEvent {
+  lastSource?: Source;
+  currentSource: Source;
+}
+
+export interface PreviewChangedEvent {
+  lastSource?: Source;
+  currentSource: Source;
+}
 
 @Service()
 export class SourceService {
@@ -14,7 +25,9 @@ export class SourceService {
   private readonly storageService: StorageService = Container.get(StorageService);
 
   public sources: Record<number, Source> = {};
-  private previewSource?: Source;
+  public programChanged = new SimpleEvent<ProgramChangedEvent>();
+  public previewChanged = new SimpleEvent<PreviewChangedEvent>();
+  public previewSource?: Source;
   private programTransition?: Transition;
   private liveSource?: Source;
 
@@ -45,15 +58,22 @@ export class SourceService {
   }
 
   public preview(source: Source) {
+    const lastSource = this.previewSource;
     this.previewSource = source;
     broadcastMessage('previewChanged', source);
+    this.previewChanged.emit({ lastSource, currentSource: this.previewSource });
   }
 
   public async take(source: Source, transitionType: TransitionType, transitionDurationMs: number) {
-    const transition = await this.obsService.switchSource(this.programTransition?.source, source, transitionType, transitionDurationMs);
+    const lastSource = this.programTransition?.source;
+    this.programTransition = this.obsService.switchSource(lastSource, source, transitionType, transitionDurationMs);
+    const currentSource = this.programTransition.source;
     await this.obsHeadlessService.switchSource(source, transitionType, transitionDurationMs);
-    this.programTransition = transition;
     broadcastMessage('programChanged', this.programTransition);
+    this.programChanged.emit({
+      lastSource: lastSource,
+      currentSource: currentSource,
+    });
   }
 
   public previewByIndex(index: number) {
@@ -81,6 +101,7 @@ export class SourceService {
     } else {
       this.liveSource = {
         id: 'output',
+        index: -1,
         name: 'Output',
         url: url,
         previewUrl: url,

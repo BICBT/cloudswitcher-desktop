@@ -17,7 +17,7 @@
     "prepackage": "rm -rf build && npm run build:prod && npm run build-main:prod && cp env/server.env build",
     "package:windows": "npm run prepackage && rm -rf dist && electron-builder build -w --publish always",
     "package:mac": "npm run prepackage && rm -rf dist && electron-builder build -m --publish always",
-    "postinstall": "cross-os postinstall"
+    "postinstall": "electron-rebuild && cross-os postinstall"
   },
   "dependencies": {
     "@chakra-ui/react": "^1.0.4",
@@ -46,6 +46,7 @@
     "react-select": "^3.1.0",
     "react-tabs": "^3.1.2",
     "reflect-metadata": "^0.1.13",
+    "serialport": "^9.0.6",
     "styled-components": "^5.1.1",
     "typedi": "^0.8.0",
     "uuid": "^8.3.0"
@@ -59,13 +60,15 @@
     "@types/react-modal": "^3.10.6",
     "@types/react-router-dom": "^5.1.5",
     "@types/react-select": "^3.0.16",
+    "@types/serialport": "^8.0.1",
     "@types/uuid": "^8.0.0",
     "colors": "^1.4.0",
     "concurrently": "^5.2.0",
-    "cross-os": "^1.3.0",
+    "cross-os": "^1.4.0",
     "electron": "^10.1.5",
     "electron-builder": "22.7.0",
     "electron-publisher-alioss": "^1.0.2",
+    "electron-rebuild": "^2.3.4",
     "node-sass": "^4.14.1",
     "react-scripts": "3.4.1",
     "shelljs": "^0.8.4",

@@ -5,6 +5,7 @@ export interface Audio {
 
 export interface Source {
   id: string;
+  index: number;
   sceneId: string;
   name: string;
   url: string;
