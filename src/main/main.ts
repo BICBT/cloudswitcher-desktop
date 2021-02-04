@@ -14,12 +14,15 @@ import { Container } from 'typedi';
 import { SourceService } from './service/sourceService';
 import { AtemService } from './service/atemService';
 import { ATEM_DEVICE_IP, ENABLE_ATEM } from '../common/constant';
+import { BoserService } from "./service/boserService";
+import { ENABLE_BOSER } from '../common/constant'
 import { ObsService } from './service/obsService';
 import { AudioService } from './service/audioService';
 
 const loadUrl = isDev ? 'http://localhost:3000' : `file://${path.join(__dirname, '../index.html')}`;
 const sourceService = Container.get(SourceService);
 const atemService = Container.get(AtemService);
+const boserService = Container.get(BoserService);
 const obsService = Container.get(ObsService);
 const audioService = Container.get(AudioService);
 
@@ -32,6 +35,9 @@ async function startApp() {
   await audioService.initialized();
   if (ENABLE_ATEM) {
     await atemService.initialize(ATEM_DEVICE_IP);
+  }
+  if (ENABLE_BOSER) {
+    await boserService.initialize();
   }
 
   // Main window
@@ -62,6 +68,7 @@ async function startApp() {
       }
     });
   });
+
 
   // Dialog window
   dialogWindow = new BrowserWindow({

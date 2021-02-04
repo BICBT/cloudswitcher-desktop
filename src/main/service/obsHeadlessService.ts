@@ -45,8 +45,9 @@ export class ObsHeadlessService {
     for (let scene of scenes) {
       for (let source of scene.sources) {
         const r: GetSourceResponse = await this.getSource(scene.id, source.id);
-        sources[index++] = {
+        sources[index] = {
           id: source.id,
+          index: index,
           name: source.name,
           url: source.url,
           previewUrl: source.previewUrl,
@@ -55,6 +56,7 @@ export class ObsHeadlessService {
           audioLock: r.audioLock,
           audioMonitor: r.audioMonitor,
         };
+        index++;
       }
     }
     return { sources, output };

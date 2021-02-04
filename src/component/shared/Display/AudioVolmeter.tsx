@@ -104,7 +104,11 @@ interface AudioVolmeterProps {
   source: Source;
 }
 
-export class AudioVolmeter extends React.Component<AudioVolmeterProps> {
+interface AudioVolmeterState {
+  canvasId: number;
+}
+
+export class AudioVolmeter extends React.Component<AudioVolmeterProps, AudioVolmeterState> {
   private canvas: RefObject<HTMLCanvasElement> = React.createRef<HTMLCanvasElement>();
   private spacer: RefObject<HTMLDivElement> = React.createRef<HTMLDivElement>();
 
@@ -127,14 +131,21 @@ export class AudioVolmeter extends React.Component<AudioVolmeterProps> {
   private canvasHeight: number = 0;
 
   private canvasHeightInterval: number | null;
-  private canvasId = 1;
   private renderingInitialized = false;
   private listener: (e: Electron.Event, sceneId: string, sourceId: string, channels: number, magnitude: number[], peak: number[], input_peak: number[]) => void;
+
+  public constructor(props: AudioVolmeterProps) {
+    super(props);
+    this.handleLostWebglContext = this.handleLostWebglContext.bind(this);
+    this.state = {
+      canvasId: 1,
+    };
+  }
 
   public render() {
     return (
       <div className="AudioVolmeter">
-        <canvas className='volmeter' ref={this.canvas} />
+        <canvas className='volmeter' ref={this.canvas} key={this.state.canvasId} />
         <div className="volmeter-spacer" ref={this.spacer}/>
       </div>
     );
@@ -207,12 +218,12 @@ export class AudioVolmeter extends React.Component<AudioVolmeterProps> {
         this.canvasHeightInterval = null;
       }
 
-      if (this.canvas.current) {
-        this.canvas.current.removeEventListener('webglcontextlost', this.handleLostWebglContext);
-      }
+      this.canvas.current?.removeEventListener('webglcontextlost', this.handleLostWebglContext);
 
       WebGLState.activeWebglContexts -= 1;
-      this.canvasId += 1;
+      this.setState({
+        canvasId: this.state.canvasId + 1
+      });
 
       setImmediate(() => {
         this.setupNewCanvas();
