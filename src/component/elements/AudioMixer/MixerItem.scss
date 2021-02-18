@@ -18,6 +18,14 @@
     width: 2.5em;
   }
 
+  .icon-button.active, .icon-button.active:hover {
+    color: #36ade0
+  }
+
+  .icon-button:not(.active):hover {
+    color:  var(--icon);
+  }
+
   .toolbar {
     display: flex;
     flex-direction: row;
