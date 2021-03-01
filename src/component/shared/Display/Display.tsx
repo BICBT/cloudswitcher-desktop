@@ -1,19 +1,23 @@
 import './Display.scss';
 import * as uuid from 'uuid';
 import React, { RefObject } from 'react';
-import { remote } from "electron";
-import { getScaleFactor, isMac } from '../../../common/util';
+import electron from "electron";
+import { getCurrentDisplay, isMac } from '../../../common/util';
 import { Container } from 'typedi';
 import { DisplayService } from '../../../service/displayService';
 import { Bounds } from '../../../common/types';
 
 type DisplayProps = {
   displayId: string;
-}
+};
+
+type DisplayState = {
+  fullscreen: boolean;
+};
 
 const DISPLAY_ELEMENT_POLLING_INTERVAL = 500;
 
-export class Display extends React.Component<DisplayProps> {
+export class Display extends React.Component<DisplayProps, DisplayState> {
   private readonly displayService = Container.get(DisplayService);
   private readonly electronWindowId: number;
   private readonly name: string;
@@ -24,12 +28,15 @@ export class Display extends React.Component<DisplayProps> {
   constructor(props: DisplayProps) {
     super(props);
     this.name = uuid.v4();
-    this.electronWindowId = remote.getCurrentWindow().id;
+    this.electronWindowId = electron.remote.getCurrentWindow().id;
+    this.state = {
+      fullscreen: false,
+    };
   }
 
   public componentDidMount() {
     if (this.ref.current) {
-      const scaleFactor = getScaleFactor();
+      const scaleFactor = getCurrentDisplay().scaleFactor;
       this.displayService.createOBSDisplay(this.name, this.electronWindowId, scaleFactor, this.props.displayId);
       this.trackElement(this.ref.current);
     }
@@ -45,7 +52,11 @@ export class Display extends React.Component<DisplayProps> {
   public render() {
     return (
       <div className="Display">
-        <div className="Display-content content" ref={this.ref} />
+        {
+          this.state.fullscreen &&
+          <div className='Fullscreen-cover' onDoubleClick={this.hideFullscreen.bind(this)} />
+        }
+        <div className="Display-content content" ref={this.ref} onDoubleClick={this.showFullscreen.bind(this)} />
       </div>
     );
   }
@@ -87,5 +98,25 @@ export class Display extends React.Component<DisplayProps> {
     this.currentPosition.width = width;
     this.currentPosition.height = height;
     this.displayService.moveOBSDisplay(this.name, x, y, width, height);
+  }
+
+  private showFullscreen() {
+    if (this.trackingInterval) {
+      clearInterval(this.trackingInterval);
+    }
+    const bounds = getCurrentDisplay().bounds;
+    this.move(bounds.x, bounds.y, bounds.width, bounds.height);
+    this.setState({
+      fullscreen: true,
+    });
+  }
+
+  private hideFullscreen() {
+    this.setState({
+      fullscreen: false,
+    });
+    if (this.ref.current) {
+      this.trackElement(this.ref.current);
+    }
   }
 }

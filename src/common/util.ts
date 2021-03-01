@@ -36,10 +36,9 @@ export function sequence(start: number, end: number): number[] {
   return sequence;
 }
 
-export function getScaleFactor() {
+export function getCurrentDisplay() {
   const bounds = remote.getCurrentWindow().getBounds();
-  const currentDisplay = remote.screen.getDisplayMatching(bounds);
-  return currentDisplay.scaleFactor;
+  return remote.screen.getDisplayMatching(bounds);
 }
 
 export function replaceUrlParams(url: string, params: object) {
