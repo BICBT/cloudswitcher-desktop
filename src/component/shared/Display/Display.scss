@@ -6,4 +6,13 @@
   .Display-content {
     background-color: var(--display-bg);
   }
+
+  .Fullscreen-cover {
+    z-index: 999;
+    position: fixed;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+  }
 }

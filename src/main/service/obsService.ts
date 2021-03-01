@@ -45,6 +45,7 @@ export class ObsService {
       hardwareDecoder: false,
       startOnActive: false,
       bufferSize: 0,
+      enableBuffer: true,
     });
   }
 
