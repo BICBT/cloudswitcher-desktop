@@ -85,10 +85,10 @@ export class Display extends React.Component<DisplayProps, DisplayState> {
     const y = isMac() ? window.innerHeight - rect.bottom : rect.top;
 
     return {
-      x: rect.left + 1,
-      y: y - 1,
-      width: rect.width - 2,
-      height: rect.height - 2,
+      x: rect.left + 2,
+      y: y + 2,
+      width: rect.width - 4,
+      height: rect.height,
     };
   }
 
@@ -105,7 +105,7 @@ export class Display extends React.Component<DisplayProps, DisplayState> {
       clearInterval(this.trackingInterval);
     }
     const bounds = getCurrentDisplay().bounds;
-    this.move(bounds.x, bounds.y, bounds.width, bounds.height);
+    this.move(0, 0, bounds.width, bounds.height);
     this.setState({
       fullscreen: true,
     });
