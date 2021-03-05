@@ -62,19 +62,55 @@ export interface UpdateAudioRequest {
   audioWithVideo?: boolean;
 }
 
-export type DialogProps<T> = {
+export interface DialogProps<T> {
   onModalCancel: () => void;
   onModalDone: (result: T) => void;
   defaultValue: any;
-};
+}
 
 export type DialogComponent =
   | 'AddSourceDialog'
-  | 'OutputSettingDialog';
+  | 'OutputSettingDialog'
+  | 'CGDesignerDialog';
 
-export type DialogOptions = {
+export interface DialogOptions {
   title: string;
   component: DialogComponent;
   width: number;
   height: number;
-};
+}
+
+export interface CG {
+  id: string;
+  name: string;
+  snapshotBase64: string;
+  items: CGItem[];
+}
+
+export type CGItemType = 'image' | 'text';
+
+export interface CGItem {
+  type: CGItemType;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  layer: number;
+}
+
+export interface CGText extends CGItem {
+  content: string;
+  fontSize: number;
+  fontFamily: string;
+  colorHex: string;
+}
+
+export interface CGImage extends CGItem {
+  url: string;
+}
+
+export interface Image {
+  id: string;
+  name: string;
+  url: string;
+}

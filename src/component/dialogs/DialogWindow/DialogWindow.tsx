@@ -6,10 +6,12 @@ import { Container } from 'typedi';
 import { AddSourceDialog } from '../AddSourceDialog/AddSourceDialog';
 import { OutputSettingDialog } from '../OutputSettingDialog/OutputSettingDialog';
 import { DialogComponent, DialogProps } from '../../../common/types';
+import { CGDesignerDialog } from '../CGDesignerDialog/CGDesignerDialog';
 
 const dialogComponents: Record<DialogComponent, ComponentType<DialogProps<any>>> = {
   'AddSourceDialog': AddSourceDialog,
   'OutputSettingDialog': OutputSettingDialog,
+  'CGDesignerDialog': CGDesignerDialog,
 };
 
 type DialogWindowState = {

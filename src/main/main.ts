@@ -31,13 +31,23 @@ let dialogWindow: BrowserWindow | undefined;
 let externalWindow: BrowserWindow | undefined;
 
 async function startApp() {
-  await sourceService.initialize();
-  await audioService.initialized();
-  if (ENABLE_ATEM) {
-    await atemService.initialize(ATEM_DEVICE_IP);
+  if (!app.requestSingleInstanceLock()) {
+    app.quit()
+    return;
   }
-  if (ENABLE_BOSER) {
-    await boserService.initialize();
+  try {
+    await sourceService.initialize();
+    await audioService.initialized();
+    if (ENABLE_ATEM) {
+      await atemService.initialize(ATEM_DEVICE_IP);
+    }
+    if (ENABLE_BOSER) {
+      await boserService.initialize();
+    }
+  } catch (e) {
+    console.error(`Failed to start app: ${e}`);
+    app.quit();
+    return;
   }
 
   // Main window
@@ -69,14 +79,13 @@ async function startApp() {
     });
   });
 
-
   // Dialog window
   dialogWindow = new BrowserWindow({
-    parent: mainWindow,
     modal: true,
     frame: false,
     titleBarStyle: 'hidden',
     show: false,
+    fullscreen: false,
     webPreferences: {
       nodeIntegration: true,
       enableRemoteModule: true,
