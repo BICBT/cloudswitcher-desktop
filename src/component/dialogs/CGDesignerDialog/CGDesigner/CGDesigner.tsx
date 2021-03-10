@@ -15,7 +15,17 @@ interface CGDesignerProps {
 interface CGDesignerState {
   canvas?: fabric.Canvas;
   showImagePanel: boolean;
-  saveModalVisible: boolean;
+}
+
+function hexToABGR(hex: string) {
+  // convert #rgb to ABGR
+  hex = hex.substring(1);
+  return `ff${hex.substring(4, 6)}${hex.substring(2, 4)}${hex.substring(0, 2)}`;
+}
+
+function abgrToHex(abgr: string) {
+  // convert ABGR to #rgb
+  return `#${abgr.substring(6, 8)}${abgr.substring(4, 6)}${abgr.substring(2, 4)}`;
 }
 
 export class CGDesigner extends React.Component<CGDesignerProps, CGDesignerState> {
@@ -23,22 +33,48 @@ export class CGDesigner extends React.Component<CGDesignerProps, CGDesignerState
     super(props);
     this.state = {
       showImagePanel: false,
-      saveModalVisible: false,
     };
   }
 
-  public getCG() {
-    return {
-      snapshotBase64: this.getSnapshotBase64(),
-      items: this.getCGItems(),
+  public getCGItems(): CGItem[] {
+    const items: CGItem[] = [];
+    if (this.state.canvas) {
+      this.state.canvas.discardActiveObject().renderAll();
+      this.state.canvas.getObjects().forEach(o => {
+        if (o.type === 'image') {
+          const image: CGImage = {
+            type: 'image',
+            x: o.left ?? 0,
+            y: o.top ?? 0,
+            width: o.getScaledWidth() ?? 0,
+            height: o.getScaledHeight() ?? 0,
+            url: (o as any).url
+          };
+          items.push(image);
+        } else if (o.type === 'text') {
+          const text: CGText = {
+            type: 'text',
+            x: o.left ?? 0,
+            y: o.top ?? 0,
+            width: o.width ?? 0,
+            height: o.height ?? 0,
+            content: (o as fabric.Text).text ?? '',
+            fontSize: (o as fabric.Text).fontSize ?? 0,
+            fontFamily: (o as fabric.Text).fontFamily ?? '',
+            colorABGR: hexToABGR((o as fabric.Text).fill as string),
+          };
+          items.push(text);
+        }
+      });
     }
+    return items;
   }
 
   public componentDidMount() {
     const canvas = new fabric.Canvas('main-canvas', {
       width: this.props.canvasWidth,
       height: this.props.canvasHeight,
-      selection: false,
+      preserveObjectStacking: true,
     });
     this.setState({
       canvas: canvas,
@@ -90,7 +126,7 @@ export class CGDesigner extends React.Component<CGDesignerProps, CGDesignerState
   }
 
   private handleAddTextClicked() {
-    this.addText(100, 100, 200, 20, 'Add Text', 18, 'SimSun', 'black');
+    this.addText(100, 100, 200, 20, 'Add Text', 18, 'SimSun', '#000000');
   }
 
   private handleAddImageClicked() {
@@ -99,8 +135,8 @@ export class CGDesigner extends React.Component<CGDesignerProps, CGDesignerState
     });
   }
 
-  private handleImageAddClicked(url: string) {
-    this.addImage(100, 100, 200, 200, url);
+  private async handleImageAddClicked(url: string) {
+    await this.addImage(100, 100, 200, url);
     this.setState({
       showImagePanel: false,
     });
@@ -112,64 +148,21 @@ export class CGDesigner extends React.Component<CGDesignerProps, CGDesignerState
     });
   }
 
-  private getSnapshotBase64(): string {
-    this.state.canvas?.discardActiveObject().renderAll();
-    return this.state.canvas?.toDataURL({
-      format: 'png',
-      multiplier: 0.5,
-    }) ?? '';
-  }
-
-  private getCGItems(): CGItem[] {
-    const items: CGItem[] = [];
-    if (this.state.canvas) {
-      this.state.canvas.getObjects().forEach(o => {
-        if (o.type === 'image') {
-          const image: CGImage = {
-            type: 'image',
-            x: o.left ?? 0,
-            y: o.top ?? 0,
-            width: o.width ?? 0,
-            height: o.height ?? 0,
-            layer: this.state.canvas?.getObjects().indexOf(o) ?? 0,
-            url: (o as any).url
-          };
-          items.push(image);
-        } else if (o.type === 'text') {
-          const text: CGText = {
-            type: 'text',
-            x: o.left ?? 0,
-            y: o.top ?? 0,
-            width: o.width ?? 0,
-            height: o.height ?? 0,
-            layer: this.state.canvas?.getObjects().indexOf(o) ?? 0,
-            content: (o as fabric.Text).text ?? '',
-            fontSize: (o as fabric.Text).fontSize ?? 0,
-            fontFamily: (o as fabric.Text).fontFamily ?? '',
-            colorHex: (o as fabric.Text).fill as string,
-          };
-          items.push(text);
-        }
-      });
-    }
-    return items;
-  }
-
-  private loadCG(cg: CG) {
-    [...cg.items].sort((i1, i2) => i1.layer - i2.layer).forEach(i => {
-      if (i.type === 'image') {
-        const image = i as CGImage;
-        this.addImage(image.x, image.y, image.width, image.height, image.url);
-      } else if (i.type === 'text') {
-        const text = i as CGText;
-        this.addText(text.x, text.y, text.width, text.height, text.content, text.fontSize, text.fontFamily, text.colorHex);
+  private async loadCG(cg: CG) {
+    for (const item of cg.items)  {
+      if (item.type === 'image') {
+        const image = item as CGImage;
+        await this.addImage(image.x, image.y, image.width, image.url);
+      } else if (item.type === 'text') {
+        const text = item as CGText;
+        this.addText(text.x, text.y, text.width, text.height, text.content, text.fontSize, text.fontFamily, abgrToHex(text.colorABGR));
       }
-    });
-    this.state.canvas?.renderAll();
+    }
+    this.state.canvas?.discardActiveObject().renderAll();
+    console.log(`cg = ${JSON.stringify(cg)}`);
   }
 
   private addText(x: number, y: number, width: number, height: number, content: string, fontSize: number, fontFamily: string, textColor: string) {
-    console.log(`addText: ${content}`);
     const text = new fabric.Textbox(content, {
       type: 'text',
       left: x,
@@ -179,6 +172,7 @@ export class CGDesigner extends React.Component<CGDesignerProps, CGDesignerState
       fontSize: fontSize,
       fontFamily: fontFamily,
       fill: textColor,
+      padding: 0,
     });
     text.setControlsVisibility({
       tl: false,
@@ -192,25 +186,30 @@ export class CGDesigner extends React.Component<CGDesignerProps, CGDesignerState
     this.state.canvas?.add(text);
     this.state.canvas?.setActiveObject(text);
     this.state.canvas?.renderAll();
+    console.log(`lineheight = ${text.lineHeight}, height = ${text.height}, padding = ${text.padding}`);
   };
 
-  private addImage(x: number, y: number, width: number, height: number, url: string) {
-    return fabric.Image.fromURL(url, (image) => {
-      image.set({
-        left: x,
-        top: y,
+  private async addImage(x: number, y: number, width: number, url: string): Promise<fabric.Image> {
+    return new Promise(resolve => {
+      fabric.Image.fromURL(url, (image) => {
+        image.set({
+          left: x,
+          top: y,
+          padding: 0,
+        });
+        image.setControlsVisibility({
+          mb: false,
+          mr: false,
+          mt: false,
+          ml: false,
+          mtr: false,
+        });
+        (image as any).url = url;
+        this.state.canvas?.add(image);
+        image.scaleToWidth(width);
+        this.state.canvas?.setActiveObject(image);
+        resolve(image);
       });
-      image.setControlsVisibility({
-        mb: false,
-        mr: false,
-        mt: false,
-        ml: false,
-        mtr: false,
-      });
-      (image as any).url = url;
-      image.scaleToWidth(width);
-      this.state.canvas?.add(image);
-      this.state.canvas?.setActiveObject(image);
     });
   }
 }

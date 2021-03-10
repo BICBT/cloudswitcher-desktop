@@ -5,6 +5,9 @@ import { ModalLayout } from '../../shared/ModalLayout/ModalLayout';
 import { CGDesigner } from './CGDesigner/CGDesigner';
 import { Input, Modal } from 'antd';
 
+const CANVAS_WIDTH = 960;
+const CANVAS_HEIGHT = 540;
+
 export interface CGDesignerDialogResult {
   cg: CG;
 }
@@ -66,16 +69,20 @@ export class CGDesignerDialog extends React.Component<CGDesignerDialogProps, CGD
   }
 
   private handleSaveModelOK() {
-    this.setState({
-      saveModalVisible: false,
-    });
     if (this.designerRef.current && this.state.cgName) {
       this.props.onModalDone({
         cg: {
           id: this.cg?.id ?? uuid.v4(),
           name: this.state.cgName,
-          ...this.designerRef.current.getCG(),
+          type: 'cg',
+          status: this.cg?.status ?? 'down',
+          baseWidth: CANVAS_WIDTH,
+          baseHeight: CANVAS_HEIGHT,
+          items: this.designerRef.current.getCGItems(),
         },
+      });
+      this.setState({
+        saveModalVisible: false,
       });
     }
   }

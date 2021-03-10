@@ -42,7 +42,7 @@ export class ProgramLocal extends React.Component<{}, ProgramLocalState> {
               <DisplayView
                 key={this.state.programTransition.id}
                 source={this.state.programTransition.source}
-                displayId={this.state.programTransition.id}
+                displayId='output'
               />
             }
           </div>

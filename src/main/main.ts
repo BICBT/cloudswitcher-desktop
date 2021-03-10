@@ -18,6 +18,7 @@ import { BoserService } from "./service/boserService";
 import { ENABLE_BOSER } from '../common/constant'
 import { ObsService } from './service/obsService';
 import { AudioService } from './service/audioService';
+import { CGService } from './service/cgService';
 
 const loadUrl = isDev ? 'http://localhost:3000' : `file://${path.join(__dirname, '../index.html')}`;
 const sourceService = Container.get(SourceService);
@@ -25,6 +26,7 @@ const atemService = Container.get(AtemService);
 const boserService = Container.get(BoserService);
 const obsService = Container.get(ObsService);
 const audioService = Container.get(AudioService);
+const cgService = Container.get(CGService);
 
 let mainWindow: BrowserWindow | undefined;
 let dialogWindow: BrowserWindow | undefined;
@@ -38,6 +40,7 @@ async function startApp() {
   try {
     await sourceService.initialize();
     await audioService.initialized();
+    await cgService.initialize();
     if (ENABLE_ATEM) {
       await atemService.initialize(ATEM_DEVICE_IP);
     }
@@ -56,6 +59,7 @@ async function startApp() {
     webPreferences: {
       nodeIntegration: true,
       enableRemoteModule: true,
+      webSecurity: false
     }
   });
   mainWindow.removeMenu();
@@ -157,7 +161,7 @@ ipcMain.on('showExternalWindow', (event, layouts) => {
     });
     externalWindow.removeMenu();
     externalWindow.loadURL(`${loadUrl}?window=external&layouts=${layouts}`);
-    externalWindow.on('close', e => {
+    externalWindow.on('close', () => {
       externalWindow = undefined;
     });
   }

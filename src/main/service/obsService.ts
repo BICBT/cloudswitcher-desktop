@@ -3,12 +3,13 @@ import * as obs from 'obs-node';
 import { BrowserWindow, ipcMain, webContents } from 'electron';
 import { Source, Transition, TransitionType, UpdateAudioRequest, UpdateSourceRequest } from '../../common/types';
 import { broadcastMessage } from '../../common/util';
+import { Overlay } from 'obs-node';
 
 const OBS_VIDEO_SETTINGS: obs.VideoSettings = {
-  baseWidth: 640,
-  baseHeight: 360,
-  outputWidth: 640,
-  outputHeight: 360,
+  baseWidth: 1280,
+  baseHeight: 720,
+  outputWidth: 1280,
+  outputHeight: 720,
   fpsNum: 25,
   fpsDen: 1,
 };
@@ -99,5 +100,27 @@ export class ObsService {
     const buffer = await obs.screenshot(source.sceneId, source.id);
     const base64 = buffer.toString('base64');
     broadcastMessage('screenshotted', source, base64);
+  }
+
+  public addOverlay(overlay: Overlay) {
+    obs.addOverlay(overlay);
+  }
+
+  public updateOverlay(overlay: Overlay) {
+    obs.removeOverlay(overlay.id);
+    obs.addOverlay(overlay);
+    overlay.status = 'down';
+  }
+
+  public removeOverlay(overlayId: string) {
+    obs.removeOverlay(overlayId);
+  }
+
+  public upOverlay(overlayId: string) {
+    obs.upOverlay(overlayId);
+  }
+
+  public downOverlay(overlayId: string) {
+    obs.downOverlay(overlayId);
   }
 }

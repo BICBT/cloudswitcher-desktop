@@ -3,7 +3,7 @@ import React from 'react';
 import { DialogService } from '../../../service/dialogService';
 import { Container } from 'typedi';
 import { CGDesignerDialogResult } from '../../dialogs/CGDesignerDialog/CGDesignerDialog';
-import { Table, Image } from 'antd';
+import { Table } from 'antd';
 import { CG } from '../../../common/types';
 import { CGService } from '../../../service/cgService';
 import { ColumnType } from 'antd/lib/table/interface';
@@ -18,39 +18,32 @@ export class CGTable extends React.Component<unknown, CGTableState> {
 
   private readonly columns: ColumnType<CG>[] = [
     {
-      key: 'name',
-      dataIndex: 'name',
-      align: 'center',
-      width: 100,
-    },
-    {
-      key: 'snapshot',
-      align: 'center',
-      render: (cg: CG) => (
-        <div className='snapshot'>
-          <Image src={cg.snapshotBase64} preview={false} onClick={() => this.handleCGEdit(cg)} />
-        </div>
-      ),
-    },
-    {
-      key: 'edit',
+      key: 'delete',
       align: 'center',
       width: 100,
       render: (cg: CG) => (
         <div className='delete'>
-          <i className='icon-button fas fa-edit' onClick={() => this.handleCGEdit(cg)} />
           <i className='icon-button fas fa-trash-alt' onClick={() => this.handleCGDelete(cg)} />
         </div>
       ),
     },
     {
-      key: 'upDown',
+      key: 'name',
       align: 'center',
-      width: 100,
       render: (cg: CG) => (
-        <div className='edit'>
-          <button className="button--action">UP</button>
-        </div>
+        <button className='button--trans' onClick={() => this.handleCGEdit(cg)}>
+          {cg.name}
+        </button>
+      ),
+    },
+    {
+      key: 'upDown',
+      align: 'right',
+      width: 125,
+      render: (cg: CG) => (
+        <button className="UpDown-button button--action" onClick={() => this.handleUpDownClicked(cg)}>
+          { cg.status === 'down' ? 'Up' : 'Down' }
+        </button>
       ),
     }
   ];
@@ -58,8 +51,22 @@ export class CGTable extends React.Component<unknown, CGTableState> {
   public constructor(props: unknown) {
     super(props);
     this.state = {
-      cgs: this.cgService.cgs,
+      cgs: this.cgService.getCGs(),
     };
+  }
+
+  public componentDidMount() {
+    this.cgService.cgsChanged.on(this, cgs => {
+      console.log(`cgs = ${JSON.stringify(cgs)}`);
+      this.setState({
+        cgs: [...cgs],
+      });
+      this.forceUpdate();
+    });
+  }
+
+  public componentWillUnmount() {
+    this.cgService.cgsChanged.off(this);
   }
 
   public render() {
@@ -91,11 +98,8 @@ export class CGTable extends React.Component<unknown, CGTableState> {
     await this.addOrUpdateCG(cg);
   }
 
-  private handleCGDelete(cg: CG) {
-    this.cgService.deleteCG(cg);
-    this.setState({
-      cgs: [...this.cgService.cgs],
-    });
+  private async handleCGDelete(cg: CG) {
+    await this.cgService.deleteCG(cg);
   }
 
   private async addOrUpdateCG(cg?: CG) {
@@ -106,10 +110,19 @@ export class CGTable extends React.Component<unknown, CGTableState> {
       height: 700,
     }, cg);
     if (result?.cg) {
-      this.cgService.saveCG(result.cg);
-      this.setState({
-        cgs: [...this.cgService.cgs],
-      });
+      if (!cg) {
+        await this.cgService.addCG(result.cg);
+      } else {
+        await this.cgService.updateCG(result.cg);
+      }
+    }
+  }
+
+  private async handleUpDownClicked(cg: CG) {
+    if (cg.status === 'down') {
+      await this.cgService.upCG(cg);
+    } else {
+      await this.cgService.downCG(cg);
     }
   }
 }

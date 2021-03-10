@@ -80,11 +80,20 @@ export interface DialogOptions {
   height: number;
 }
 
-export interface CG {
+export type OverlayType = 'cg';
+export type OverlayStatus = 'up' | 'down';
+
+export interface Overlay {
   id: string;
   name: string;
-  snapshotBase64: string;
+  type: OverlayType;
+  status: OverlayStatus;
+}
+
+export interface CG extends Overlay {
   items: CGItem[];
+  baseWidth: number;
+  baseHeight: number;
 }
 
 export type CGItemType = 'image' | 'text';
@@ -95,14 +104,13 @@ export interface CGItem {
   y: number;
   width: number;
   height: number;
-  layer: number;
 }
 
 export interface CGText extends CGItem {
   content: string;
   fontSize: number;
   fontFamily: string;
-  colorHex: string;
+  colorABGR: string;
 }
 
 export interface CGImage extends CGItem {

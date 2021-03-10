@@ -68,30 +68,6 @@ export class Toolbar extends Component<ToolbarProps, ToolbarState> {
     this.setTextOptions({ fill: color });
   }
 
-  get bold(): boolean {
-    return this.getTextOptions('fontWeight') === 'bold';
-  }
-
-  set bold(bold: boolean) {
-    this.setTextOptions({ fontWeight: bold ? 'bold' : 'normal' });
-  }
-
-  get italic(): boolean {
-    return this.getTextOptions('fontStyle') === 'italic';
-  }
-
-  set italic(italic: boolean) {
-    this.setTextOptions({ fontStyle: italic ? 'italic' : 'normal' });
-  }
-
-  get underline(): boolean {
-    return this.getTextOptions('underline');
-  }
-
-  set underline(underline: boolean) {
-    this.setTextOptions({ underline });
-  }
-
   get position(): string {
     const object = this.props.canvas.getActiveObject();
     return `${Math.trunc(object.left ?? 0)}, ${Math.trunc(object.top ?? 0)}, ${Math.trunc(object.getScaledWidth() ?? 0)}, ${Math.trunc(object.getScaledHeight() ?? 0)}`;
@@ -175,14 +151,6 @@ export class Toolbar extends Component<ToolbarProps, ToolbarState> {
                     <SketchPicker color={this.textColor} onChangeComplete={this.setTextColor}/>
                   </div>
                 }
-                <div className="Toolbar-item font-style-container">
-                  <i className={`toolbar-icon fas fa-bold ${this.bold ? 'selected' : ''}`}
-                     title="Bold" onClick={this.toggleTextBold}/>
-                  <i className={`toolbar-icon fas fa-italic ${this.italic ? 'selected' : ''}`}
-                     title="Italic" onClick={this.toggleTextItalic}/>
-                  <i className={`toolbar-icon fas fa-underline ${this.underline ? 'selected' : ''}`}
-                     title="Underline" onClick={this.toggleTextUnderline}/>
-                </div>
               </>
             }
             <div className="Toolbar-item overlap-container">
@@ -248,32 +216,20 @@ export class Toolbar extends Component<ToolbarProps, ToolbarState> {
     });
   };
 
-  toggleTextBold = () => {
-    this.bold = !this.bold;
-  };
-
-  toggleTextItalic = () => {
-    this.italic = !this.italic;
-  };
-
-  toggleTextUnderline = () => {
-    this.underline = !this.underline;
-  };
-
   bringForward = () => {
     this.props.canvas.getActiveObjects().forEach(o => {
       this.props.canvas.bringToFront(o);
     });
-    this.props.canvas.discardActiveObject();
     this.props.canvas.renderAll();
+    console.log(`objects = ${this.props.canvas.getObjects()}`);
   };
 
   sendBackwards = () => {
     this.props.canvas.getActiveObjects().forEach(o => {
       this.props.canvas.sendBackwards(o);
     });
-    this.props.canvas.discardActiveObject();
     this.props.canvas.renderAll();
+    console.log(`objects = ${this.props.canvas.getObjects()}`);
   };
 
   deleteObject = () => {
