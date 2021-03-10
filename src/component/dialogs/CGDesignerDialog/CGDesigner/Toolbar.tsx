@@ -221,7 +221,6 @@ export class Toolbar extends Component<ToolbarProps, ToolbarState> {
       this.props.canvas.bringToFront(o);
     });
     this.props.canvas.renderAll();
-    console.log(`objects = ${this.props.canvas.getObjects()}`);
   };
 
   sendBackwards = () => {
@@ -229,7 +228,6 @@ export class Toolbar extends Component<ToolbarProps, ToolbarState> {
       this.props.canvas.sendBackwards(o);
     });
     this.props.canvas.renderAll();
-    console.log(`objects = ${this.props.canvas.getObjects()}`);
   };
 
   deleteObject = () => {

@@ -159,7 +159,6 @@ export class CGDesigner extends React.Component<CGDesignerProps, CGDesignerState
       }
     }
     this.state.canvas?.discardActiveObject().renderAll();
-    console.log(`cg = ${JSON.stringify(cg)}`);
   }
 
   private addText(x: number, y: number, width: number, height: number, content: string, fontSize: number, fontFamily: string, textColor: string) {
@@ -186,7 +185,6 @@ export class CGDesigner extends React.Component<CGDesignerProps, CGDesignerState
     this.state.canvas?.add(text);
     this.state.canvas?.setActiveObject(text);
     this.state.canvas?.renderAll();
-    console.log(`lineheight = ${text.lineHeight}, height = ${text.height}, padding = ${text.padding}`);
   };
 
   private async addImage(x: number, y: number, width: number, url: string): Promise<fabric.Image> {

@@ -57,7 +57,6 @@ export class CGTable extends React.Component<unknown, CGTableState> {
 
   public componentDidMount() {
     this.cgService.cgsChanged.on(this, cgs => {
-      console.log(`cgs = ${JSON.stringify(cgs)}`);
       this.setState({
         cgs: [...cgs],
       });
