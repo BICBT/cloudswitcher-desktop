@@ -21,10 +21,6 @@
     ReadRegStr $R0 HKCR "Installer\Dependencies\VC,redist.x64,amd64,14.25,bundle" "Version"
     IfErrors 0 VSRedistInstalled
 
-    MessageBox MB_YESNO "This application requires$\r$\n\
-      'Microsoft Visual C++ Redistributable for Visual Studio 2015 - 2019 x64'$\r$\n\
-      to function properly.$\r$\n$\r$\n\
-      Download and install now?" /SD IDYES IDNO VSRedistInstalled
     StrCpy $VCRedistDownload "https://aka.ms/vs/16/release/vc_redist.x64.exe"
   ${Else}
     ;HKCR\Installer\Dependencies\VC,redist.x86,x86,14.21,bundle\Dependents\{49697869-be8e-427d-81a0-c334d1d14950}
@@ -44,10 +40,6 @@
     ReadRegStr $R0 HKCR "Installer\Dependencies\VC,redist.x86,x86,14.25,bundle" "Version"
     IfErrors 0 VSRedistInstalled
 
-    MessageBox MB_YESNO "This application requires$\r$\n\
-      'Microsoft Visual C++ Redistributable for Visual Studio 2015 - 2019 x86'$\r$\n\
-      to function properly.$\r$\n$\r$\n\
-      Download and install now?" /SD IDYES IDNO VSRedistInstalled
     StrCpy $VCRedistDownload "https://aka.ms/vs/16/release/vc_redist.x86.exe"
   ${EndIf}
 
