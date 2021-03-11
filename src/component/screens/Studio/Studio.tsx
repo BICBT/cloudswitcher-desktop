@@ -24,7 +24,7 @@ export class Studio extends React.Component {
         <div className='bottom'>
           <Tabs isFitted className='Switcher-tabs'>
             <TabList className='Switcher-tablist'>
-              <Tab className='Switcher-tab'>导播切换</Tab>
+              <Tab className='Switcher-tab'>切换台</Tab>
               <Tab className='Switcher-tab'>调音台</Tab>
             </TabList>
             <TabPanels className='Switcher-tabpanels'>

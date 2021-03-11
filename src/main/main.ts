@@ -19,6 +19,8 @@ import { BoserService } from "./service/boserService";
 import { ENABLE_BOSER } from '../common/constant'
 import { ObsService } from './service/obsService';
 import { AudioService } from './service/audioService';
+import { CGService } from './service/cgService';
+import { isMac } from '../common/util';
 
 const packageJson: { version: string } =
   JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../package.json'), 'utf-8'));
@@ -30,19 +32,31 @@ const atemService = Container.get(AtemService);
 const boserService = Container.get(BoserService);
 const obsService = Container.get(ObsService);
 const audioService = Container.get(AudioService);
+const cgService = Container.get(CGService);
 
 let mainWindow: BrowserWindow | undefined;
 let dialogWindow: BrowserWindow | undefined;
 let externalWindow: BrowserWindow | undefined;
 
 async function startApp() {
-  await sourceService.initialize();
-  await audioService.initialized();
-  if (ENABLE_ATEM) {
-    await atemService.initialize(ATEM_DEVICE_IP);
+  if (!app.requestSingleInstanceLock()) {
+    app.quit()
+    return;
   }
-  if (ENABLE_BOSER) {
-    await boserService.initialize();
+  try {
+    await sourceService.initialize();
+    await audioService.initialized();
+    await cgService.initialize();
+    if (ENABLE_ATEM) {
+      await atemService.initialize(ATEM_DEVICE_IP);
+    }
+    if (ENABLE_BOSER) {
+      await boserService.initialize();
+    }
+  } catch (e) {
+    console.error(`Failed to start app: ${e}`);
+    app.quit();
+    return;
   }
 
   // Main window
@@ -75,15 +89,15 @@ async function startApp() {
     });
   });
 
-
   // Dialog window
   dialogWindow = new BrowserWindow({
     title: title,
-    parent: mainWindow,
+    parent: isMac() ? undefined : mainWindow,
     modal: true,
     frame: false,
     titleBarStyle: 'hidden',
     show: false,
+    fullscreen: false,
     webPreferences: {
       nodeIntegration: true,
       enableRemoteModule: true,
@@ -156,7 +170,7 @@ ipcMain.on('showExternalWindow', (event, layouts) => {
     });
     externalWindow.removeMenu();
     externalWindow.loadURL(`${loadUrl}?window=external&layouts=${layouts}`);
-    externalWindow.on('close', e => {
+    externalWindow.on('close', () => {
       externalWindow = undefined;
     });
   }

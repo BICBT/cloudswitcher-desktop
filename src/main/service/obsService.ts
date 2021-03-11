@@ -2,6 +2,8 @@ import { Service } from 'typedi';
 import * as obs from 'obs-node';
 import { BrowserWindow, ipcMain, webContents } from 'electron';
 import { Source, Transition, TransitionType, UpdateAudioRequest, UpdateSourceRequest } from '../../common/types';
+import { broadcastMessage } from '../../common/util';
+import { Overlay } from 'obs-node';
 
 const OBS_VIDEO_SETTINGS: obs.VideoSettings = {
   baseWidth: 640,
@@ -28,6 +30,7 @@ export class ObsService {
     ipcMain.on('moveOBSDisplay', (event, name: string, x: number, y: number, width: number, height: number) =>
       event.returnValue = this.moveOBSDisplay(name, x, y, width, height));
     ipcMain.on('destroyOBSDisplay', (event, name: string) => event.returnValue = this.destroyOBSDisplay(name));
+    ipcMain.on('screenshot', (event, source: Source) => this.screenshot(source));
 
     obs.addVolmeterCallback((sceneId: string, sourceId: string, channels: number, magnitude: number[], peak: number[], input_peak: number[]) => {
       webContents.getAllWebContents().forEach(webContents => {
@@ -95,5 +98,33 @@ export class ObsService {
 
   public close() {
     obs.shutdown();
+  }
+
+  private async screenshot(source: Source) {
+    const buffer = await obs.screenshot(source.sceneId, source.id);
+    const base64 = buffer.toString('base64');
+    broadcastMessage('screenshotted', source, base64);
+  }
+
+  public addOverlay(overlay: Overlay) {
+    obs.addOverlay(overlay);
+  }
+
+  public updateOverlay(overlay: Overlay) {
+    obs.removeOverlay(overlay.id);
+    obs.addOverlay(overlay);
+    overlay.status = 'down';
+  }
+
+  public removeOverlay(overlayId: string) {
+    obs.removeOverlay(overlayId);
+  }
+
+  public upOverlay(overlayId: string) {
+    obs.upOverlay(overlayId);
+  }
+
+  public downOverlay(overlayId: string) {
+    obs.downOverlay(overlayId);
   }
 }

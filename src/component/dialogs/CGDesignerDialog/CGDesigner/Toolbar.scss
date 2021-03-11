@@ -1,0 +1,117 @@
+@font-face {
+  font-family: "SimSun";
+  src: local('SimSun'), url("./fonts/SimSun.ttf") format('truetype');
+}
+@font-face {
+  font-family: "SimHei";
+  src: local('SimHei'), url("./fonts/SimHei.ttf") format('truetype');
+}
+@font-face {
+  font-family: "Microsoft Yahei";
+  src: local('Microsoft Yahei'), url("./fonts/Microsoft Yahei.ttf") format('truetype');
+}
+@font-face {
+  font-family: "Kaiti";
+  src: local('Kaiti'), url("./fonts/Kaiti.ttf") format('truetype');
+}
+
+.Toolbar {
+  padding: 5px 20px;
+  height: 44px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  background-color: var(--section);
+  position: relative;
+
+  .Toolbar-item {
+    margin-right: 20px;
+  }
+
+  .toolbar-icon {
+    margin: 0 10px;
+    color: var(--button);
+    cursor: pointer;
+    &:hover, &.selected {
+      color: var(--button-hover)
+    }
+  }
+
+  .ColorPicker-popover {
+    position: absolute;
+    top: 40px;
+    left: 282px;
+    z-index: 2;
+  }
+
+  .ColorPicker-cover {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+  }
+
+  .font-family-container {
+    select {
+      background-color: var(--dropdown-bg);
+      cursor: pointer;
+    }
+  }
+
+  .font-size-container {
+    display: flex;
+    cursor: pointer;
+    margin-right: 20px;
+
+    select {
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 16px;
+      font-weight: 600;
+      border: 0;
+      margin: 0;
+      padding-right: 10px;
+      text-indent: .01px;
+      text-overflow: '';
+      background-color: var(--dropdown-bg);
+    }
+
+    select[disabled] {
+      color: rgba(0,0,0,.25);
+    }
+  }
+
+  .font-color-container {
+    width: 53px;
+    height: 34px;
+    border-radius: 4px;
+    padding: 0 5px;
+    cursor: pointer;
+    background-color: var(--dropdown-bg);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    position: relative;
+
+    .primcol {
+      flex: 1;
+      width: 24px;
+      height: 20px;
+      background-color: #000;
+      border-radius: 2px;
+      margin-right: 5px;
+    }
+
+    .arrowimg {
+      float: right;
+      margin-top: 7px;
+      width: 10px;
+      height: 10px;
+    }
+  }
+
+  .position-container {
+    color: var(--button);
+  }
+}

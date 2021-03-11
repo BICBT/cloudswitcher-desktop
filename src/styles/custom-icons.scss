@@ -19,6 +19,10 @@
   /* Better Font Rendering =========== */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  &.fas {
+    font-family: "Font Awesome 5 Free", sans-serif !important;
+  }
 }
 
 .icon-periscope::before {

@@ -7,6 +7,7 @@
     padding: 5px;
     display: flex;
     flex-direction: row;
+    border-bottom: 1px solid var(--border);
 
     h2 {
       flex: 1;
@@ -14,11 +15,37 @@
     }
   }
 
-  .rdt_Table {
-    .rdt_TableCol_Sortable {
-      &:hover, &:focus {
-        color: white;
+  .CGTable-content {
+    flex: 1;
+    flex-basis: 0;
+    overflow: auto;
+  }
+
+  .ant-table {
+    background-color: transparent;
+
+    .ant-table-placeholder {
+      display: none;
+    }
+
+    .ant-table-row, {
+      background-color: transparent;
+
+      &:hover {
+        background-color: transparent;
+        > td {
+          background-color: transparent;
+        }
       }
     }
+
+    .ant-table-tbody > tr > td {
+      border-bottom: 1px solid var(--border);
+      padding: 8px;
+    }
+  }
+
+  .UpDown-button  {
+    width: 60px;
   }
 }

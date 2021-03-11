@@ -64,19 +64,63 @@ export interface UpdateAudioRequest {
   pgmMonitor?: boolean;
 }
 
-export type DialogProps<T> = {
+export interface DialogProps<T> {
   onModalCancel: () => void;
   onModalDone: (result: T) => void;
   defaultValue: any;
-};
+}
 
 export type DialogComponent =
   | 'AddSourceDialog'
-  | 'OutputSettingDialog';
+  | 'OutputSettingDialog'
+  | 'CGDesignerDialog';
 
-export type DialogOptions = {
+export interface DialogOptions {
   title: string;
   component: DialogComponent;
   width: number;
   height: number;
-};
+}
+
+export type OverlayType = 'cg';
+export type OverlayStatus = 'up' | 'down';
+
+export interface Overlay {
+  id: string;
+  name: string;
+  type: OverlayType;
+  status: OverlayStatus;
+}
+
+export interface CG extends Overlay {
+  items: CGItem[];
+  baseWidth: number;
+  baseHeight: number;
+}
+
+export type CGItemType = 'image' | 'text';
+
+export interface CGItem {
+  type: CGItemType;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export interface CGText extends CGItem {
+  content: string;
+  fontSize: number;
+  fontFamily: string;
+  colorABGR: string;
+}
+
+export interface CGImage extends CGItem {
+  url: string;
+}
+
+export interface Image {
+  id: string;
+  name: string;
+  url: string;
+}
