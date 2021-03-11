@@ -1,13 +1,15 @@
 import {Container, Service} from "typedi";
 import {SourceService} from "./sourceService";
-import {TransitionType} from "../../common/types";
+import {TransitionType, UpdateAudioRequest} from "../../common/types";
 import * as SerialPort from "serialport";
 import ByteLength = SerialPort.parsers.ByteLength;
+import {AudioService} from "./audioService";
 
 @Service()
 export class BoserService {
     private boser: any;
     private readonly sourceService = Container.get(SourceService);
+    private readonly audioService = Container.get(AudioService);
 
     constructor() {
 
@@ -45,10 +47,10 @@ export class BoserService {
 
         const parser = this.boser.pipe(new ByteLength({length: 4}));
         parser.on('data', (receivedata: Buffer) => {
-              console.log('Data:', receivedata.toString('hex'))
+              //console.log('Data:', receivedata.toString('hex'))
             switch (receivedata[1]){
                 case 0x3d:
-                    console.log('switch :',receivedata[2]);
+                //    console.log('switch :',receivedata[2]);
                     if (Number(receivedata[2]) <= 24 && receivedata[3] == 0x01){ //pgm switch
                         const pgmIndex = Number(receivedata[2]) - 17;
                         const pgmSource = this.sourceService.sources[pgmIndex];
@@ -72,11 +74,12 @@ export class BoserService {
                     }
                     break;
                 case 0x31:
-                    console.log('aduio :',receivedata[3]);
+                    //console.log('aduio :',receivedata[3]);
+                    this.audioService.updateAudio({masterVolume:(Math.round(Number(receivedata[3])*60/100 - 60))});
                     this.boser.write(receivedata);
                     break;
                 case 0x32:
-                    console.log('T-Bar :',receivedata[3]);
+                    //console.log('T-Bar :',receivedata[3]);
                     break;
             }
           });

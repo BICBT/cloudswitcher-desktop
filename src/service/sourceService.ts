@@ -1,7 +1,7 @@
-import {ipcRenderer} from 'electron';
-import {Service} from 'typedi';
-import {SimpleEvent} from '../common/event';
-import {Source, Transition, TransitionType, UpdateSourceRequest} from '../common/types';
+import { ipcRenderer } from 'electron';
+import { Service } from 'typedi';
+import { SimpleEvent } from '../common/event';
+import { Source, Transition, TransitionType, UpdateSourceRequest } from '../common/types';
 
 @Service()
 export class SourceService {
