@@ -1,7 +1,6 @@
 import "reflect-metadata";
 import '@fortawesome/fontawesome-free/css/all.css';
 import './index.scss';
-import 'react-dropdown/style.css';
 import 'antd/dist/antd.css';
 import React from 'react';
 import ReactDOM from 'react-dom';
