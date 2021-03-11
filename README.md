@@ -23,6 +23,6 @@ which can be run in the docker container locally.
 3. Run `npm install`
 4. Run `npm run local` to start, or Run `npm run server` to start local development against server.
 
-### Package
-1. Run `npm electron-pack` to build distribution package.
+### Release new version
+Run `bash release.sh` to release a new version.
 
