@@ -1,6 +1,6 @@
 {
   "name": "streaming-desktop",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "homepage": "./",
   "main": "build/main/main.js",
   "scripts": {
@@ -124,6 +124,9 @@
       "build/**/*",
       "node_modules/**/*"
     ],
+    "nsis": {
+      "include": "windows-installer.nsh"
+    },
     "publish": [
       {
         "provider": "custom",

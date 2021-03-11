@@ -2,6 +2,7 @@ import 'reflect-metadata';
 import * as isDev from 'electron-is-dev';
 import * as path from 'path';
 import * as os from 'os';
+import * as fs from 'fs';
 import * as dotenv from 'dotenv';
 
 // TODO: load env from local path when in the production, remove this in the future
@@ -18,6 +19,10 @@ import { BoserService } from "./service/boserService";
 import { ENABLE_BOSER } from '../common/constant'
 import { ObsService } from './service/obsService';
 import { AudioService } from './service/audioService';
+
+const packageJson: { version: string } =
+  JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../package.json'), 'utf-8'));
+const title = `CloudSwitcher - ${packageJson.version}`;
 
 const loadUrl = isDev ? 'http://localhost:3000' : `file://${path.join(__dirname, '../index.html')}`;
 const sourceService = Container.get(SourceService);
@@ -42,6 +47,7 @@ async function startApp() {
 
   // Main window
   mainWindow = new BrowserWindow({
+    title: title,
     maximizable: true,
     webPreferences: {
       nodeIntegration: true,
@@ -72,6 +78,7 @@ async function startApp() {
 
   // Dialog window
   dialogWindow = new BrowserWindow({
+    title: title,
     parent: mainWindow,
     modal: true,
     frame: false,
@@ -139,6 +146,7 @@ ipcMain.on('showExternalWindow', (event, layouts) => {
     externalWindow.webContents.send('layoutsUpdated', layouts);
   } else {
     externalWindow = new BrowserWindow({
+      title: title,
       width: 960,
       height: 540,
       webPreferences: {
