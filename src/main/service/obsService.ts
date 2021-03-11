@@ -6,10 +6,10 @@ import { broadcastMessage } from '../../common/util';
 import { Overlay } from 'obs-node';
 
 const OBS_VIDEO_SETTINGS: obs.VideoSettings = {
-  baseWidth: 1280,
-  baseHeight: 720,
-  outputWidth: 1280,
-  outputHeight: 720,
+  baseWidth: 640,
+  baseHeight: 360,
+  outputWidth: 640,
+  outputHeight: 360,
   fpsNum: 25,
   fpsDen: 1,
 };

@@ -37,8 +37,13 @@ export class CGDesignerDialog extends React.Component<CGDesignerDialogProps, CGD
   public render() {
     return (
       <ModalLayout
-        onDoneClicked={() => this.onModalDone()}
-        onCancelClicked={() => this.props.onModalCancel()}>
+        customControls={
+          <>
+            <button className="button button--default" onClick={() => this.cancel()}>Cancel</button>
+            <button className="button button--action" onClick={() => this.save()}>Save</button>
+            <button className="button button--action" onClick={() => this.saveAs()}>Save As</button>
+          </>
+        }>
         <CGDesigner
           ref={this.designerRef}
           cg={this.cg}
@@ -62,25 +67,9 @@ export class CGDesignerDialog extends React.Component<CGDesignerDialogProps, CGD
     )
   }
 
-  private onModalDone() {
-    this.setState({
-      saveModalVisible: true,
-    });
-  }
-
   private handleSaveModelOK() {
-    if (this.designerRef.current && this.state.cgName) {
-      this.props.onModalDone({
-        cg: {
-          id: this.cg?.id ?? uuid.v4(),
-          name: this.state.cgName,
-          type: 'cg',
-          status: this.cg?.status ?? 'down',
-          baseWidth: CANVAS_WIDTH,
-          baseHeight: CANVAS_HEIGHT,
-          items: this.designerRef.current.getCGItems(),
-        },
-      });
+    if (this.state.cgName) {
+      this.onModelDone(this.state.cgName);
       this.setState({
         saveModalVisible: false,
       });
@@ -96,6 +85,42 @@ export class CGDesignerDialog extends React.Component<CGDesignerDialogProps, CGD
   private handleCGNameChanged(event: ChangeEvent<HTMLInputElement>) {
     this.setState({
       cgName: event.target.value,
+    });
+  }
+
+  private cancel() {
+    this.props.onModalCancel();
+  }
+
+  private save() {
+    if (!this.state.cgName) {
+      return this.saveAs();
+    } else {
+      this.onModelDone(this.state.cgName);
+    }
+  }
+
+  private saveAs() {
+    this.setState({
+      saveModalVisible: true,
+    });
+  }
+
+  private onModelDone(cgName: string) {
+    if (!this.designerRef.current) {
+      console.error(`designer is empty`);
+      return;
+    }
+    this.props.onModalDone({
+      cg: {
+        id: this.cg?.id ?? uuid.v4(),
+        name: cgName,
+        type: 'cg',
+        status: this.cg?.status ?? 'down',
+        baseWidth: CANVAS_WIDTH,
+        baseHeight: CANVAS_HEIGHT,
+        items: this.designerRef.current.getCGItems(),
+      },
     });
   }
 }

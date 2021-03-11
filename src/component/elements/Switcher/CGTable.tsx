@@ -41,7 +41,7 @@ export class CGTable extends React.Component<unknown, CGTableState> {
       align: 'right',
       width: 125,
       render: (cg: CG) => (
-        <button className="UpDown-button button--action" onClick={() => this.handleUpDownClicked(cg)}>
+        <button className="UpDown-button  button button--default" onClick={() => this.handleUpDownClicked(cg)}>
           { cg.status === 'down' ? 'Up' : 'Down' }
         </button>
       ),

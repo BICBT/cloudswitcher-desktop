@@ -31,25 +31,6 @@ export class HeadNav extends React.Component<{}, HeadNavState> {
         <div className='logo'>
           <img className='logo' src={logo} alt='' />
         </div>
-        <div className='header-bar'>
-          <div className='header-bar-item'>
-            <h2>当前时间：</h2>
-            <span>20:00:00</span>
-          </div>
-          <div className='header-bar-item'>
-            <h2>直播时长：</h2>
-            <span>02:00:00</span>
-          </div>
-          <div className='header-bar-item'>
-            <h2>剩余时长：</h2>
-            <span>01:00:00</span>
-            <button className='renew button button--trans'>续费</button>
-          </div>
-          <div className='live'>
-            <button className='button button--action'>开始直播</button>
-            <i className="icon-settings icon-button" onClick={() => this.onOutputSettingClicked()} />
-          </div>
-        </div>
       </div>
     );
   }

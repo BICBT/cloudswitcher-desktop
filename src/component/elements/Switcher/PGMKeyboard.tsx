@@ -7,7 +7,7 @@ import { Transition } from '../../../common/types';
 
 const keyNames = [
   '1', '2', '3', '4', '5', '6', '7', '8', '9',
-  '10', '11', '12', 'CG', 'DDR', 'M1', 'M2', 'M3', 'M4'
+  '10', '11', '12',
 ];
 
 export class PGMKeyboardState {

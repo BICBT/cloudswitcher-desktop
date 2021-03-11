@@ -1,11 +1,11 @@
 import './TransitionView.scss';
-import React from 'react';
-import Dropdown, { Option } from 'react-dropdown';
+import React, { ChangeEvent } from 'react';
 import { Container } from 'typedi';
 import { SourceService } from '../../../service/sourceService';
 import { TransitionType } from '../../../common/types';
 
 const transitions = [
+  { value: TransitionType.Cut, label: '直接切换' },
   { value: TransitionType.Fade, label: '淡入淡出' },
   { value: TransitionType.Swipe, label: '滑入滑出' },
   { value: TransitionType.Slide, label: '幻灯片' },
@@ -21,7 +21,7 @@ export class TransitionView extends React.Component<{}, TransitionViewState> {
   constructor(props: {}) {
     super(props);
     this.state = {
-      transitionType: TransitionType.Fade,
+      transitionType: TransitionType.Cut,
     };
   }
 
@@ -31,25 +31,25 @@ export class TransitionView extends React.Component<{}, TransitionViewState> {
         <div className='transition-header'>
           <h2>切换特技</h2>
         </div>
-        <div className='transition-dropdown'>
-            <Dropdown
-              value={this.state.transitionType}
-              options={transitions}
-              onChange={option => this.onTransitionTypeChanged(option)}
-            />
-            <button className='button--trans'>3秒</button>
-          </div>
-          <div className='transition-controls'>
-            <button className='button--action' onClick={() => this.onTakeClicked(this.state.transitionType)}>TAKE</button>
-            <button className='button--action' onClick={() => this.onTakeClicked(TransitionType.Cut)}>CUT</button>
-          </div>
+        <div className='transition-content'>
+          <select className='transition-dropdown'
+                  value={this.state.transitionType}
+                  onChange={option => this.onTransitionTypeChanged(option)}>
+            {
+              transitions.map(t => (
+                <option key={t.value} value={t.value}>{t.label}</option>
+              ))
+            }
+          </select>
+          <button className='button button--default' onClick={() => this.onTakeClicked(this.state.transitionType)}>TAKE</button>
+        </div>
       </div>
     );
   }
 
-  private onTransitionTypeChanged(option: Option) {
+  private onTransitionTypeChanged(e: ChangeEvent<HTMLSelectElement>) {
     this.setState({
-      transitionType: option.value as TransitionType,
+      transitionType: e.target.value as TransitionType,
     });
   }
 

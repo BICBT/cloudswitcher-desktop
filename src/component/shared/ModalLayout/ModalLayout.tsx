@@ -4,8 +4,9 @@ import { isMac } from '../../../common/util';
 
 type Props = {
   className?: string;
-  onCancelClicked: () => void;
-  onDoneClicked: () => void;
+  onCancelClicked?: () => void;
+  onDoneClicked?: () => void;
+  customControls?: JSX.Element;
 };
 
 export class ModalLayout extends React.Component<Props> {
@@ -19,18 +20,23 @@ export class ModalLayout extends React.Component<Props> {
           {this.props.children}
         </div>
         <div className="modal-layout-controls">
-          <button className="button button--default" onClick={() => this.cancel()}>Cancel</button>
-          <button className="button button--action" onClick={() => this.done()}>Done</button>
+          {
+            this.props.customControls ||
+            <>
+              <button className="button button--default" onClick={() => this.cancel()}>Cancel</button>
+              <button className="button button--action" onClick={() => this.done()}>Done</button>
+            </>
+          }
         </div>
       </div>
     );
   };
 
   private cancel() {
-    this.props.onCancelClicked();
+    this.props.onCancelClicked?.();
   };
 
   private done() {
-    this.props.onDoneClicked();
+    this.props.onDoneClicked?.();
   };
 }

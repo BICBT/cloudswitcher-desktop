@@ -19,6 +19,7 @@ import { ENABLE_BOSER } from '../common/constant'
 import { ObsService } from './service/obsService';
 import { AudioService } from './service/audioService';
 import { CGService } from './service/cgService';
+import { isMac } from '../common/util';
 
 const loadUrl = isDev ? 'http://localhost:3000' : `file://${path.join(__dirname, '../index.html')}`;
 const sourceService = Container.get(SourceService);
@@ -85,6 +86,7 @@ async function startApp() {
 
   // Dialog window
   dialogWindow = new BrowserWindow({
+    parent: isMac() ? undefined : mainWindow,
     modal: true,
     frame: false,
     titleBarStyle: 'hidden',

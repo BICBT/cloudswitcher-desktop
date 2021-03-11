@@ -1,7 +1,7 @@
 .TransitionView {
   display: flex;
   flex-direction: column;
-  padding: 0 10px;
+  padding: 0 20px;
   border-right: 1px solid var(--border);
 
   .transition-header {
@@ -12,33 +12,29 @@
     }
   }
 
-  .transition-dropdown {
-    display: flex;
-    flex-direction: row;
-
-    .Dropdown-root {
-      width: 100px;
-      margin: 5px;
-      font-size: 10px;
-    }
-
-    .Dropdown-control {
-      padding: 5px 25px 5px 5px;
-    }
-
-    .Dropdown-arrow {
-      top: 10px;
-    }
-  }
-
-  .transition-controls {
+  .transition-content {
     display: flex;
     flex-direction: column;
+    flex: 1;
+    margin-top: 2px;
+
+    select {
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 16px;
+      font-weight: 600;
+      border: 0;
+      margin: 0;
+      padding-right: 10px;
+      text-indent: .01px;
+      text-overflow: '';
+      background-color: var(--dropdown-bg);
+    }
 
     button {
-      width: 50px;
-      height: 50px;
-      margin: 5px;
+      margin-top: 10px;
+      width: 100px;
+      height: 45px;
     }
   }
 }
