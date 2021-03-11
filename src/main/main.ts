@@ -66,7 +66,6 @@ async function startApp() {
     webPreferences: {
       nodeIntegration: true,
       enableRemoteModule: true,
-      webSecurity: false
     }
   });
   mainWindow.removeMenu();

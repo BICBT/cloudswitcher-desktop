@@ -97,6 +97,7 @@ export class Toolbar extends Component<ToolbarProps, ToolbarState> {
     return (
       <div className="Toolbar">
         {
+          // to load fonts, we need insert an empty span
           !this.state.fontLoaded &&
           <>
             <span style={{ fontFamily: 'SimSun' }}>&nbsp;</span>

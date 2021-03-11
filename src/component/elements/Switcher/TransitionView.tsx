@@ -41,7 +41,11 @@ export class TransitionView extends React.Component<{}, TransitionViewState> {
               ))
             }
           </select>
-          <button className='button button--default' onClick={() => this.onTakeClicked(this.state.transitionType)}>TAKE</button>
+          <div className='button-container'>
+            <div className='content'>
+              <button className='button button--default' onClick={() => this.onTakeClicked(this.state.transitionType)}>TAKE</button>
+            </div>
+          </div>
         </div>
       </div>
     );

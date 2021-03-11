@@ -1,4 +1,7 @@
+@import '../../../styles/index';
+
 .TransitionView {
+  flex: 1;
   display: flex;
   flex-direction: column;
   padding: 0 20px;
@@ -31,10 +34,18 @@
       background-color: var(--dropdown-bg);
     }
 
-    button {
-      margin-top: 10px;
-      width: 100px;
-      height: 45px;
+    .button-container {
+      @include aspect-ratio(2, 1);
+      margin-top: 15px;
+
+      .content {
+        display: flex;
+
+        button {
+          flex: 1;
+          margin-right: 0;
+        }
+      }
     }
   }
 }
