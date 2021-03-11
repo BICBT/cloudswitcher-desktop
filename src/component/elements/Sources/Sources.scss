@@ -11,7 +11,7 @@
     .SourceView-item {
       display: flex;
       flex-direction: row;
-      border: 1px solid var(--border);
+      border: 2px solid var(--border);
       background: var(--background);
 
       &.isPreview {
@@ -23,18 +23,18 @@
       }
 
       &.rows2 {
-        width: calc(16.66% - 2px);
+        width: calc(16.66%);
       }
 
       &.rows3 {
-        width: calc(25% - 2.5px);
+        width: calc(25% - 5px);
       }
     }
 
     &.sources4 {
       .SourceView-item {
         &.rows2 {
-          width: calc(50% - 2px);
+          width: calc(50% - 4px);
         }
       }
     }

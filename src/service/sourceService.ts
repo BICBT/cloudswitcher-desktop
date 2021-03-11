@@ -1,7 +1,7 @@
-import { ipcRenderer } from 'electron';
-import { Service } from 'typedi';
-import { SimpleEvent } from '../common/event';
-import { Source, Transition, TransitionType, UpdateSourceRequest } from '../common/types';
+import {ipcRenderer} from 'electron';
+import {Service} from 'typedi';
+import {SimpleEvent} from '../common/event';
+import {Source, Transition, TransitionType, UpdateSourceRequest} from '../common/types';
 
 @Service()
 export class SourceService {
@@ -61,7 +61,7 @@ export class SourceService {
     ipcRenderer.send('preview', source);
   }
 
-  public take(source: Source, transitionType: TransitionType, transitionDurationMs: number): void {
+  public take(source: Source, transitionType: TransitionType = TransitionType.Cut, transitionDurationMs: number = 3000): void {
     ipcRenderer.send('take', source, transitionType, transitionDurationMs);
   }
 

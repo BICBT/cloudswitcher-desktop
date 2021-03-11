@@ -50,7 +50,7 @@ export class PGMSKeyboard extends React.Component<{}, PGMKeyboardState> {
                   name={name}
                   isPreview={false}
                   isProgram={!!source && this.state.programTransition?.source?.id === source.id}
-                  onButtonClicked={() => {}}
+                  onButtonClicked={() => this.onKeyClicked(index)}
                 />
               );
             })
@@ -58,5 +58,11 @@ export class PGMSKeyboard extends React.Component<{}, PGMKeyboardState> {
         </div>
       </div>
     );
+  }
+  private onKeyClicked(index: number) {
+    const source = this.sourceService.sources[index];
+    if (source) {
+      this.sourceService.take(source);
+    }
   }
 }

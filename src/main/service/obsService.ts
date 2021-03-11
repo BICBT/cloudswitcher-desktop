@@ -47,6 +47,8 @@ export class ObsService {
       url: source.previewUrl,
       hardwareDecoder: false,
       startOnActive: false,
+      bufferSize: 0,
+      enableBuffer: true,
     });
   }
 

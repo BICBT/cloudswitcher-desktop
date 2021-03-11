@@ -73,6 +73,7 @@ export class BoserService {
                     break;
                 case 0x31:
                     console.log('aduio :',receivedata[3]);
+                    this.boser.write(receivedata);
                     break;
                 case 0x32:
                     console.log('T-Bar :',receivedata[3]);
