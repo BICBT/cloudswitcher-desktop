@@ -60,6 +60,8 @@ export interface UpdateSourceRequest {
 
 export interface UpdateAudioRequest {
   audioWithVideo?: boolean;
+  masterVolume?: number;
+  pgmMonitor?: boolean;
 }
 
 export type DialogProps<T> = {

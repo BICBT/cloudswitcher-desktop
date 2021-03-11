@@ -20,7 +20,7 @@ export class AudioService {
     ipcMain.on('updateAudio', (event, request: UpdateAudioRequest) => this.updateAudio(request));
   }
 
-  private async updateAudio(request: UpdateAudioRequest) {
+  public async updateAudio(request: UpdateAudioRequest) {
     if (this.audio) {
       await this.obsHeadlessService.updateAudio(request);
       this.obsService.updateAudio(request);

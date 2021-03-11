@@ -4,11 +4,13 @@ import { Box, Slider, SliderFilledTrack, SliderThumb, SliderTrack } from '@chakr
 import { Source } from '../../../common/types';
 import { Container } from 'typedi';
 import { SourceService } from '../../../service/sourceService';
+import {AudioService} from "../../../service/audioService";
 
 export interface MixerItemProps {
   index: number;
   source?: Source;
   audioWithVideo: boolean;
+  isPgm: boolean;
 }
 
 export interface MixerItemState {
@@ -22,7 +24,7 @@ export interface MixerItemState {
 
 const MIN_VOLUME = -60;
 const MAX_VOLUME = 0;
-const DEFAULT_VOLUME = MIN_VOLUME;
+const DEFAULT_VOLUME = MAX_VOLUME;
 const SLIDER_COLOR = 'black';
 const SLIDER_FILL_COLOR = '#81868C';
 const SLIDER_ACTIVE_FILL_COLOR = '#36ade0';
@@ -37,11 +39,12 @@ const MixerThumb = () => {
 
 export class MixerItem extends React.Component<MixerItemProps, MixerItemState> {
   private readonly sourceService = Container.get(SourceService);
+  private readonly audioService = Container.get(AudioService);
 
   public constructor(props: MixerItemProps) {
     super(props);
     this.state = {
-      disabled: !props.source,
+      disabled: !props.source && !props.isPgm,
       volume: props.source?.volume ?? DEFAULT_VOLUME,
       selectingVolume: props.source?.volume ?? DEFAULT_VOLUME,
       audioLock: props.source?.audioLock ?? false,
@@ -75,11 +78,20 @@ export class MixerItem extends React.Component<MixerItemProps, MixerItemState> {
     this.setState({
       pgmSource: this.sourceService.programTransition?.source,
     });
+    this.audioService.audioChanged.on(this, audio => {
+      if (this.props.isPgm && this.state.volume !== audio.masterVolume) {
+        this.setState({
+          volume: audio.masterVolume,
+          selectingVolume: audio.masterVolume,
+        });
+      }
+    });
   }
 
   public componentWillUnmount() {
     this.sourceService.sourceChanged.off(this);
     this.sourceService.programChanged.off(this);
+    this.audioService.audioChanged.off(this);
   }
 
   public render() {
@@ -99,10 +111,13 @@ export class MixerItem extends React.Component<MixerItemProps, MixerItemState> {
           </i>
           <div className='index'>
             {
-              <div className='number'>{(this.props.index ?? 0) + 1}</div>
+              this.props.isPgm
+                  ? <div className='PGM-title'>PGM</div>
+                  : <div className='number'>{(this.props.index ?? 0) + 1}</div>
             }
           </div>
           {
+            !this.props.isPgm &&
             <i className={`icon-button ${this.state.disabled ? 'disabled' : ''} ${this.state.audioLock ? 'active' : ''}`}
                onClick={() => this.handleAudioLockClicked()}>
               <i className={`${this.state.audioLock ? 'fas fa-lock' : 'fas fa-unlock'}`}/>
@@ -143,7 +158,14 @@ export class MixerItem extends React.Component<MixerItemProps, MixerItemState> {
   }
 
   private handleMonitorClicked() {
-    if (this.props.source) {
+    if (this.props.isPgm) {
+      this.audioService.updateAudio({
+        pgmMonitor: !this.state.audioMonitor,
+      });
+      this.setState({
+        audioMonitor: !this.state.audioMonitor,
+      });
+    } else if (this.props.source) {
       this.sourceService.updateSource(this.props.source, {
         audioMonitor: !this.state.audioMonitor,
       });
@@ -165,18 +187,24 @@ export class MixerItem extends React.Component<MixerItemProps, MixerItemState> {
   }
 
   private handleVolumeChangeEnd(volume: number) {
-    if (this.props.source && this.state.volume !== volume) {
-      this.sourceService.updateSource(this.props.source, {
-        volume: volume,
-      });
-    }
+    this.updateVolume(volume);
   }
 
   private handleMuteClicked() {
-    if (this.props.source) {
-      this.sourceService.updateSource(this.props.source, {
-        volume: MIN_VOLUME,
-      });
+    this.updateVolume(MIN_VOLUME);
+  }
+
+  private updateVolume(volume: number) {
+    if (this.state.volume !== volume) {
+      if (this.props.isPgm) {
+        this.audioService.updateAudio({
+          masterVolume: volume
+        });
+      } else if (this.props.source) {
+        this.sourceService.updateSource(this.props.source, {
+          volume: volume,
+        });
+      }
     }
   }
 }

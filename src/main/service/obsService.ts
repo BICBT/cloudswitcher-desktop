@@ -42,7 +42,7 @@ export class ObsService {
       isFile: false,
       type: 'MediaSource',
       url: source.previewUrl,
-      hardwareDecoder: false,
+      hardwareDecoder: true,
       startOnActive: false,
       bufferSize: 0,
       enableBuffer: true,
@@ -83,7 +83,9 @@ export class ObsService {
 
   public updateAudio(request: UpdateAudioRequest) {
     obs.updateAudio({
+      masterVolume: request.masterVolume,
       audioWithVideo: request.audioWithVideo,
+      pgmMonitor: request.pgmMonitor,
     });
   }
 
