@@ -27,6 +27,8 @@
         color: var(--paragraph);
         background: var(--background);
         border: 1px solid var(--border);
+        padding-top: 0.2em;
+        padding-bottom: 0.2em;
 
         &[aria-selected=true] {
           border-color: var(--focus-border);

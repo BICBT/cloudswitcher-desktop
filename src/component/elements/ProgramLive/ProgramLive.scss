@@ -5,7 +5,7 @@
   display: flex;
   flex-direction: column;
   border: 1px solid var(--border);
-  padding: 0 30px;
+  padding: 0 50px;
 
   .DisplayView-container {
     @include aspect-ratio(16, 9);
@@ -16,7 +16,6 @@
     justify-content: center;
     align-items: center;
     h2 {
-      margin: 5px 0;
       flex: 1;
       text-align: center;
     }
