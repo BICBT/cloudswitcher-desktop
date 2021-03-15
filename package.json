@@ -1,6 +1,6 @@
 {
   "name": "streaming-desktop",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "homepage": "./",
   "main": "build/main/main.js",
   "scripts": {
