@@ -38,6 +38,12 @@ let mainWindow: BrowserWindow | undefined;
 let dialogWindow: BrowserWindow | undefined;
 let externalWindow: BrowserWindow | undefined;
 
+function openDevTools() {
+  mainWindow?.webContents.openDevTools();
+  dialogWindow?.webContents.openDevTools();
+  externalWindow?.webContents.openDevTools();
+}
+
 async function startApp() {
   if (!app.requestSingleInstanceLock()) {
     app.quit()
@@ -88,6 +94,15 @@ async function startApp() {
       }
     });
   });
+
+
+  if (isDev) {
+    mainWindow.webContents.on('before-input-event', (event, input) => {
+      if (input.key === 'F12') {
+        openDevTools();
+      }
+    });
+  }
 
   // Dialog window
   dialogWindow = new BrowserWindow({
@@ -150,7 +165,7 @@ ipcMain.on('dialogClosed', (event, sessionId, result) => {
 
 // Open DevTools
 ipcMain.on('openDevTools', () => {
-  mainWindow?.webContents.openDevTools();
+  openDevTools();
 });
 
 // External window

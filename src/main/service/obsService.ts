@@ -1,6 +1,8 @@
+import * as path from 'path';
 import { Service } from 'typedi';
-import * as obs from 'obs-node';
 import { BrowserWindow, ipcMain, webContents } from 'electron';
+import * as isDev from 'electron-is-dev';
+import * as obs from 'obs-node';
 import { Source, Transition, TransitionType, UpdateAudioRequest, UpdateSourceRequest } from '../../common/types';
 import { broadcastMessage } from '../../common/util';
 import { Overlay } from 'obs-node';
@@ -21,10 +23,16 @@ const OBS_AUDIO_SETTINGS: obs.AudioSettings = {
 @Service()
 export class ObsService {
   public initialize() {
+    if (isDev) {
+      obs.setFontPath(path.resolve(process.cwd(), 'src/fonts'));
+    } else {
+      obs.setFontPath(path.resolve(process.resourcesPath, 'fonts'));
+    }
     obs.startup({
       video: OBS_VIDEO_SETTINGS,
       audio: OBS_AUDIO_SETTINGS,
     });
+
     ipcMain.on('createOBSDisplay', (event, name: string, electronWindowId: number, scaleFactor: number, sourceId: string) =>
       event.returnValue = this.createOBSDisplay(name, electronWindowId, scaleFactor, sourceId));
     ipcMain.on('moveOBSDisplay', (event, name: string, x: number, y: number, width: number, height: number) =>
