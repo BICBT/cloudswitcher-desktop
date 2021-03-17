@@ -1,17 +1,16 @@
 import 'reflect-metadata';
-import * as isDev from 'electron-is-dev';
 import * as path from 'path';
 import * as os from 'os';
 import * as fs from 'fs';
+import { app, BrowserWindow, ipcMain } from 'electron';
+import * as isDev from 'electron-is-dev';
 import * as dotenv from 'dotenv';
+import { Container } from 'typedi';
 
-// TODO: load env from local path when in the production, remove this in the future
 if (!isDev) {
   dotenv.config({ path: path.join(__dirname, '../server.env') });
 }
 
-import { app, BrowserWindow, ipcMain } from 'electron';
-import { Container } from 'typedi';
 import { SourceService } from './service/sourceService';
 import { AtemService } from './service/atemService';
 import { ATEM_DEVICE_IP, ENABLE_ATEM } from '../common/constant';
@@ -21,6 +20,7 @@ import { ObsService } from './service/obsService';
 import { AudioService } from './service/audioService';
 import { CGService } from './service/cgService';
 import { isMac } from '../common/util';
+import { MediaService } from './service/mediaService';
 
 const packageJson: { version: string } =
   JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../package.json'), 'utf-8'));
@@ -33,6 +33,7 @@ const boserService = Container.get(BoserService);
 const obsService = Container.get(ObsService);
 const audioService = Container.get(AudioService);
 const cgService = Container.get(CGService);
+const mediaService = Container.get(MediaService);
 
 let mainWindow: BrowserWindow | undefined;
 let dialogWindow: BrowserWindow | undefined;
@@ -53,6 +54,7 @@ async function startApp() {
     await sourceService.initialize();
     await audioService.initialized();
     await cgService.initialize();
+    await mediaService.initialize();
     if (ENABLE_ATEM) {
       await atemService.initialize(ATEM_DEVICE_IP);
     }
