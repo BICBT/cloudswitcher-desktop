@@ -2,7 +2,8 @@ name: build-windows-package
 
 on:
   push:
-    branches: [ master ]
+    tags:
+      - '*'
 
 env:
   DESKTOP_OSS_BUCKET: ${{ secrets.DESKTOP_OSS_BUCKET }}
