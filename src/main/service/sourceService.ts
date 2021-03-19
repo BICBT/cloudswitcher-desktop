@@ -100,9 +100,9 @@ export class SourceService {
       this.obsService.updatePreviewUrl(this.liveSource);
     } else {
       this.liveSource = {
-        id: 'output',
+        id: 'live output',
         index: -1,
-        name: 'Output',
+        name: 'Live Output',
         url: url,
         previewUrl: url,
         sceneId: uuid.v4(),

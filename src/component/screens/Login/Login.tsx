@@ -22,12 +22,9 @@ export class Login extends React.Component<LoginPageProps, LoginPageState> {
     axios.post<LoginResponse>(`${AUTH_BASE_URL}/v1/token`, values).then(res => {
       // Save token
       const token = res.data.token;
-      console.log('请检查token值是否获取正确（正式代码请删除）：', token);
       window.localStorage.setItem('token', token);
       //Jump to select page
       this.props.history.push('/select');
-      //remote.getCurrentWindow().setFullScreen(true);
-      return message.info('Login succeed');
     }).catch(error => {
       console.error(error);
       return message.error('Please enter the correct username and password');

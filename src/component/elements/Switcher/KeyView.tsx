@@ -16,7 +16,7 @@ export class KeyView extends React.Component<KeyViewProps> {
       <div className={`KeyView  ${isPreview ? 'isPreview' : ''} ${isProgram ? 'isProgram' : ''}`}>
         <div className='button-container'>
           <div className='content'>
-            <button className='button--key' onClick={() => this.props.onButtonClicked()}>
+            <button className='button button--default' onClick={() => this.props.onButtonClicked()}>
               {name}
             </button>
           </div>

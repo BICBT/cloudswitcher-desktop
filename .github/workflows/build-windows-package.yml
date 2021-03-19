@@ -20,6 +20,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Download GTK to install fabricjs (node-canvas)
+        # https://github.com/Automattic/node-canvas/wiki/Installation:-Windows
+        run: |
+          curl -kL http://ftp.gnome.org/pub/gnome/binaries/win64/gtk+/2.22/gtk+-bundle_2.22.1-20101229_win64.zip -o gtk.zip
+          7z x gtk.zip -o"c:\\GTK"
+        shell: bash
+
       - name: Npm install
         run: npm ci
 

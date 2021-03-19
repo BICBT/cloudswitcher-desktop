@@ -56,7 +56,6 @@ export class SelectSwitcher extends React.Component<SwitcherPageProps, SwitcherP
 
     private rowSelection = {
         onChange: (selectedRowKeys: any, selectedRows: any) => {
-            console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
             this.setState({
                 selectedSwitcherIds: selectedRowKeys,
             });
@@ -85,7 +84,6 @@ export class SelectSwitcher extends React.Component<SwitcherPageProps, SwitcherP
     }
 
     public render(): JSX.Element {
-        //let isDisable = true;
         return (
             <div className="SelectPage">
                 <Space className="title">

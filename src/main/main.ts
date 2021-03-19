@@ -1,12 +1,17 @@
 import 'reflect-metadata';
-import * as isDev from 'electron-is-dev';
 import * as path from 'path';
 import * as os from 'os';
 import * as fs from 'fs';
-import * as dotenv from 'dotenv';
-
 import { app, BrowserWindow, ipcMain } from 'electron';
+import * as isDev from 'electron-is-dev';
+import * as dotenv from 'dotenv';
 import { Container } from 'typedi';
+
+// TODO: load env from local path when in the production, remove this in the future
+if (!isDev) {
+  dotenv.config({ path: path.join(__dirname, '../server.env') });
+}
+
 import { SourceService } from './service/sourceService';
 import { AtemService } from './service/atemService';
 import { ATEM_DEVICE_IP, ENABLE_ATEM } from '../common/constant';
@@ -14,6 +19,9 @@ import { BoserService } from "./service/boserService";
 import { ENABLE_BOSER } from '../common/constant'
 import { ObsService } from './service/obsService';
 import { AudioService } from './service/audioService';
+import { CGService } from './service/cgService';
+import { isMac } from '../common/util';
+import { MediaService } from './service/mediaService';
 
 // TODO: load env from local path when in the production, remove this in the future
 if (!isDev) {
@@ -30,19 +38,39 @@ const atemService = Container.get(AtemService);
 const boserService = Container.get(BoserService);
 const obsService = Container.get(ObsService);
 const audioService = Container.get(AudioService);
+const cgService = Container.get(CGService);
+const mediaService = Container.get(MediaService);
 
 let mainWindow: BrowserWindow | undefined;
 let dialogWindow: BrowserWindow | undefined;
 let externalWindow: BrowserWindow | undefined;
 
+function openDevTools() {
+  mainWindow?.webContents.openDevTools();
+  dialogWindow?.webContents.openDevTools();
+  externalWindow?.webContents.openDevTools();
+}
+
 async function startApp() {
-  await sourceService.initialize();
-  await audioService.initialized();
-  if (ENABLE_ATEM) {
-    await atemService.initialize(ATEM_DEVICE_IP);
+  if (!app.requestSingleInstanceLock()) {
+    app.quit()
+    return;
   }
-  if (ENABLE_BOSER) {
-    await boserService.initialize();
+  try {
+    await sourceService.initialize();
+    await audioService.initialized();
+    await cgService.initialize();
+    await mediaService.initialize();
+    if (ENABLE_ATEM) {
+      await atemService.initialize(ATEM_DEVICE_IP);
+    }
+    if (ENABLE_BOSER) {
+      await boserService.initialize();
+    }
+  } catch (e) {
+    console.error(`Failed to start app: ${e}`);
+    app.quit();
+    return;
   }
 
   // Main window
@@ -84,14 +112,23 @@ async function startApp() {
   }
 
 
+  if (isDev) {
+    mainWindow.webContents.on('before-input-event', (event, input) => {
+      if (input.key === 'F12') {
+        openDevTools();
+      }
+    });
+  }
+
   // Dialog window
   dialogWindow = new BrowserWindow({
     title: title,
-    parent: mainWindow,
+    parent: isMac() ? undefined : mainWindow,
     modal: true,
     frame: false,
     titleBarStyle: 'hidden',
     show: false,
+    fullscreen: false,
     webPreferences: {
       nodeIntegration: true,
       enableRemoteModule: true,
@@ -144,7 +181,7 @@ ipcMain.on('dialogClosed', (event, sessionId, result) => {
 
 // Open DevTools
 ipcMain.on('openDevTools', () => {
-  mainWindow?.webContents.openDevTools();
+  openDevTools();
 });
 
 // External window
@@ -164,7 +201,7 @@ ipcMain.on('showExternalWindow', (event, layouts) => {
     });
     externalWindow.removeMenu();
     externalWindow.loadURL(`${loadUrl}?window=external&layouts=${layouts}`);
-    externalWindow.on('close', e => {
+    externalWindow.on('close', () => {
       externalWindow = undefined;
     });
   }

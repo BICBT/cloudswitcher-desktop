@@ -68,9 +68,18 @@ export class AudioMixer extends React.Component<{}, AudioMixerState> {
                   index={index}
                   source={source}
                   audioWithVideo={audioWithVideo}
+                  isPgm={false}
                 />
               );
             })
+          }
+          {
+            <MixerItem
+                key={"pgm"}
+                index={SOURCE_COUNT}
+                audioWithVideo={audioWithVideo}
+                isPgm={true}
+            />
           }
         </div>
       </div>

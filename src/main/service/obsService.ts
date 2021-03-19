@@ -1,7 +1,11 @@
+import * as path from 'path';
 import { Service } from 'typedi';
-import * as obs from 'obs-node';
 import { BrowserWindow, ipcMain, webContents } from 'electron';
+import * as isDev from 'electron-is-dev';
+import * as obs from 'obs-node';
 import { Source, Transition, TransitionType, UpdateAudioRequest, UpdateSourceRequest } from '../../common/types';
+import { broadcastMessage } from '../../common/util';
+import { Overlay } from 'obs-node';
 
 const OBS_VIDEO_SETTINGS: obs.VideoSettings = {
   baseWidth: 640,
@@ -19,15 +23,22 @@ const OBS_AUDIO_SETTINGS: obs.AudioSettings = {
 @Service()
 export class ObsService {
   public initialize() {
+    if (isDev) {
+      obs.setFontPath(path.resolve(process.cwd(), 'src/fonts'));
+    } else {
+      obs.setFontPath(path.resolve(process.resourcesPath, 'fonts'));
+    }
     obs.startup({
       video: OBS_VIDEO_SETTINGS,
       audio: OBS_AUDIO_SETTINGS,
     });
+
     ipcMain.on('createOBSDisplay', (event, name: string, electronWindowId: number, scaleFactor: number, sourceId: string) =>
       event.returnValue = this.createOBSDisplay(name, electronWindowId, scaleFactor, sourceId));
     ipcMain.on('moveOBSDisplay', (event, name: string, x: number, y: number, width: number, height: number) =>
       event.returnValue = this.moveOBSDisplay(name, x, y, width, height));
     ipcMain.on('destroyOBSDisplay', (event, name: string) => event.returnValue = this.destroyOBSDisplay(name));
+    ipcMain.on('screenshot', (event, source: Source) => this.screenshot(source));
 
     obs.addVolmeterCallback((sceneId: string, sourceId: string, channels: number, magnitude: number[], peak: number[], input_peak: number[]) => {
       webContents.getAllWebContents().forEach(webContents => {
@@ -42,7 +53,7 @@ export class ObsService {
       isFile: false,
       type: 'MediaSource',
       url: source.previewUrl,
-      hardwareDecoder: false,
+      hardwareDecoder: true,
       startOnActive: false,
       bufferSize: 0,
       enableBuffer: true,
@@ -83,7 +94,9 @@ export class ObsService {
 
   public updateAudio(request: UpdateAudioRequest) {
     obs.updateAudio({
+      masterVolume: request.masterVolume,
       audioWithVideo: request.audioWithVideo,
+      pgmMonitor: request.pgmMonitor,
     });
   }
 
@@ -93,5 +106,33 @@ export class ObsService {
 
   public close() {
     obs.shutdown();
+  }
+
+  private async screenshot(source: Source) {
+    const buffer = await obs.screenshot(source.sceneId, source.id);
+    const base64 = buffer.toString('base64');
+    broadcastMessage('screenshotted', source, base64);
+  }
+
+  public addOverlay(overlay: Overlay) {
+    obs.addOverlay(overlay);
+  }
+
+  public updateOverlay(overlay: Overlay) {
+    obs.removeOverlay(overlay.id);
+    obs.addOverlay(overlay);
+    overlay.status = 'down';
+  }
+
+  public removeOverlay(overlayId: string) {
+    obs.removeOverlay(overlayId);
+  }
+
+  public upOverlay(overlayId: string) {
+    obs.upOverlay(overlayId);
+  }
+
+  public downOverlay(overlayId: string) {
+    obs.downOverlay(overlayId);
   }
 }

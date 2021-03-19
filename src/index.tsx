@@ -1,7 +1,6 @@
 import "reflect-metadata";
 import '@fortawesome/fontawesome-free/css/all.css';
 import './index.scss';
-import 'react-dropdown/style.css';
 import 'antd/dist/antd.css';
 import React from 'react';
 import ReactDOM from 'react-dom';
@@ -14,14 +13,10 @@ import axios from "axios";
 
 //request interceptor to add token in header
 axios.interceptors.request.use(function (config) {
-  // config.withCredentials = true;
   const token = localStorage.getItem('token');
   if (token) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     config.headers.Authorization = `Bearer ${token}`;
-  }else {
-  //记得删除else
-    console.log('token为空：', token);
   }
   return config;
 }, function (error) {

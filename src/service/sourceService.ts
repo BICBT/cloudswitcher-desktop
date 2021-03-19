@@ -1,7 +1,7 @@
-import {ipcRenderer} from 'electron';
-import {Service} from 'typedi';
-import {SimpleEvent} from '../common/event';
-import {Source, Transition, TransitionType, UpdateSourceRequest} from '../common/types';
+import { ipcRenderer } from 'electron';
+import { Service } from 'typedi';
+import { SimpleEvent } from '../common/event';
+import { Source, Transition, TransitionType, UpdateSourceRequest } from '../common/types';
 
 @Service()
 export class SourceService {
@@ -11,6 +11,7 @@ export class SourceService {
   public liveChanged = new SimpleEvent<Source | undefined>();
   public sourceRestarted = new SimpleEvent<Source>();
   public sourceChanged = new SimpleEvent<Source>();
+  public screenshotted = new SimpleEvent<{ source: Source, base64: string }>();
 
   public initialize(): void {
     ipcRenderer.on('sourcesChanged', (event, sources: Record<number, Source>) => {
@@ -30,6 +31,9 @@ export class SourceService {
     });
     ipcRenderer.on('sourceChanged', (event, source: Source) => {
       this.sourceChanged.emit(source);
+    });
+    ipcRenderer.on('screenshotted', (event, source: Source, base64: string) => {
+      this.screenshotted.emit({ source, base64 });
     });
   }
 
@@ -67,5 +71,9 @@ export class SourceService {
 
   public updateSource(source: Source, request: UpdateSourceRequest) {
     ipcRenderer.send('updateSource', source, request);
+  }
+
+  public screenshot(source: Source) {
+    ipcRenderer.send('screenshot', source);
   }
 }

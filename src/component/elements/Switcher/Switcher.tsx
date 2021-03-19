@@ -2,7 +2,6 @@ import './Switcher.scss'
 import React from 'react';
 import { TransitionView } from './TransitionView';
 import { CGTable } from './CGTable';
-import { DDRTable } from './DDRTable';
 import { Keyboard } from './Keyboard';
 
 export class Switcher extends React.Component {
@@ -16,7 +15,6 @@ export class Switcher extends React.Component {
         </div>
         <div className='PlayList-container'>
           <CGTable />
-          <DDRTable />
         </div>
       </div>
     );

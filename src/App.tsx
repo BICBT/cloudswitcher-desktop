@@ -6,10 +6,12 @@ import { SelectSwitcher } from './component/screens/SelectSwitcher/SelectSwitche
 import { Studio } from './component/screens/Studio/Studio';
 import { Container } from 'typedi';
 import { SourceService } from './service/sourceService';
-import { DialogWindow } from './component/dialogs/DialogWindow/DialogWindow';
-import { isDialogWindow, isExternalWindow } from './common/util';
-import { ExternalWindow } from './component/screens/ExternalWindow/ExternalWindow';
 import { AudioService } from './service/audioService';
+import { isDialogWindow, isExternalWindow } from './common/util';
+import { DialogWindow } from './component/dialogs/DialogWindow/DialogWindow';
+import { ExternalWindow } from './component/screens/ExternalWindow/ExternalWindow';
+import { CGService } from './service/cgService';
+import { MediaService } from './service/mediaService';
 import { Switch, Route } from 'react-router-dom';
 
 type AppState = {
@@ -19,6 +21,8 @@ type AppState = {
 export class App extends React.Component<{}, AppState> {
   private readonly sourceService = Container.get(SourceService);
   private readonly audioService = Container.get(AudioService);
+  private readonly cgService = Container.get(CGService);
+  private readonly mediaService = Container.get(MediaService);
 
   constructor(props: {}) {
     super(props);
@@ -30,6 +34,8 @@ export class App extends React.Component<{}, AppState> {
   async componentDidMount() {
     this.sourceService.initialize();
     this.audioService.initialize();
+    this.cgService.initialize();
+    this.mediaService.initialize();
     this.setState({
       initialized: true,
     });
