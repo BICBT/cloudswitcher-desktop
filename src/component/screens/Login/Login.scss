@@ -1,0 +1,40 @@
+.LoginPage {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 40px;
+    background-color: var(--background);
+
+    .title {
+      font-size: 30px;
+      color: var(--paragraph);
+    }
+
+    form {
+      margin-top: 40px;
+
+      .ant-input-affix-wrapper {
+        background-color: var(--background);
+      }
+
+      .ant-input-password-icon{
+        color: white;
+      }
+
+      label {
+        color: var(--paragraph);
+      }
+
+      .login-button-container {
+        display: flex;
+        justify-content: space-around;
+        margin-top: 40px;
+
+        button {
+          padding: 5px 40px;
+        }
+      }
+    }
+}
+  

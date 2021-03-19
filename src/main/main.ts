@@ -7,6 +7,7 @@ import * as isDev from 'electron-is-dev';
 import * as dotenv from 'dotenv';
 import { Container } from 'typedi';
 
+// TODO: load env from local path when in the production, remove this in the future
 if (!isDev) {
   dotenv.config({ path: path.join(__dirname, '../server.env') });
 }
@@ -21,6 +22,11 @@ import { AudioService } from './service/audioService';
 import { CGService } from './service/cgService';
 import { isMac } from '../common/util';
 import { MediaService } from './service/mediaService';
+
+// TODO: load env from local path when in the production, remove this in the future
+if (!isDev) {
+  dotenv.config({ path: path.join(__dirname, '../server.env') });
+}
 
 const packageJson: { version: string } =
   JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../package.json'), 'utf-8'));
@@ -71,6 +77,8 @@ async function startApp() {
   mainWindow = new BrowserWindow({
     title: title,
     maximizable: true,
+    width: 450,
+    height: 550,
     webPreferences: {
       nodeIntegration: true,
       enableRemoteModule: true,
@@ -78,7 +86,6 @@ async function startApp() {
   });
   mainWindow.removeMenu();
   mainWindow.loadURL(`${loadUrl}?window=main`);
-  mainWindow.setFullScreen(true);
   mainWindow.on('closed', () => {
     obsService.close();
     app.exit(0);
@@ -96,6 +103,13 @@ async function startApp() {
       }
     });
   });
+  if (isDev) {
+    mainWindow.webContents.on('before-input-event', (event, input) => {
+      if (input.key === 'F12') {
+        mainWindow?.webContents.openDevTools();
+      }
+    });
+  }
 
 
   if (isDev) {

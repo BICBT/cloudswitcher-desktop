@@ -8,6 +8,20 @@ import { ipcRenderer } from 'electron';
 import * as serviceWorker from './serviceWorker';
 import { App } from './App';
 import { ChakraProvider } from '@chakra-ui/react';
+import { BrowserRouter } from "react-router-dom";
+import axios from "axios";
+
+//request interceptor to add token in header
+axios.interceptors.request.use(function (config) {
+  const token = localStorage.getItem('token');
+  if (token) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+}, function (error) {
+  return Promise.reject(error);
+});
 
 // wrap control log
 ['log', 'debug', 'info', 'warn', 'errpr'].forEach(level => {
@@ -20,7 +34,9 @@ import { ChakraProvider } from '@chakra-ui/react';
 
 ReactDOM.render(
   <ChakraProvider>
-    <App/>
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
   </ChakraProvider>,
   document.getElementById('root')
 );

@@ -1,14 +1,18 @@
+import './App.scss';
 import React from 'react';
+import { Main } from './component/screens/Main/Main';
+import { Login } from './component/screens/Login/Login'
+import { SelectSwitcher } from './component/screens/SelectSwitcher/SelectSwitcher'
+import { Studio } from './component/screens/Studio/Studio';
 import { Container } from 'typedi';
 import { SourceService } from './service/sourceService';
 import { AudioService } from './service/audioService';
 import { isDialogWindow, isExternalWindow } from './common/util';
 import { DialogWindow } from './component/dialogs/DialogWindow/DialogWindow';
 import { ExternalWindow } from './component/screens/ExternalWindow/ExternalWindow';
-import { Main } from './component/screens/Main/Main';
-import { Studio } from './component/screens/Studio/Studio';
 import { CGService } from './service/cgService';
 import { MediaService } from './service/mediaService';
+import { Switch, Route } from 'react-router-dom';
 
 type AppState = {
   initialized: boolean;
@@ -49,9 +53,17 @@ export class App extends React.Component<{}, AppState> {
       return <ExternalWindow layouts={layouts} />
     } else {
       return (
-        <Main>
-          <Studio />
-        </Main>
+        <div className="App night-theme">
+          <Switch>
+            <Route path='/' exact component={Login} />
+            <Route path='/select' exact component={SelectSwitcher} />
+            <Route path="/main" exact>
+              <Main>
+                <Studio />
+              </Main>
+            </Route>
+          </Switch>
+        </div>
       );
     }
   }

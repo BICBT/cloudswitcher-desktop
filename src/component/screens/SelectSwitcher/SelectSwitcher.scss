@@ -1,0 +1,39 @@
+.SelectPage{
+    flex:1;
+    display:block ;
+    justify-content: center;
+    padding: 20px;
+    background-color: var(--background);
+    height: auto;
+
+    .ant-table {
+        background-color: var(--background);
+
+        .ant-table-thead > tr > th {
+            color: var(--paragraph);
+            background: var(--background);
+        }
+
+        .ant-table-tbody > tr.ant-table-row:hover > td,
+        .ant-table-tbody > tr.ant-table-row-selected > td {
+            background: var(--background);
+        }
+
+        table tbody tr:nth-child(odd) {
+            background: var(--background);
+        }
+
+        .ant-table-tbody > tr > td {
+            border-bottom: 1px solid var(--border);
+        }
+    }
+
+    .ant-empty-normal {
+        color: var(--paragraph);
+    }
+
+    .title {
+        font-size: 20px;
+        color: var(--paragraph);
+      }
+}
