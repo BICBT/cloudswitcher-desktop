@@ -78,3 +78,23 @@ export type DialogOptions = {
   width: number;
   height: number;
 };
+
+export interface LoginInfo {
+  username: string,
+  password: string;
+};
+
+export interface LoginResponse {
+  token: string;
+}
+
+export interface SwitcherResponse {
+  id: string;
+  name: string;
+  bitrate: number;
+  code: string;
+  format: string;
+  region: string;
+  recordingenable: boolean;
+  switcherstatus:string;
+}

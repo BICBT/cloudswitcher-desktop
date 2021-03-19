@@ -24,6 +24,7 @@
     "@emotion/react": "^11.1.2",
     "@emotion/styled": "^11.0.0",
     "@fortawesome/fontawesome-free": "^5.14.0",
+    "antd": "^4.9.1",
     "atem": "^0.1.8",
     "axios": "^0.19.2",
     "cross-env": "^7.0.2",
@@ -46,7 +47,7 @@
     "react-select": "^3.1.0",
     "react-tabs": "^3.1.2",
     "reflect-metadata": "^0.1.13",
-    "serialport": "^9.0.6",
+    "serialport": "^9.0.7",
     "styled-components": "^5.1.1",
     "typedi": "^0.8.0",
     "uuid": "^8.3.0"

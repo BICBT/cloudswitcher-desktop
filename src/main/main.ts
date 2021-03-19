@@ -5,11 +5,6 @@ import * as os from 'os';
 import * as fs from 'fs';
 import * as dotenv from 'dotenv';
 
-// TODO: load env from local path when in the production, remove this in the future
-if (!isDev) {
-  dotenv.config({ path: path.join(__dirname, '../server.env') });
-}
-
 import { app, BrowserWindow, ipcMain } from 'electron';
 import { Container } from 'typedi';
 import { SourceService } from './service/sourceService';
@@ -19,6 +14,11 @@ import { BoserService } from "./service/boserService";
 import { ENABLE_BOSER } from '../common/constant'
 import { ObsService } from './service/obsService';
 import { AudioService } from './service/audioService';
+
+// TODO: load env from local path when in the production, remove this in the future
+if (!isDev) {
+  dotenv.config({ path: path.join(__dirname, '../server.env') });
+}
 
 const packageJson: { version: string } =
   JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../package.json'), 'utf-8'));
@@ -49,6 +49,8 @@ async function startApp() {
   mainWindow = new BrowserWindow({
     title: title,
     maximizable: true,
+    width: 450,
+    height: 550,
     webPreferences: {
       nodeIntegration: true,
       enableRemoteModule: true,
@@ -56,7 +58,6 @@ async function startApp() {
   });
   mainWindow.removeMenu();
   mainWindow.loadURL(`${loadUrl}?window=main`);
-  mainWindow.setFullScreen(true);
   mainWindow.on('closed', () => {
     obsService.close();
     app.exit(0);
@@ -74,6 +75,13 @@ async function startApp() {
       }
     });
   });
+  if (isDev) {
+    mainWindow.webContents.on('before-input-event', (event, input) => {
+      if (input.key === 'F12') {
+        mainWindow?.webContents.openDevTools();
+      }
+    });
+  }
 
 
   // Dialog window
