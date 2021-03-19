@@ -10,13 +10,13 @@
     "eject": "react-scripts eject",
     "lint": "tsc --noEmit && tsc -p src/main --noEmit",
     "build-main": "tsc -p src/main",
-    "local": "npm run build-main && env-cmd -f env/local.env concurrently \"cross-env BROWSER=none npm start\" \"wait-on http://localhost:3000 && electron .\"",
-    "server": "npm run build-main && env-cmd -f env/server.env concurrently \"cross-env BROWSER=none npm start\" \"wait-on http://localhost:3000 && electron .\"",
     "build:prod": "npm run build",
     "build-main:prod": "npm run build-main",
-    "prepackage": "rm -rf build && npm run build:prod && npm run build-main:prod && cp env/server.env build",
-    "package:windows": "npm run prepackage && rm -rf dist && electron-builder build -w --publish always",
-    "package:mac": "npm run prepackage && rm -rf dist && electron-builder build -m --publish always",
+    "dev": "npm run build-main && env-cmd -f env/.env.${ENV:-dev} concurrently \"cross-env BROWSER=none npm start\" \"wait-on http://localhost:3000 && electron .\"",
+    "dev:test": "ENV=test npm run dev",
+    "dev:prod": "ENV=prod npm run dev",
+    "prepackage": "rm -rf build && npm run build:prod && npm run build-main:prod && cp env/.env.${ENV:-prod} build/.env",
+    "package-windows": "npm run prepackage && rm -rf dist && env-cmd -f env/.env.${ENV:-prod} electron-builder build -w --publish always",
     "postinstall": "electron-rebuild && cross-os postinstall"
   },
   "dependencies": {

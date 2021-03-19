@@ -7,15 +7,14 @@ import * as isDev from 'electron-is-dev';
 import * as dotenv from 'dotenv';
 import { Container } from 'typedi';
 
+// load env files in production package
 if (!isDev) {
-  dotenv.config({ path: path.join(__dirname, '../server.env') });
+  dotenv.config({ path: path.join(__dirname, '../.env') });
 }
 
 import { SourceService } from './service/sourceService';
-import { AtemService } from './service/atemService';
-import { ATEM_DEVICE_IP, ENABLE_ATEM } from '../common/constant';
 import { BoserService } from "./service/boserService";
-import { ENABLE_BOSER } from '../common/constant'
+import { ENABLE_PANEL } from '../common/constant'
 import { ObsService } from './service/obsService';
 import { AudioService } from './service/audioService';
 import { CGService } from './service/cgService';
@@ -28,7 +27,6 @@ const title = `CloudSwitcher - ${packageJson.version}`;
 
 const loadUrl = isDev ? 'http://localhost:3000' : `file://${path.join(__dirname, '../index.html')}`;
 const sourceService = Container.get(SourceService);
-const atemService = Container.get(AtemService);
 const boserService = Container.get(BoserService);
 const obsService = Container.get(ObsService);
 const audioService = Container.get(AudioService);
@@ -55,10 +53,7 @@ async function startApp() {
     await audioService.initialized();
     await cgService.initialize();
     await mediaService.initialize();
-    if (ENABLE_ATEM) {
-      await atemService.initialize(ATEM_DEVICE_IP);
-    }
-    if (ENABLE_BOSER) {
+    if (ENABLE_PANEL) {
       await boserService.initialize();
     }
   } catch (e) {
