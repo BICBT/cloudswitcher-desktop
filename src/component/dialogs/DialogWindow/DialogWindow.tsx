@@ -1,7 +1,7 @@
 import './DialogWindow.scss';
 import React, { ComponentType } from 'react';
 import { TitleBar } from '../../shared/TitleBar/TitleBar';
-import { DialogService } from '../../../service/dialogService';
+import { DialogService } from '../../../service/DialogService';
 import { Container } from 'typedi';
 import { AddSourceDialog } from '../AddSourceDialog/AddSourceDialog';
 import { OutputSettingDialog } from '../OutputSettingDialog/OutputSettingDialog';

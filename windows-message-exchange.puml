@@ -1,0 +1,14 @@
+@startuml
+object MainWindow
+object ExternalWindow
+object DialogWindow
+object WorkerWindow
+object MainProcess
+
+MainWindow -down-> MainProcess: @ExecuteInWorkerProcess()
+ExternalWindow -down-> MainProcess: @ExecuteInWorkerProcess()
+DialogWindow -down-> MainProcess: @ExecuteInWorkerProcess()
+MainProcess -down-> WorkerWindow
+WorkerWindow .up.->MainProcess: IpcEvent
+
+@enduml

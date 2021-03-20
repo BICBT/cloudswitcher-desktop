@@ -1,17 +1,17 @@
 import { Service } from 'typedi';
 import axios from 'axios';
-import { OBS_SERVER_URL } from '../../common/constant';
-import { replaceUrlParams } from '../../common/util';
-import { Audio, GetSourceResponse, Output, Source, TransitionType, UpdateAudioRequest, UpdateSourceRequest } from '../../common/types';
+import { OBS_SERVER_URL } from '../common/constant';
+import { replaceUrlParams } from '../common/util';
+import { Audio, GetSourceResponse, Output, Source, TransitionType, UpdateAudioRequest, UpdateSourceRequest } from '../common/types';
 
-const GET_SCENES_URL = `${OBS_SERVER_URL}/v1/scenes`;
-const GET_OUTPUT_URL = `${OBS_SERVER_URL}/v1/output`;
-const SWITCH_URL = `${OBS_SERVER_URL}/v1/switch/:sceneId`;
-const RESTART_SOURCE_URL = `${OBS_SERVER_URL}/v1/restart`;
-const GET_SOURCE_URL = `${OBS_SERVER_URL}/v1/scenes/:sceneId/sources/:sourceId`;
-const UPDATE_SOURCE_URL = `${OBS_SERVER_URL}/v1/scenes/:sceneId/sources/:sourceId`;
-const GET_AUDIO_URL = `${OBS_SERVER_URL}/v1/audio`;
-const UPDATE_AUDIO_URL = `${OBS_SERVER_URL}/v1/audio`;
+const GET_SCENES_URL = `:switcherBaseUrl/v1/scenes`;
+const GET_OUTPUT_URL = `:switcherBaseUrl/v1/output`;
+const SWITCH_URL = `:switcherBaseUrl/v1/switch/:sceneId`;
+const RESTART_SOURCE_URL = `:switcherBaseUrl/v1/restart`;
+const GET_SOURCE_URL = `:switcherBaseUrl/v1/scenes/:sceneId/sources/:sourceId`;
+const UPDATE_SOURCE_URL = `:switcherBaseUrl/v1/scenes/:sceneId/sources/:sourceId`;
+const GET_AUDIO_URL = `:switcherBaseUrl/v1/audio`;
+const UPDATE_AUDIO_URL = `:switcherBaseUrl/v1/audio`;
 
 interface SceneResponse {
   id: string;
@@ -27,7 +27,7 @@ interface SourceResponse {
 }
 
 @Service()
-export class ObsHeadlessService {
+export class SwitcherServerService  {
 
   constructor() {
     if (!OBS_SERVER_URL) {
@@ -108,18 +108,10 @@ export class ObsHeadlessService {
   }
 
   public async getAudio(): Promise<Audio> {
-    try {
-      return (await axios.get(GET_AUDIO_URL)).data as Audio;
-    } catch (e) {
-      throw new Error(`Failed to get audio: ${e.message || e}`);
-    }
+    return (await axios.get(GET_AUDIO_URL)).data as Audio;
   }
 
-  public async updateAudio(request: UpdateAudioRequest): Promise<void> {
-    try {
-      await axios.patch(UPDATE_AUDIO_URL, request);
-    } catch (e) {
-      throw new Error(`Failed to update audio: ${e.message || e}`);
-    }
+  public async updateAudio(request: UpdateAudioRequest): Promise<Audio> {
+    return (await axios.patch(UPDATE_AUDIO_URL, request)).data as Audio;
   }
 }

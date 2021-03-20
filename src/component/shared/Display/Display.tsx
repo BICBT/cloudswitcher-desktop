@@ -4,7 +4,7 @@ import React, { RefObject } from 'react';
 import electron from "electron";
 import { getCurrentDisplay, isMac } from '../../../common/util';
 import { Container } from 'typedi';
-import { DisplayService } from '../../../service/displayService';
+import { DisplayService } from '../../../service/DisplayService';
 import { Bounds } from '../../../common/types';
 
 type DisplayProps = {

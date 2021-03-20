@@ -1,11 +1,12 @@
 import * as path from 'path';
 import { Service } from 'typedi';
-import { BrowserWindow, ipcMain, webContents } from 'electron';
+import { ipcMain, webContents } from 'electron';
 import * as isDev from 'electron-is-dev';
 import * as obs from 'obs-node';
-import { Source, Transition, TransitionType, UpdateAudioRequest, UpdateSourceRequest } from '../../common/types';
-import { broadcastMessage } from '../../common/util';
+import { Source, Transition, TransitionType, UpdateAudioRequest, UpdateSourceRequest } from '../common/types';
+import { broadcastMessage } from '../common/util';
 import { Overlay } from 'obs-node';
+import { ServiceBase } from './ServiceManager';
 
 const OBS_VIDEO_SETTINGS: obs.VideoSettings = {
   baseWidth: 640,
@@ -21,8 +22,9 @@ const OBS_AUDIO_SETTINGS: obs.AudioSettings = {
 };
 
 @Service()
-export class ObsService {
-  public initialize() {
+export class ObsService extends ServiceBase {
+
+  public async init(): Promise<void> {
     if (isDev) {
       obs.setFontPath(path.resolve(process.cwd(), 'src/fonts'));
     } else {
@@ -32,13 +34,6 @@ export class ObsService {
       video: OBS_VIDEO_SETTINGS,
       audio: OBS_AUDIO_SETTINGS,
     });
-
-    ipcMain.on('createOBSDisplay', (event, name: string, electronWindowId: number, scaleFactor: number, sourceId: string) =>
-      event.returnValue = this.createOBSDisplay(name, electronWindowId, scaleFactor, sourceId));
-    ipcMain.on('moveOBSDisplay', (event, name: string, x: number, y: number, width: number, height: number) =>
-      event.returnValue = this.moveOBSDisplay(name, x, y, width, height));
-    ipcMain.on('destroyOBSDisplay', (event, name: string) => event.returnValue = this.destroyOBSDisplay(name));
-    ipcMain.on('screenshot', (event, source: Source) => this.screenshot(source));
 
     obs.addVolmeterCallback((sceneId: string, sourceId: string, channels: number, magnitude: number[], peak: number[], input_peak: number[]) => {
       webContents.getAllWebContents().forEach(webContents => {
@@ -64,19 +59,6 @@ export class ObsService {
     obs.updateSource(source.sceneId, source.id, {
       url: source.previewUrl,
     });
-  }
-
-  public createOBSDisplay(name: string, electronWindowId: number, scaleFactor: number, sourceId: string): void {
-    const electronWindow = BrowserWindow.fromId(electronWindowId);
-    obs.createDisplay(name, electronWindow.getNativeWindowHandle(), scaleFactor, sourceId);
-  }
-
-  public moveOBSDisplay(name: string, x: number, y: number, width: number, height: number): void {
-    obs.moveDisplay(name, x, y, width, height);
-  }
-
-  public destroyOBSDisplay(name: string): void {
-    obs.destroyDisplay(name);
   }
 
   public switchSource(from: Source | undefined, to: Source, transitionType: TransitionType, transitionDurationMs: number): Transition {
@@ -106,12 +88,6 @@ export class ObsService {
 
   public close() {
     obs.shutdown();
-  }
-
-  private async screenshot(source: Source) {
-    const buffer = await obs.screenshot(source.sceneId, source.id);
-    const base64 = buffer.toString('base64');
-    broadcastMessage('screenshotted', source, base64);
   }
 
   public addOverlay(overlay: Overlay) {

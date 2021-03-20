@@ -1,7 +1,7 @@
 import './ProgramLocal.scss';
 import React from 'react';
 import { Container } from 'typedi';
-import { SourceService } from '../../../service/sourceService';
+import { SourceService } from '../../../service/SourceService';
 import { DisplayView } from '../../shared/Display/DisplayView';
 import { Transition } from '../../../common/types';
 
@@ -17,14 +17,14 @@ export class ProgramLocal extends React.Component<{}, ProgramLocalState> {
     this.state = {};
   }
 
-  public componentDidMount() {
-    this.setState({
-      programTransition: this.sourceService.programTransition,
-    });
-    this.sourceService.programChanged.on(this, transition => {
+  public async componentDidMount() {
+    this.sourceService.programChanged.on(this, event => {
       this.setState({
-        programTransition: transition,
+        programTransition: event.current,
       })
+    });
+    this.setState({
+      programTransition: await this.sourceService.getProgramTransition(),
     });
   }
 

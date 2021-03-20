@@ -1,7 +1,7 @@
 import './ProgramLive.scss';
 import React from 'react';
 import { Container } from 'typedi';
-import { SourceService } from '../../../service/sourceService';
+import { SourceService } from '../../../service/SourceService';
 import { DisplayView } from '../../shared/Display/DisplayView';
 import { Source } from '../../../common/types';
 
@@ -17,14 +17,14 @@ export class ProgramLive extends React.Component<{}, ProgramLiveState> {
     this.state = {};
   }
 
-  public componentDidMount() {
-    this.setState({
-      liveSource: this.sourceService.liveSource,
-    });
+  public async componentDidMount() {
     this.sourceService.liveChanged.on(this, source => {
       this.setState({
         liveSource: source,
       });
+    });
+    this.setState({
+      liveSource: await this.sourceService.getLiveSource(),
     });
   }
 

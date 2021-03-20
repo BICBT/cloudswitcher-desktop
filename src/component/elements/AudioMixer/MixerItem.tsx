@@ -1,10 +1,10 @@
 import './MixerItem.scss';
 import React from 'react';
 import { Box, Slider, SliderFilledTrack, SliderThumb, SliderTrack } from '@chakra-ui/react';
-import { Source } from '../../../common/types';
+import { Source, Transition } from '../../../common/types';
 import { Container } from 'typedi';
-import { SourceService } from '../../../service/sourceService';
-import {AudioService} from "../../../service/audioService";
+import { SourceService } from '../../../service/SourceService';
+import { AudioService } from '../../../service/AudioService';
 
 export interface MixerItemProps {
   index: number;
@@ -19,7 +19,7 @@ export interface MixerItemState {
   selectingVolume: number;
   audioLock: boolean;
   audioMonitor: boolean;
-  pgmSource?: Source;
+  programTransition?: Transition;
 }
 
 const MIN_VOLUME = -60;
@@ -56,10 +56,10 @@ export class MixerItem extends React.Component<MixerItemProps, MixerItemState> {
     return this.state.audioLock ||
       (this.props.audioWithVideo
         && !!this.props.source
-        && this.props.source.id === this.state.pgmSource?.id);
+        && this.props.source.id === this.state.programTransition?.id);
   }
 
-  public componentDidMount() {
+  public async componentDidMount() {
     this.sourceService.sourceChanged.on(this, source => {
       if (this.props.source?.id === source.id) {
         this.setState({
@@ -70,13 +70,10 @@ export class MixerItem extends React.Component<MixerItemProps, MixerItemState> {
         });
       }
     });
-    this.sourceService.programChanged.on(this, transition => {
+    this.sourceService.programChanged.on(this, event => {
       this.setState({
-        pgmSource: transition?.source,
+        programTransition: event.current,
       });
-    });
-    this.setState({
-      pgmSource: this.sourceService.programTransition?.source,
     });
     this.audioService.audioChanged.on(this, audio => {
       if (this.props.isPgm && this.state.volume !== audio.masterVolume) {
@@ -85,6 +82,9 @@ export class MixerItem extends React.Component<MixerItemProps, MixerItemState> {
           selectingVolume: audio.masterVolume,
         });
       }
+    });
+    this.setState({
+      programTransition: await this.sourceService.getProgramTransition(),
     });
   }
 
@@ -157,24 +157,24 @@ export class MixerItem extends React.Component<MixerItemProps, MixerItemState> {
     );
   }
 
-  private handleMonitorClicked() {
+  private async handleMonitorClicked() {
     if (this.props.isPgm) {
-      this.audioService.updateAudio({
+      await this.audioService.updateAudio({
         pgmMonitor: !this.state.audioMonitor,
       });
       this.setState({
         audioMonitor: !this.state.audioMonitor,
       });
     } else if (this.props.source) {
-      this.sourceService.updateSource(this.props.source, {
+      await this.sourceService.updateSource(this.props.source, {
         audioMonitor: !this.state.audioMonitor,
       });
     }
   }
 
-  private handleAudioLockClicked() {
+  private async handleAudioLockClicked() {
     if (this.props.source) {
-      this.sourceService.updateSource(this.props.source, {
+      await this.sourceService.updateSource(this.props.source, {
         audioLock: !this.state.audioLock,
       });
     }
@@ -186,22 +186,22 @@ export class MixerItem extends React.Component<MixerItemProps, MixerItemState> {
     });
   }
 
-  private handleVolumeChangeEnd(volume: number) {
-    this.updateVolume(volume);
+  private async handleVolumeChangeEnd(volume: number) {
+    await this.updateVolume(volume);
   }
 
-  private handleMuteClicked() {
-    this.updateVolume(MIN_VOLUME);
+  private async handleMuteClicked() {
+    await this.updateVolume(MIN_VOLUME);
   }
 
-  private updateVolume(volume: number) {
+  private async updateVolume(volume: number) {
     if (this.state.volume !== volume) {
       if (this.props.isPgm) {
-        this.audioService.updateAudio({
+        await this.audioService.updateAudio({
           masterVolume: volume
         });
       } else if (this.props.source) {
-        this.sourceService.updateSource(this.props.source, {
+        await this.sourceService.updateSource(this.props.source, {
           volume: volume,
         });
       }

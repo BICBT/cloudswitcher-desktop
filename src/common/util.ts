@@ -1,5 +1,14 @@
 import { remote, webContents } from 'electron';
 
+export function as<T>(value: T): T {
+  return value;
+}
+
+export function isWorkerWindow() {
+  const url = new URL(window.location.href);
+  return url.searchParams.get('window') === 'worker';
+}
+
 export function isMainWindow() {
   const url = new URL(window.location.href);
   return url.searchParams.get('window') === 'main';

@@ -1,24 +1,15 @@
 import React from 'react';
-import { Container } from 'typedi';
-import { SourceService } from './service/sourceService';
-import { AudioService } from './service/audioService';
 import { isDialogWindow, isExternalWindow } from './common/util';
 import { DialogWindow } from './component/dialogs/DialogWindow/DialogWindow';
 import { ExternalWindow } from './component/screens/ExternalWindow/ExternalWindow';
 import { Main } from './component/screens/Main/Main';
 import { Studio } from './component/screens/Studio/Studio';
-import { CGService } from './service/cgService';
-import { MediaService } from './service/mediaService';
 
 type AppState = {
   initialized: boolean;
 };
 
 export class App extends React.Component<{}, AppState> {
-  private readonly sourceService = Container.get(SourceService);
-  private readonly audioService = Container.get(AudioService);
-  private readonly cgService = Container.get(CGService);
-  private readonly mediaService = Container.get(MediaService);
 
   constructor(props: {}) {
     super(props);
@@ -28,10 +19,6 @@ export class App extends React.Component<{}, AppState> {
   }
 
   async componentDidMount() {
-    this.sourceService.initialize();
-    this.audioService.initialize();
-    this.cgService.initialize();
-    this.mediaService.initialize();
     this.setState({
       initialized: true,
     });
