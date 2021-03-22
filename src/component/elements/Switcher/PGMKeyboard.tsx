@@ -3,7 +3,7 @@ import React from 'react';
 import { KeyView } from './KeyView';
 import { Container } from 'typedi';
 import { SourceService } from '../../../service/SourceService';
-import { Source } from '../../../common/types';
+import { Source, Transition } from '../../../common/types';
 
 const keyNames = [
   '1', '2', '3', '4', '5', '6', '7', '8', '9',
@@ -12,7 +12,7 @@ const keyNames = [
 
 export class PGMKeyboardState {
   sources: Record<number, Source>;
-  programSource?: Source;
+  programTransition?: Transition;
 }
 
 export class PGMSKeyboard extends React.Component<{}, PGMKeyboardState> {
@@ -33,8 +33,12 @@ export class PGMSKeyboard extends React.Component<{}, PGMKeyboardState> {
     });
     this.sourceService.programChanged.on(this, event => {
       this.setState({
-        programSource: event.current?.source,
+        programTransition: event.current,
       });
+    });
+    this.setState({
+      sources: await this.sourceService.getSources(),
+      programTransition: await this.sourceService.getProgramTransition(),
     });
   }
 
@@ -55,7 +59,7 @@ export class PGMSKeyboard extends React.Component<{}, PGMKeyboardState> {
                   key={name}
                   name={name}
                   isPreview={false}
-                  isProgram={!!source && this.state.programSource?.id === source.id}
+                  isProgram={!!source && this.state.programTransition?.source.id === source.id}
                   onButtonClicked={() => this.onKeyClicked(index)}
                 />
               );

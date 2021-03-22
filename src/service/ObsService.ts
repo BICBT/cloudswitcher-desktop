@@ -1,12 +1,13 @@
 import * as path from 'path';
 import { Service } from 'typedi';
-import { ipcMain, webContents } from 'electron';
+import { BrowserWindow, webContents } from 'electron';
 import * as isDev from 'electron-is-dev';
 import * as obs from 'obs-node';
-import { Source, Transition, TransitionType, UpdateAudioRequest, UpdateSourceRequest } from '../common/types';
-import { broadcastMessage } from '../common/util';
 import { Overlay } from 'obs-node';
-import { ServiceBase } from './ServiceManager';
+import { Source, Transition, TransitionType, UpdateAudioRequest, UpdateSourceRequest } from '../common/types';
+import { ServiceBase } from './ServiceBase';
+import { ExecuteInMainProcess } from './IpcService';
+import { isMainProcess } from '../common/util';
 
 const OBS_VIDEO_SETTINGS: obs.VideoSettings = {
   baseWidth: 640,
@@ -24,25 +25,27 @@ const OBS_AUDIO_SETTINGS: obs.AudioSettings = {
 @Service()
 export class ObsService extends ServiceBase {
 
-  public async init(): Promise<void> {
-    if (isDev) {
-      obs.setFontPath(path.resolve(process.cwd(), 'src/fonts'));
-    } else {
-      obs.setFontPath(path.resolve(process.resourcesPath, 'fonts'));
-    }
-    obs.startup({
-      video: OBS_VIDEO_SETTINGS,
-      audio: OBS_AUDIO_SETTINGS,
-    });
-
-    obs.addVolmeterCallback((sceneId: string, sourceId: string, channels: number, magnitude: number[], peak: number[], input_peak: number[]) => {
-      webContents.getAllWebContents().forEach(webContents => {
-        webContents.send('volmeterChanged', sceneId, sourceId, channels, magnitude, peak, input_peak);
+  public async initialize(): Promise<void> {
+    if (isMainProcess()) {
+      if (isDev) {
+        obs.setFontPath(path.resolve(process.cwd(), 'src/fonts'));
+      } else {
+        obs.setFontPath(path.resolve(process.resourcesPath, 'fonts'));
+      }
+      obs.startup({
+        video: OBS_VIDEO_SETTINGS,
+        audio: OBS_AUDIO_SETTINGS,
       });
-    });
+      obs.addVolmeterCallback((sceneId: string, sourceId: string, channels: number, magnitude: number[], peak: number[], input_peak: number[]) => {
+        webContents.getAllWebContents().forEach(webContents => {
+          webContents.send('volmeterChanged', sceneId, sourceId, channels, magnitude, peak, input_peak);
+        });
+      });
+    }
   }
 
-  public createSource(source: Source): void {
+  @ExecuteInMainProcess()
+  public async createSource(source: Source): Promise<void> {
     obs.addScene(source.sceneId);
     obs.addSource(source.sceneId, source.id, {
       isFile: false,
@@ -55,13 +58,15 @@ export class ObsService extends ServiceBase {
     });
   }
 
-  public updatePreviewUrl(source: Source): void {
+  @ExecuteInMainProcess()
+  public async updatePreviewUrl(source: Source): Promise<void> {
     obs.updateSource(source.sceneId, source.id, {
       url: source.previewUrl,
     });
   }
 
-  public switchSource(from: Source | undefined, to: Source, transitionType: TransitionType, transitionDurationMs: number): Transition {
+  @ExecuteInMainProcess()
+  public async switchSource(from: Source | undefined, to: Source, transitionType: TransitionType, transitionDurationMs: number): Promise<Transition> {
     obs.switchToScene(to.sceneId, transitionType, transitionDurationMs);
     return {
       id: transitionType,
@@ -70,11 +75,29 @@ export class ObsService extends ServiceBase {
     };
   }
 
-  public restart(source: Source): void {
+  @ExecuteInMainProcess()
+  public async restart(source: Source): Promise<void> {
     obs.restartSource(source.sceneId, source.id);
   }
 
-  public updateAudio(request: UpdateAudioRequest) {
+  @ExecuteInMainProcess()
+  public async createOBSDisplay(name: string, electronWindowId: number, scaleFactor: number, sourceId: string): Promise<void> {
+    const electronWindow = BrowserWindow.fromId(electronWindowId);
+    return obs.createDisplay(name, electronWindow.getNativeWindowHandle(), scaleFactor, sourceId);
+  }
+
+  @ExecuteInMainProcess()
+  public async moveOBSDisplay(name: string, x: number, y: number, width: number, height: number): Promise<void> {
+    return obs.moveDisplay(name, x, y, width, height);
+  }
+
+  @ExecuteInMainProcess()
+  public async destroyOBSDisplay(name: string): Promise<void> {
+    return obs.destroyDisplay(name);
+  }
+
+  @ExecuteInMainProcess()
+  public async updateAudio(request: UpdateAudioRequest): Promise<void> {
     obs.updateAudio({
       masterVolume: request.masterVolume,
       audioWithVideo: request.audioWithVideo,
@@ -82,33 +105,40 @@ export class ObsService extends ServiceBase {
     });
   }
 
-  public updateSource(source: Source, request: UpdateSourceRequest): void {
+  @ExecuteInMainProcess()
+  public async updateSource(source: Source, request: UpdateSourceRequest): Promise<void> {
     obs.updateSource(source.sceneId, source.id, request);
   }
 
-  public close() {
+  @ExecuteInMainProcess()
+  public async close() {
     obs.shutdown();
   }
 
-  public addOverlay(overlay: Overlay) {
+  @ExecuteInMainProcess()
+  public async addOverlay(overlay: Overlay): Promise<void> {
     obs.addOverlay(overlay);
   }
 
-  public updateOverlay(overlay: Overlay) {
+  @ExecuteInMainProcess()
+  public async updateOverlay(overlay: Overlay): Promise<void> {
     obs.removeOverlay(overlay.id);
     obs.addOverlay(overlay);
     overlay.status = 'down';
   }
 
-  public removeOverlay(overlayId: string) {
+  @ExecuteInMainProcess()
+  public async removeOverlay(overlayId: string): Promise<void> {
     obs.removeOverlay(overlayId);
   }
 
-  public upOverlay(overlayId: string) {
+  @ExecuteInMainProcess()
+  public async upOverlay(overlayId: string): Promise<void> {
     obs.upOverlay(overlayId);
   }
 
-  public downOverlay(overlayId: string) {
+  @ExecuteInMainProcess()
+  public async downOverlay(overlayId: string): Promise<void> {
     obs.downOverlay(overlayId);
   }
 }

@@ -1,39 +1,44 @@
 import { Container, Service } from 'typedi';
 import { Audio, UpdateAudioRequest } from '../common/types';
-import { ExecuteInWorkerProcess, IpcEvent } from './IpcService';
-import { SwitcherServerService } from './SwitcherServerService';
+import { ExecuteInMainProcess, IpcEvent } from './IpcService';
 import { ObsService } from './ObsService';
-import { ServiceBase } from './ServiceManager';
-import { isWorkerWindow } from '../common/util';
+import { ServiceBase } from './ServiceBase';
+import { OBS_SERVER_URL } from '../common/constant';
+import axios from 'axios';
+import { isMainProcess } from '../common/util';
+
+const GET_AUDIO_URL = `${OBS_SERVER_URL}/v1/audio`;
+const UPDATE_AUDIO_URL = `${OBS_SERVER_URL}/v1/audio`;
 
 @Service()
 export class AudioService extends ServiceBase {
-  private readonly switcherServerService = Container.get(SwitcherServerService);
   private readonly obsService = Container.get(ObsService);
   private audio?: Audio;
-
   public audioChanged: IpcEvent<Audio> = new IpcEvent<Audio>('audioChanged');
 
-  @ExecuteInWorkerProcess()
-  public async init(): Promise<void> {
-    if (isWorkerWindow()) {
-      this.audio = await this.switcherServerService.getAudio();
-      this.obsService.updateAudio({
+  public async initialize(): Promise<void> {
+    if (isMainProcess()) {
+      this.audio = (await axios.get(GET_AUDIO_URL)).data as Audio;
+      await this.obsService.updateAudio({
+        masterVolume: this.audio.masterVolume,
         audioWithVideo: this.audio.audioWithVideo,
       });
-      this.audioChanged.emit(this.audio);
     }
   }
 
-  @ExecuteInWorkerProcess()
+  @ExecuteInMainProcess()
   public async getAudio(): Promise<Audio | undefined> {
     return this.audio;
   }
 
-  @ExecuteInWorkerProcess()
+  @ExecuteInMainProcess()
   public async updateAudio(request: UpdateAudioRequest): Promise<void> {
-    this.audio = await this.switcherServerService.updateAudio(request);
-    this.obsService.updateAudio(request);
+    if (!this.audio) {
+      throw new Error(`Audio is empty`);
+    }
+    await axios.patch(UPDATE_AUDIO_URL, request);
+    Object.assign(this.audio, request);
+    await this.obsService.updateAudio(request);
     this.audioChanged.emit(this.audio);
   }
 }

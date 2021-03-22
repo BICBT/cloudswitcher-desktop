@@ -3,11 +3,12 @@ import { SourceService } from './SourceService';
 import { Source, TransitionType } from "../common/types";
 import SerialPort from "serialport";
 import { AudioService } from './AudioService';
-import { ServiceBase } from './ServiceManager';
-import { ExecuteInWorkerProcess } from './IpcService';
 import { ENABLE_PANEL } from '../common/constant';
-import { isWorkerWindow } from '../common/util';
-import ByteLength = SerialPort.parsers.ByteLength;
+import { ServiceBase } from './ServiceBase';
+import { ExecuteInMainProcess } from './IpcService';
+import { isMainProcess } from '../common/util';
+
+const ByteLength = SerialPort.parsers.ByteLength;
 
 @Service()
 export class BoserService extends ServiceBase {
@@ -17,32 +18,26 @@ export class BoserService extends ServiceBase {
   private sources: Record<number, Source> = {};
   private previewSource?: Source;
 
-  @ExecuteInWorkerProcess()
-  public async init(): Promise<void> {
-    if (!isWorkerWindow() || !ENABLE_PANEL) {
+  public async initialize(): Promise<void> {
+    if (!isMainProcess() || !ENABLE_PANEL) {
       return;
     }
-
     const ports = await SerialPort.list();
     if (!ports.length) {
       console.warn('No serial port connected.');
       return;
     }
-
     this.boser = new SerialPort(ports[0].path, {
       autoOpen: true,
       baudRate: 115200,
       dataBits: 8,
       stopBits: 1,
     });
-
     this.sources = await this.sourceService.getSources();
     this.previewSource = await this.sourceService.getPreviewSource();
-
     this.sourceService.sourcesChanged.on(this, sources => {
       this.sources = sources;
     });
-
     this.sourceService.previewChanged.on(this, ({ previous, current }) => {
       if (previous) {
         this.boser.write(Buffer.from([0x55, 0x0e, previous.index + 33, 0x00, 0x0d, 0x0a]));
@@ -50,7 +45,6 @@ export class BoserService extends ServiceBase {
       this.boser.write(Buffer.from([0x55, 0x0e, current.index + 33, 0x02, 0x0d, 0x0a]));
       this.previewSource = current;
     });
-
     this.sourceService.programChanged.on(this, ({ previous, current }) => {
       if (previous) {
         this.boser.write(Buffer.from([0x55, 0x0e, previous.source.index + 17, 0x00, 0x0d, 0x0a]));
@@ -59,28 +53,27 @@ export class BoserService extends ServiceBase {
     });
 
     this.boser.write(Buffer.from([0x55, 0x0e, 0xff, 0xbb, 0x0d, 0x0a]));
-
     const parser = this.boser.pipe(new ByteLength({ length: 4 }));
     parser.on('data', async (receivedata: Buffer) => {
       switch (receivedata[1]) {
         case 0x3d:
-          if (Number(receivedata[2]) <= 24 && receivedata[3] == 0x01) { //pgm switch
+          if (Number(receivedata[2]) <= 24 && receivedata[3] === 0x01) { //pgm switch
             const pgmIndex = Number(receivedata[2]) - 17;
             const pgmSource = await this.sources[pgmIndex];
             if (pgmIndex >= 0 && pgmSource) {
               await this.sourceService.take(pgmSource, TransitionType.Cut, 0);
             }
-          } else if (24 < Number(receivedata[2]) && Number(receivedata[2]) <= 40 && receivedata[3] == 0x01) {  //pvw switch
+          } else if (24 < Number(receivedata[2]) && Number(receivedata[2]) <= 40 && receivedata[3] === 0x01) {  //pvw switch
             const pvwIndex = Number(receivedata[2]) - 33;
             const pvwSource = this.sources[pvwIndex];
             if (pvwIndex >= 0 && pvwSource) {
               this.sourceService.preview(pvwSource);
             }
-          } else if (receivedata[2] == 0x37 && receivedata[3] == 0x01) {
+          } else if (receivedata[2] === 0x37 && receivedata[3] === 0x01) {
             if (this.previewSource) {
               await this.sourceService.take(this.previewSource, TransitionType.Cut, 0);
             }
-          } else if (receivedata[2] == 0x38 && receivedata[3] == 0x01) {
+          } else if (receivedata[2] === 0x38 && receivedata[3] === 0x01) {
             if (this.previewSource) {
               await this.sourceService.take(this.previewSource, TransitionType.Fade, 3000);
             }

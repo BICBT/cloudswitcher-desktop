@@ -23,9 +23,7 @@ mostly follows this [instruction](https://www.codementor.io/@randyfindley/how-to
 1. `npm run release`
 
 ### Windows message exchange
-There are four BrowserWindows (Main, External, Dialog, Worker) in the application , to keep all windows shared with same data,
-we only keep and change state in the Worker BrowserWindow, Other windows will send messages and subscribe events from Worker BrowserWindow.
-Look into `windows-message-exchange.puml` for detail.
-
-
+There are three BrowserWindows (Main, External, Dialog) in the application , to keep all windows shared with same data,
+we keep and change state only in the main process, Other windows will send IPC messages and subscribe IPC events from main process.
+See `windows-message-exchange.puml` for detail.
 

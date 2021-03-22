@@ -1,12 +1,26 @@
 import { Container, Service } from 'typedi';
 import * as uuid from 'uuid';
 import { ObsService } from './ObsService';
-import { SwitcherServerService } from './SwitcherServerService';
-import { isWorkerWindow } from '../common/util';
-import { Source, Transition, TransitionType, UpdateSourceRequest } from '../common/types';
-import { ExecuteInWorkerProcess, IpcEvent } from './IpcService';
-import { ServiceBase } from './ServiceManager';
+import { GetSourceResponse, Output, Source, Transition, TransitionType, UpdateSourceRequest } from '../common/types';
+import { ExecuteInMainProcess, IpcEvent } from './IpcService';
 import * as obs from 'obs-node';
+import { ServiceBase } from './ServiceBase';
+import { OBS_SERVER_URL } from '../common/constant';
+import axios from 'axios';
+import { isMainProcess, replaceUrlParams } from '../common/util';
+
+interface SceneResponse {
+  id: string;
+  name: string;
+  sources: SourceResponse[];
+}
+
+interface SourceResponse {
+  id: string;
+  name: string;
+  url: string;
+  previewUrl: string;
+}
 
 export interface ProgramChangedEvent {
   previous?: Transition;
@@ -18,10 +32,16 @@ export interface PreviewChangedEvent {
   current: Source;
 }
 
+const GET_SCENES_URL = `${OBS_SERVER_URL}/v1/scenes`;
+const GET_OUTPUT_URL = `${OBS_SERVER_URL}/v1/output`;
+const SWITCH_URL = `${OBS_SERVER_URL}/v1/switch/:sceneId`;
+const RESTART_SOURCE_URL = `${OBS_SERVER_URL}/v1/restart`;
+const GET_SOURCE_URL = `${OBS_SERVER_URL}/v1/scenes/:sceneId/sources/:sourceId`;
+const UPDATE_SOURCE_URL = `${OBS_SERVER_URL}/v1/scenes/:sceneId/sources/:sourceId`;
+
 @Service()
 export class SourceService extends ServiceBase {
   private readonly obsService: ObsService = Container.get(ObsService);
-  private readonly switcherServerService: SwitcherServerService = Container.get(SwitcherServerService);
   private sources: Record<number, Source> = {};
   private previewSource?: Source;
   private programTransition?: Transition;
@@ -34,68 +54,92 @@ export class SourceService extends ServiceBase {
   public sourceRestarted = new IpcEvent<Source>('sourceRestarted');
   public sourceChanged = new IpcEvent<Source>('sourceChanged');
 
-  @ExecuteInWorkerProcess()
-  public async init(): Promise<void> {
-    if (isWorkerWindow()) {
-      const { sources, output } = await this.switcherServerService.initialize();
+  public async initialize(): Promise<void> {
+    if (isMainProcess()) {
+      const [scenes, output] = await Promise.all([
+        axios.get(GET_SCENES_URL).then(res => res.data as SceneResponse[]),
+        axios.get(GET_OUTPUT_URL).then(res => res.data as Output),
+      ]);
+      const sources: Record<number, Source> = {};
+      let index = 0;
+      for (let scene of scenes) {
+        for (let source of scene.sources) {
+          const r: GetSourceResponse = await this.getSource(scene.id, source.id);
+          sources[index] = {
+            id: source.id,
+            index: index,
+            name: source.name,
+            url: source.url,
+            previewUrl: source.previewUrl,
+            sceneId: scene.id,
+            volume: r.volume,
+            audioLock: r.audioLock,
+            audioMonitor: r.audioMonitor,
+          };
+          index++;
+        }
+      }
       this.sources = sources;
       // Create sources for local obs
       for (const source of Object.values(this.sources)) {
-        this.obsService.createSource(source);
+        await this.obsService.createSource(source);
       }
       // Create output
-      this.updateLiveUrl(output.previewUrl);
+      await this.updateLiveUrl(output.previewUrl);
     }
   }
 
-  @ExecuteInWorkerProcess()
+  @ExecuteInMainProcess()
   public async getSources(): Promise<Record<number, Source>> {
     return this.sources;
   }
 
-  @ExecuteInWorkerProcess()
+  @ExecuteInMainProcess()
   public async getPreviewSource(): Promise<Source | undefined> {
     return this.previewSource;
   }
 
-  @ExecuteInWorkerProcess()
+  @ExecuteInMainProcess()
   public async getProgramTransition(): Promise<Transition | undefined> {
     return this.programTransition;
   }
 
-  @ExecuteInWorkerProcess()
+  @ExecuteInMainProcess()
   public async getLiveSource(): Promise<Source | undefined> {
     return this.liveSource;
   }
 
-  @ExecuteInWorkerProcess()
-  public preview(source: Source) {
+  @ExecuteInMainProcess()
+  public async preview(source: Source): Promise<void> {
     const previous = this.previewSource;
     this.previewSource = source;
     this.previewChanged.emit({ previous: previous, current: this.previewSource });
   }
 
-  @ExecuteInWorkerProcess()
+  @ExecuteInMainProcess()
   public async take(source: Source, transitionType: TransitionType = TransitionType.Cut, transitionDurationMs: number = 3000) {
     const previous = this.programTransition;
-    this.programTransition = this.obsService.switchSource(previous?.source, source, transitionType, transitionDurationMs);
+    this.programTransition = await this.obsService.switchSource(previous?.source, source, transitionType, transitionDurationMs);
     const current = this.programTransition;
-    await this.switcherServerService.switchSource(source, transitionType, transitionDurationMs);
+    await axios.post(replaceUrlParams(SWITCH_URL, { sceneId: source.sceneId }), {
+      transitionType: transitionType,
+      transitionMs: transitionDurationMs,
+    });
     this.programChanged.emit({
       previous: previous,
       current: current,
     });
   }
 
-  @ExecuteInWorkerProcess()
-  public previewByIndex(index: number) {
+  @ExecuteInMainProcess()
+  public async previewByIndex(index: number): Promise<void> {
     const source = this.sources[index];
     if (source) {
-      this.preview(source);
+      await this.preview(source);
     }
   }
 
-  @ExecuteInWorkerProcess()
+  @ExecuteInMainProcess()
   public async takeByIndex(index: number, transitionType: TransitionType = TransitionType.Cut, transitionDurationMs: number = 1000) {
     const source = this.sources[index];
     if (source) {
@@ -103,15 +147,15 @@ export class SourceService extends ServiceBase {
     }
   }
 
-  @ExecuteInWorkerProcess()
-  public updateLiveUrl(url: string) {
+  @ExecuteInMainProcess()
+  public async updateLiveUrl(url: string): Promise<void> {
     if (url === this.liveSource?.url) {
       return;
     }
     if (this.liveSource) {
       this.liveSource.url = url;
       this.liveSource.previewUrl = url;
-      this.obsService.updatePreviewUrl(this.liveSource);
+      await this.obsService.updatePreviewUrl(this.liveSource);
     } else {
       this.liveSource = {
         id: 'live output',
@@ -124,30 +168,49 @@ export class SourceService extends ServiceBase {
         audioLock: false,
         audioMonitor: false,
       };
-      this.obsService.createSource(this.liveSource);
+      await this.obsService.createSource(this.liveSource);
     }
     this.liveChanged.emit(this.liveSource);
   }
 
-  @ExecuteInWorkerProcess()
+  @ExecuteInMainProcess()
   public async restart(source: Source) {
-    this.obsService.restart(source);
-    await this.switcherServerService.restart(source);
+    await axios.post(RESTART_SOURCE_URL, {
+      sceneId: source.sceneId,
+      sourceId: source.id,
+    });
+    await this.obsService.restart(source);
     this.sourceRestarted.emit(source);
   }
 
-  @ExecuteInWorkerProcess()
+  @ExecuteInMainProcess()
+  public async getSource(sceneId: string, sourceId: string): Promise<GetSourceResponse> {
+    return (await axios.get(replaceUrlParams(GET_SOURCE_URL, {
+      sceneId: sceneId,
+      sourceId: sourceId,
+    }))).data as GetSourceResponse;
+  }
+
+  @ExecuteInMainProcess()
   public async updateSource(source: Source, request: UpdateSourceRequest) {
     const existing = this.findSource(source.sceneId, source.id);
     if (existing) {
-      await this.switcherServerService.updateSource(existing, request);
-      this.obsService.updateSource(existing, request);
+      if (request.volume !== undefined || request.audioMonitor !== undefined) {
+        await axios.patch(replaceUrlParams(UPDATE_SOURCE_URL, {
+          sceneId: source.sceneId,
+          sourceId: source.id
+        }), {
+          volume: request.volume,
+          audioMonitor: request.audioMonitor,
+        });
+      }
+      await this.obsService.updateSource(existing, request);
       Object.assign(existing, request);
       this.sourceChanged.emit(existing);
     }
   }
 
-  @ExecuteInWorkerProcess()
+  @ExecuteInMainProcess()
   public async screenshot(source: Source): Promise<string> {
     const buffer = await obs.screenshot(source.sceneId, source.id);
     return buffer.toString('base64');

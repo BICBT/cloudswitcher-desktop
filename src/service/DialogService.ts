@@ -4,7 +4,7 @@ import { Service } from 'typedi';
 import { isDialogWindow, isMainWindow } from '../common/util';
 import { SimpleEvent } from '../common/event';
 import { DialogComponent, DialogOptions } from '../common/types';
-import { ServiceBase } from './ServiceManager';
+import { ServiceBase } from './ServiceBase';
 
 export type SessionId = string;
 type Resolver = (result: any) => void;
@@ -21,7 +21,7 @@ export class DialogService extends ServiceBase {
   private readonly resolvers: Map<SessionId, Resolver> = new Map<SessionId, Resolver>();
   public showDialogRequested = new SimpleEvent<ShowDialogRequest>();
 
-  public async init(): Promise<void> {
+  public async initialize(): Promise<void> {
     if (isDialogWindow()) {
       ipcRenderer.on('showDialog', (event, sessionId: SessionId, options: DialogOptions, defaultValue: any) => {
         this.showDialogRequested.emit({

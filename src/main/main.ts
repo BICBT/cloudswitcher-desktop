@@ -1,27 +1,35 @@
 import 'reflect-metadata';
 import * as path from 'path';
 import * as os from 'os';
-import * as fs from 'fs';
 import { app, BrowserWindow, ipcMain } from 'electron';
 import * as isDev from 'electron-is-dev';
+import * as SegfaultHandler from 'segfault-handler';
 import { isMac } from '../common/util';
+import { Container } from 'typedi';
+import { SourceService } from '../service/SourceService';
+import { ObsService } from '../service/ObsService';
+import { ServiceManager } from '../service/ServiceManager';
 
-const packageJson: { version: string } =
-  JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../package.json'), 'utf-8'));
+// register segfault handler
+SegfaultHandler.registerHandler("crash.log", function(signal, address, stack) {
+  console.log(`Native crash appeared: ${stack}`);
+});
 
-const title = `CloudSwitcher - ${packageJson.version}`;
+const title = `CloudSwitcher`;
 const loadUrl = isDev ? 'http://localhost:3000' : `file://${path.join(__dirname, '../index.html')}`;
 
-let workerWindow: BrowserWindow | undefined;
 let mainWindow: BrowserWindow | undefined;
 let dialogWindow: BrowserWindow | undefined;
 let externalWindow: BrowserWindow | undefined;
+
+const serviceManager = Container.get(ServiceManager);
+const sourceService = Container.get(SourceService);
+const obsService = Container.get(ObsService);
 
 function openDevTools() {
   mainWindow?.webContents.openDevTools();
   dialogWindow?.webContents.openDevTools();
   externalWindow?.webContents.openDevTools();
-  workerWindow?.webContents.openDevTools();
 }
 
 async function startApp() {
@@ -29,19 +37,47 @@ async function startApp() {
     app.quit()
     return;
   }
-  // Worker Window
-  workerWindow = new BrowserWindow({
-    title: 'Worker Window',
-    show: false,
+  await serviceManager.initializeAll();
+  mainWindow = new BrowserWindow({
+    title: title,
+    maximizable: true,
     webPreferences: {
       nodeIntegration: true,
       enableRemoteModule: true,
-    },
+    }
   });
-  await workerWindow.loadURL(`${loadUrl}?window=worker`);
+  mainWindow.removeMenu();
+  await mainWindow.loadURL(`${loadUrl}?window=main`);
+  mainWindow.setFullScreen(true);
+  mainWindow.on('closed', () => {
+    obsService.close();
+    app.exit(0);
+  });
+
+  // shortcuts
+  mainWindow.webContents.on('before-input-event', (event, input) => {
+    ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '='].forEach((key, index) => {
+      if (input.key === key) {
+        if (input.control) {
+          sourceService.previewByIndex(index);
+        } else {
+          sourceService.takeByIndex(index);
+        }
+      }
+    });
+  });
+
+
+  if (isDev) {
+    mainWindow.webContents.on('before-input-event', (event, input) => {
+      if (input.key === 'F12') {
+        openDevTools();
+      }
+    });
+  }
 }
 
-// Fix windows scale factor
+app.allowRendererProcessReuse = false;
 if (os.platform() === 'win32') {
   app.commandLine.appendSwitch('high-dpi-support', '1');
   app.commandLine.appendSwitch('force-device-scale-factor', '1');
@@ -55,19 +91,10 @@ app.on('window-all-closed', () => {
   }
 });
 
-// Main window
-ipcMain.on('workerInitialized', async () => {
-  mainWindow = new BrowserWindow({
-    title: title,
-    maximizable: true,
-    webPreferences: {
-      nodeIntegration: true,
-      enableRemoteModule: true,
-    }
-  });
-  mainWindow.removeMenu();
-  await mainWindow.loadURL(`${loadUrl}?window=main`);
-  mainWindow.setFullScreen(true);
+app.on('activate', async () => {
+  if (mainWindow === null) {
+    await startApp();
+  }
 });
 
 // Dialog window
@@ -76,14 +103,13 @@ ipcMain.on('showDialog', async (event, sessionId, options, defaultValue) => {
     dialogWindow?.webContents.send('showDialog', sessionId, options, defaultValue);
     dialogWindow.show();
   } else {
+    // noinspection RedundantConditionalExpressionJS
     dialogWindow = new BrowserWindow({
       title: title,
       parent: isMac() ? undefined : mainWindow,
-      modal: true,
+      modal: isMac() ? false : true,
       frame: false,
       titleBarStyle: 'hidden',
-      show: false,
-      fullscreen: false,
       webPreferences: {
         nodeIntegration: true,
         enableRemoteModule: true,
@@ -127,8 +153,8 @@ ipcMain.on('showExternalWindow', async (event, layouts) => {
 
 // Show renderer log in main
 const color = (str: string) => `\x1b[35m${str}\x1b[0m`;
-ipcMain.on('logMsg', (event, level, message, ...args) => {
-  (console as any)[level](`${color('[renderer]')}${message}`, args);
+ipcMain.on('logMsg', (event, level, windowName, message, ...args) => {
+  (console as any)[level](`${color(`[${windowName}]`)}${message}`, args);
 });
 
 // Open DevTools

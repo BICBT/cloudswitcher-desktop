@@ -1,13 +1,13 @@
 import { Container, Service } from 'typedi';
-import { ipcRenderer } from 'electron';
-import { as, broadcastMessage, isWorkerWindow } from '../common/util';
+import { ipcMain, ipcRenderer, webContents } from 'electron';
 import * as uuid from 'uuid';
+import { as, isMainProcess } from '../common/util';
 import { SimpleEvent } from '../common/event';
-import { ServiceBase, ServiceManager, ServiceName } from './ServiceManager';
+import { ServiceBase } from './ServiceBase';
 
 export interface IpcMessage {
   sessionId: string;
-  serviceName: ServiceName;
+  serviceName: string;
   method: string;
   args: any[];
 }
@@ -17,7 +17,6 @@ export interface IpcResult {
   result?: unknown;
   error?: unknown;
 }
-
 
 export interface IpcEventMessage {
   eventName: string;
@@ -33,22 +32,14 @@ const IpcMessageChannel = 'ipc-message';
 const IpcResultChannel = 'ipc-result';
 const IpcEventChannel = 'ipc-event';
 
-export function ExecuteInWorkerProcess() {
-  const serviceManager = Container.get(ServiceManager);
-  const ipcService = Container.get(IpcService);
+export function ExecuteInMainProcess() {
   return function(target: unknown, property: string, descriptor: PropertyDescriptor) {
-    descriptor.value = (...args: any[]) => {
-      if (isWorkerWindow()) {
-        return descriptor.value.apply(target, args);
+    const origin = descriptor.value;
+    descriptor.value = function (...args: any[]) {
+      if (isMainProcess()) {
+        return origin.apply(this, args);
       } else {
-        if (!(target instanceof ServiceBase)) {
-          throw new Error(`target is not a instance of ServiceBase`);
-        }
-        const serviceName = serviceManager.getServiceName(target);
-        if (!serviceName) {
-          throw new Error(`service name not found`);
-        }
-        return ipcService.executeInWorkerProcess(serviceName, property, args);
+        return Container.get(IpcService).executeInMainProcess(this, property, args);
       }
     };
   };
@@ -58,45 +49,56 @@ export class IpcEvent<T> extends SimpleEvent<T> {
 
   public constructor(private readonly eventName: string) {
     super();
-    ipcRenderer.on(IpcEventChannel, (event, message: IpcEventMessage) => {
-      if (message.eventName === this.eventName) {
-        super.emit(message.data);
-      }
-    });
+    if (!isMainProcess()) {
+      ipcRenderer.on(IpcEventChannel, (event, message: IpcEventMessage) => {
+        if (message.eventName === this.eventName) {
+          super.emit(message.data);
+        }
+      });
+    }
   }
 
   public emit(data: T): void {
-    broadcastMessage(IpcEventChannel, as<IpcEventMessage>({
-      eventName: this.eventName,
-      data: data,
-    }));
+    super.emit(data);
+    if (isMainProcess()) {
+      webContents.getAllWebContents().forEach(webContents => {
+        webContents.send(IpcEventChannel, as<IpcEventMessage>({
+          eventName: this.eventName,
+          data: data,
+        }));
+      });
+    }
   }
 }
 
 @Service()
 export class IpcService extends ServiceBase {
   private readonly resolvers: Map<string, Resolver> = new Map<string, Resolver>();
-  private readonly serviceManager = Container.get(ServiceManager);
+  private readonly services: object[] = [];
 
-  public async init(): Promise<void> {
-    if (isWorkerWindow()) {
+  public async initialize(): Promise<void> {
+    if (isMainProcess()) {
       // handle message
-      ipcRenderer.on(IpcMessageChannel, async (event, message: IpcMessage) => {
-        const service = this.serviceManager.getService(message.serviceName);
-        if (!service) {
-          throw new Error(`Service ${message.serviceName} not existed.`);
-        }
+      ipcMain.on(IpcMessageChannel, async (event, message: IpcMessage) => {
         try {
-          let result = ((service as any)[message.method] as Function).apply(service, message.args);
-          if (result instanceof Promise) {
-            result = await result;
+          const service = this.services.find(s => s.constructor.name === message.serviceName);
+          if (!service) {
+            // noinspection ExceptionCaughtLocallyJS
+            throw new Error(`Service ${message.serviceName} not existed.`);
           }
-          ipcRenderer.send(IpcResultChannel, as<IpcResult>({
+          let result = ((service as any)[message.method] as Function).apply(service, message.args);
+          if (!(result instanceof Promise)) {
+            // noinspection ExceptionCaughtLocallyJS
+            throw new Error(`Method execute in main should always return Promise.`);
+          }
+          result = await result;
+          event.sender.send(IpcResultChannel, as<IpcResult>({
             sessionId: message.sessionId,
             result: result,
           }));
         } catch (e: unknown) {
-          ipcRenderer.send(IpcResultChannel, as<IpcResult>({
+          console.error(`Failed to execute ipc message`, e);
+          event.sender.send(IpcResultChannel, as<IpcResult>({
             sessionId: message.sessionId,
             error: e,
           }));
@@ -117,11 +119,15 @@ export class IpcService extends ServiceBase {
     }
   }
 
-  public executeInWorkerProcess(serviceName: ServiceName, method: string, args: any[]): Promise<void> {
+  public registerServices(services: object[]) {
+    this.services.push(...services);
+  }
+
+  public executeInMainProcess(service: any, method: string, args: any[]): Promise<void> {
     const sessionId = uuid.v4();
     ipcRenderer.send(IpcMessageChannel, as<IpcMessage>({
       sessionId: sessionId,
-      serviceName: serviceName,
+      serviceName: service.constructor.name,
       method: method,
       args: args,
     }));

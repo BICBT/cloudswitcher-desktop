@@ -43,6 +43,7 @@ export class PVWKeyboard extends React.Component<{}, PVWKeyboardState> {
   }
 
   public componentWillUnmount() {
+    this.sourceService.sourcesChanged.off(this);
     this.sourceService.previewChanged.off(this);
   }
 

@@ -2,13 +2,13 @@
 object MainWindow
 object ExternalWindow
 object DialogWindow
-object WorkerWindow
 object MainProcess
 
-MainWindow -down-> MainProcess: @ExecuteInWorkerProcess()
-ExternalWindow -down-> MainProcess: @ExecuteInWorkerProcess()
-DialogWindow -down-> MainProcess: @ExecuteInWorkerProcess()
-MainProcess -down-> WorkerWindow
-WorkerWindow .up.->MainProcess: IpcEvent
+MainWindow -down-> MainProcess: @ExecuteInMainProcess()
+ExternalWindow -down-> MainProcess: @ExecuteInMainProcess()
+DialogWindow -down-> MainProcess: @ExecuteInMainProcess()
+MainProcess .up.> MainWindow: IpcEvent
+MainProcess .up.> ExternalWindow: IpcEvent
+MainProcess .up.> DialogWindow: IpcEvent
 
 @enduml

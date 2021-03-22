@@ -5,29 +5,9 @@ import { ExternalWindow } from './component/screens/ExternalWindow/ExternalWindo
 import { Main } from './component/screens/Main/Main';
 import { Studio } from './component/screens/Studio/Studio';
 
-type AppState = {
-  initialized: boolean;
-};
-
-export class App extends React.Component<{}, AppState> {
-
-  constructor(props: {}) {
-    super(props);
-    this.state = {
-      initialized: false,
-    };
-  }
-
-  async componentDidMount() {
-    this.setState({
-      initialized: true,
-    });
-  }
+export class App extends React.Component {
 
   public render() {
-    if (!this.state.initialized) {
-      return <></>;
-    }
     if (isDialogWindow()) {
       return <DialogWindow />;
     } else if (isExternalWindow()) {
