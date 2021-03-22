@@ -5,8 +5,8 @@ import { sequence } from '../../../common/util';
 import { SOURCE_COUNT } from '../../../common/constant';
 import { MixerItem } from './MixerItem';
 import { Checkbox } from '@chakra-ui/react';
-import { AudioService } from '../../../service/audioService';
-import { SourceService } from '../../../service/sourceService';
+import { AudioService } from '../../../service/AudioService';
+import { SourceService } from '../../../service/SourceService';
 import { Source } from '../../../common/types';
 
 export interface AudioMixerState {
@@ -23,11 +23,7 @@ export class AudioMixer extends React.Component<{}, AudioMixerState> {
     this.state = {};
   }
 
-  public componentDidMount() {
-    this.setState({
-      sources: this.sourceService.sources,
-      audioWithVideo: this.audioService.audio.audioWithVideo,
-    })
+  public async componentDidMount() {
     this.sourceService.sourcesChanged.on(this, sources => {
       this.setState({
         sources: sources,
@@ -37,6 +33,10 @@ export class AudioMixer extends React.Component<{}, AudioMixerState> {
       this.setState({
         audioWithVideo: audio.audioWithVideo,
       });
+    })
+    this.setState({
+      sources: await this.sourceService.getSources(),
+      audioWithVideo: (await this.audioService.getAudio())?.audioWithVideo,
     })
   }
 
@@ -86,9 +86,9 @@ export class AudioMixer extends React.Component<{}, AudioMixerState> {
     );
   }
 
-  private handleAudioWithVideoChanged(event: ChangeEvent<HTMLInputElement>) {
+  private async handleAudioWithVideoChanged(event: ChangeEvent<HTMLInputElement>) {
     const audioWithVideo = event.target.checked || false;
-    this.audioService.updateAudio({
+    await this.audioService.updateAudio({
       audioWithVideo: audioWithVideo,
     });
   }

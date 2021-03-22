@@ -1,7 +1,7 @@
 import './Preview.scss';
 import React from 'react';
 import { Container } from 'typedi';
-import { SourceService } from '../../../service/sourceService';
+import { SourceService } from '../../../service/SourceService';
 import { DisplayView } from '../../shared/Display/DisplayView';
 import { Source } from '../../../common/types';
 
@@ -14,16 +14,17 @@ export class Preview extends React.Component<{}, PreviewState> {
 
   constructor(props: {}) {
     super(props);
-    this.state = {
-      previewSource: this.sourceService.previewSource,
-    };
+    this.state = {};
   }
 
-  public componentDidMount() {
-    this.sourceService.previewChanged.on(this, source => {
+  public async componentDidMount() {
+    this.sourceService.previewChanged.on(this, event => {
       this.setState({
-        previewSource: source,
+        previewSource: event.current,
       })
+    });
+    this.setState({
+      previewSource: await this.sourceService.getPreviewSource(),
     });
   }
 

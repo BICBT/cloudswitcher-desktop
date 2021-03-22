@@ -1,7 +1,7 @@
 import './TransitionView.scss';
 import React, { ChangeEvent } from 'react';
 import { Container } from 'typedi';
-import { SourceService } from '../../../service/sourceService';
+import { SourceService } from '../../../service/SourceService';
 import { TransitionType } from '../../../common/types';
 
 const transitions = [
@@ -58,8 +58,9 @@ export class TransitionView extends React.Component<{}, TransitionViewState> {
   }
 
   private async onTakeClicked(transitionType: TransitionType) {
-    if (this.sourceService.previewSource) {
-      await this.sourceService.take(this.sourceService.previewSource, transitionType, 3000);
+    const source = await this.sourceService.getPreviewSource();
+    if (source) {
+      await this.sourceService.take(source, transitionType);
     }
   }
 }

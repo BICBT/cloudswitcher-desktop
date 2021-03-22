@@ -2,8 +2,8 @@ import './PGMKeyboard.scss';
 import React from 'react';
 import { KeyView } from './KeyView';
 import { Container } from 'typedi';
-import { SourceService } from '../../../service/sourceService';
-import { Transition } from '../../../common/types';
+import { SourceService } from '../../../service/SourceService';
+import { Source, Transition } from '../../../common/types';
 
 const keyNames = [
   '1', '2', '3', '4', '5', '6', '7', '8', '9',
@@ -11,6 +11,7 @@ const keyNames = [
 ];
 
 export class PGMKeyboardState {
+  sources: Record<number, Source>;
   programTransition?: Transition;
 }
 
@@ -20,15 +21,24 @@ export class PGMSKeyboard extends React.Component<{}, PGMKeyboardState> {
   constructor(props: {}) {
     super(props);
     this.state = {
-      programTransition: this.sourceService.programTransition,
+      sources: {},
     };
   }
 
-  public componentDidMount() {
-    this.sourceService.programChanged.on(this, transition => {
+  public async componentDidMount() {
+    this.sourceService.sourcesChanged.on(this, sources => {
       this.setState({
-        programTransition: transition,
+        sources: sources,
       });
+    });
+    this.sourceService.programChanged.on(this, event => {
+      this.setState({
+        programTransition: event.current,
+      });
+    });
+    this.setState({
+      sources: await this.sourceService.getSources(),
+      programTransition: await this.sourceService.getProgramTransition(),
     });
   }
 
@@ -43,13 +53,13 @@ export class PGMSKeyboard extends React.Component<{}, PGMKeyboardState> {
         <div className='keyboard'>
           {
             keyNames.map((name, index) => {
-              const source = this.sourceService.sources[index];
+              const source = this.state.sources[index];
               return (
                 <KeyView
                   key={name}
                   name={name}
                   isPreview={false}
-                  isProgram={!!source && this.state.programTransition?.source?.id === source.id}
+                  isProgram={!!source && this.state.programTransition?.source.id === source.id}
                   onButtonClicked={() => this.onKeyClicked(index)}
                 />
               );
@@ -59,10 +69,10 @@ export class PGMSKeyboard extends React.Component<{}, PGMKeyboardState> {
       </div>
     );
   }
-  private onKeyClicked(index: number) {
-    const source = this.sourceService.sources[index];
+  private async onKeyClicked(index: number) {
+    const source = this.state.sources[index];
     if (source) {
-      this.sourceService.take(source);
+      await this.sourceService.take(source);
     }
   }
 }

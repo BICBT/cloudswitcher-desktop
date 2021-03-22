@@ -1,49 +1,30 @@
 import 'reflect-metadata';
 import * as path from 'path';
 import * as os from 'os';
-import * as fs from 'fs';
 import { app, BrowserWindow, ipcMain } from 'electron';
 import * as isDev from 'electron-is-dev';
-import * as dotenv from 'dotenv';
-import { Container } from 'typedi';
-
-// TODO: load env from local path when in the production, remove this in the future
-if (!isDev) {
-  dotenv.config({ path: path.join(__dirname, '../server.env') });
-}
-
-import { SourceService } from './service/sourceService';
-import { AtemService } from './service/atemService';
-import { ATEM_DEVICE_IP, ENABLE_ATEM } from '../common/constant';
-import { BoserService } from "./service/boserService";
-import { ENABLE_BOSER } from '../common/constant'
-import { ObsService } from './service/obsService';
-import { AudioService } from './service/audioService';
-import { CGService } from './service/cgService';
+import * as SegfaultHandler from 'segfault-handler';
 import { isMac } from '../common/util';
-import { MediaService } from './service/mediaService';
+import { Container } from 'typedi';
+import { SourceService } from '../service/SourceService';
+import { ObsService } from '../service/ObsService';
+import { ServiceManager } from '../service/ServiceManager';
 
-// TODO: load env from local path when in the production, remove this in the future
-if (!isDev) {
-  dotenv.config({ path: path.join(__dirname, '../server.env') });
-}
+// register segfault handler
+SegfaultHandler.registerHandler("crash.log", function(signal, address, stack) {
+  console.log(`Native crash appeared: ${stack}`);
+});
 
-const packageJson: { version: string } =
-  JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../package.json'), 'utf-8'));
-const title = `CloudSwitcher - ${packageJson.version}`;
-
+const title = `CloudSwitcher`;
 const loadUrl = isDev ? 'http://localhost:3000' : `file://${path.join(__dirname, '../index.html')}`;
-const sourceService = Container.get(SourceService);
-const atemService = Container.get(AtemService);
-const boserService = Container.get(BoserService);
-const obsService = Container.get(ObsService);
-const audioService = Container.get(AudioService);
-const cgService = Container.get(CGService);
-const mediaService = Container.get(MediaService);
 
 let mainWindow: BrowserWindow | undefined;
 let dialogWindow: BrowserWindow | undefined;
 let externalWindow: BrowserWindow | undefined;
+
+const serviceManager = Container.get(ServiceManager);
+const sourceService = Container.get(SourceService);
+const obsService = Container.get(ObsService);
 
 function openDevTools() {
   mainWindow?.webContents.openDevTools();
@@ -56,24 +37,7 @@ async function startApp() {
     app.quit()
     return;
   }
-  try {
-    await sourceService.initialize();
-    await audioService.initialized();
-    await cgService.initialize();
-    await mediaService.initialize();
-    if (ENABLE_ATEM) {
-      await atemService.initialize(ATEM_DEVICE_IP);
-    }
-    if (ENABLE_BOSER) {
-      await boserService.initialize();
-    }
-  } catch (e) {
-    console.error(`Failed to start app: ${e}`);
-    app.quit();
-    return;
-  }
-
-  // Main window
+  await serviceManager.initializeAll();
   mainWindow = new BrowserWindow({
     title: title,
     maximizable: true,
@@ -119,36 +83,15 @@ async function startApp() {
       }
     });
   }
-
-  // Dialog window
-  dialogWindow = new BrowserWindow({
-    title: title,
-    parent: isMac() ? undefined : mainWindow,
-    modal: true,
-    frame: false,
-    titleBarStyle: 'hidden',
-    show: false,
-    fullscreen: false,
-    webPreferences: {
-      nodeIntegration: true,
-      enableRemoteModule: true,
-    },
-  });
-  dialogWindow.removeMenu();
-  dialogWindow.loadURL(`${loadUrl}?window=dialog`);
-  dialogWindow.on('close', e => {
-    // Prevent the window from actually closing
-    e.preventDefault();
-  });
 }
 
-// Fix windows scale factor
+app.allowRendererProcessReuse = false;
 if (os.platform() === 'win32') {
   app.commandLine.appendSwitch('high-dpi-support', '1');
   app.commandLine.appendSwitch('force-device-scale-factor', '1');
 }
 
-app.on('ready', startApp);
+app.on('ready', () => startApp());
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
@@ -156,22 +99,36 @@ app.on('window-all-closed', () => {
   }
 });
 
-app.on('activate', () => {
+app.on('activate', async () => {
   if (mainWindow === null) {
-    startApp();
+    await startApp();
   }
 });
 
-// Show renderer log in main
-const color = (str: string) => `\x1b[35m${str}\x1b[0m`;
-ipcMain.on('logMsg', (event, level, message, ...args) => {
-  (console as any)[level](`${color('[renderer]')}${message}`, args);
-});
-
-// Dialog
-ipcMain.on('showDialog', (event, sessionId, options, defaultValue) => {
+// Dialog window
+ipcMain.on('showDialog', async (event, sessionId, options, defaultValue) => {
   if (dialogWindow) {
-    dialogWindow.webContents.send('showDialog', sessionId, options, defaultValue);
+    dialogWindow?.webContents.send('showDialog', sessionId, options, defaultValue);
+    dialogWindow.show();
+  } else {
+    // noinspection RedundantConditionalExpressionJS
+    dialogWindow = new BrowserWindow({
+      title: title,
+      parent: isMac() ? undefined : mainWindow,
+      modal: isMac() ? false : true,
+      frame: false,
+      titleBarStyle: 'hidden',
+      webPreferences: {
+        nodeIntegration: true,
+        enableRemoteModule: true,
+      },
+    });
+    dialogWindow.removeMenu();
+    await dialogWindow.loadURL(`${loadUrl}?window=dialog`);
+    dialogWindow.on('close', e => {
+      // Prevent the window from actually closing
+      e.preventDefault();
+    });
   }
 });
 
@@ -179,16 +136,11 @@ ipcMain.on('dialogClosed', (event, sessionId, result) => {
   mainWindow?.webContents.send('dialogClosed', sessionId, result);
 });
 
-// Open DevTools
-ipcMain.on('openDevTools', () => {
-  openDevTools();
-});
-
 // External window
-ipcMain.on('showExternalWindow', (event, layouts) => {
+ipcMain.on('showExternalWindow', async (event, layouts) => {
   if (externalWindow) {
-    externalWindow.show();
     externalWindow.webContents.send('layoutsUpdated', layouts);
+    externalWindow.show();
   } else {
     externalWindow = new BrowserWindow({
       title: title,
@@ -200,11 +152,22 @@ ipcMain.on('showExternalWindow', (event, layouts) => {
       }
     });
     externalWindow.removeMenu();
-    externalWindow.loadURL(`${loadUrl}?window=external&layouts=${layouts}`);
+    await externalWindow.loadURL(`${loadUrl}?window=external&layouts=${layouts}`);
     externalWindow.on('close', () => {
       externalWindow = undefined;
     });
   }
+});
+
+// Show renderer log in main
+const color = (str: string) => `\x1b[35m${str}\x1b[0m`;
+ipcMain.on('logMsg', (event, level, windowName, message, ...args) => {
+  (console as any)[level](`${color(`[${windowName}]`)}${message}`, args);
+});
+
+// Open DevTools
+ipcMain.on('openDevTools', () => {
+  openDevTools();
 });
 
 // Exit

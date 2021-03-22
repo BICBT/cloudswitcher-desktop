@@ -1,7 +1,7 @@
 import './SourceView.scss';
 import React from 'react';
 import { Container } from 'typedi';
-import { SourceService } from '../../../service/sourceService';
+import { SourceService } from '../../../service/SourceService';
 import { DisplayView } from '../../shared/Display/DisplayView';
 import { Source } from '../../../common/types';
 
@@ -78,9 +78,9 @@ export class SourceView extends React.Component<SourceViewProps, SourceViewState
     );
   }
 
-  private onRestartClicked() {
+  private async onRestartClicked() {
     if (this.state.source) {
-      this.sourceService.restart(this.state.source);
+      await this.sourceService.restart(this.state.source);
     }
   }
 }

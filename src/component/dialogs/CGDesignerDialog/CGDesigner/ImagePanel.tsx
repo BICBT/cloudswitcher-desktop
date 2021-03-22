@@ -3,7 +3,7 @@ import React, { ChangeEvent, Component, KeyboardEvent } from 'react';
 import { fabric } from 'fabric';
 import { Input, List } from 'antd';
 import { Container } from 'typedi';
-import { MediaService } from '../../../../service/mediaService';
+import { MediaService } from '../../../../service/MediaService';
 import { Image } from '../../../../common/types';
 
 interface LeftPanelProps {
@@ -27,17 +27,8 @@ export class ImagePanel extends Component<LeftPanelProps, LeftPanelState> {
     };
   }
 
-  public componentDidMount() {
-    this.mediaService.searchImagesResult.on(this, images => {
-      this.setState({
-        images: images,
-      })
-    });
-    this.searchImages();
-  }
-
-  public componentWillUnmount() {
-    this.mediaService.searchImagesResult.off(this);
+  public async componentDidMount() {
+    await this.searchImages();
   }
 
   public render() {
@@ -81,7 +72,9 @@ export class ImagePanel extends Component<LeftPanelProps, LeftPanelState> {
     this.props.handleImageAddClicked(url);
   }
 
-  private searchImages() {
-    this.mediaService.searchImages(this.state.search);
+  private async searchImages() {
+    this.setState({
+      images: await this.mediaService.searchImages(this.state.search),
+    })
   }
 }

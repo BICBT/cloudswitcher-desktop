@@ -1,16 +1,33 @@
-import { remote, webContents } from 'electron';
+import { remote } from 'electron';
+
+export function as<T>(value: T): T {
+  return value;
+}
+
+export function isMainProcess() {
+  return !(process && process.type === 'renderer');
+}
 
 export function isMainWindow() {
+  if (isMainProcess()) {
+    return false;
+  }
   const url = new URL(window.location.href);
   return url.searchParams.get('window') === 'main';
 }
 
 export function isDialogWindow() {
+  if (isMainProcess()) {
+    return false;
+  }
   const url = new URL(window.location.href);
   return url.searchParams.get('window') === 'dialog';
 }
 
 export function isExternalWindow() {
+  if (isMainProcess()) {
+    return false;
+  }
   const url = new URL(window.location.href);
   return url.searchParams.get('window') === 'external';
 }
@@ -46,10 +63,4 @@ export function replaceUrlParams(url: string, params: object) {
     url = url.replace(`:${key}`, value);
   });
   return url;
-}
-
-export function broadcastMessage(channel: string, ...args: any[]) {
-  webContents.getAllWebContents().forEach(webContents => {
-    webContents.send(channel, ...args);
-  });
 }

@@ -3,7 +3,7 @@ import React from 'react';
 import { Container } from 'typedi';
 import { sequence } from '../../../common/util';
 import { SourceView } from './SourceView';
-import { SourceService } from '../../../service/sourceService';
+import { SourceService } from '../../../service/SourceService';
 import { Source, Transition } from '../../../common/types';
 
 type SourcesProps = {
@@ -33,27 +33,30 @@ export class Sources extends React.Component<SourcesProps, SourcesState> {
     this.state = {
       rows: props.rows,
       sourceCount: props.sourceCount,
-      sources: this.sourceService.sources,
-      previewSource: this.sourceService.previewSource,
-      programTransition: this.sourceService.programTransition,
+      sources: {},
     };
   }
 
-  public componentDidMount() {
+  public async componentDidMount() {
     this.sourceService.sourcesChanged.on(this, sources => {
       this.setState({
         sources: sources
       });
     });
-    this.sourceService.previewChanged.on(this, source => {
+    this.sourceService.previewChanged.on(this, event => {
       this.setState({
-        previewSource: source,
+        previewSource: event.current,
       })
     });
-    this.sourceService.programChanged.on(this, transition => {
+    this.sourceService.programChanged.on(this, event => {
       this.setState({
-        programTransition: transition,
+        programTransition: event.current,
       })
+    });
+    this.setState({
+      sources: await this.sourceService.getSources(),
+      previewSource: await this.sourceService.getPreviewSource(),
+      programTransition: await this.sourceService.getProgramTransition(),
     });
   }
 

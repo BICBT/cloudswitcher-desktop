@@ -10,6 +10,8 @@ import { App } from './App';
 import { ChakraProvider } from '@chakra-ui/react';
 import { BrowserRouter } from "react-router-dom";
 import axios from "axios";
+import { Container } from 'typedi';
+import { ServiceManager } from './service/ServiceManager';
 
 //request interceptor to add token in header
 axios.interceptors.request.use(function (config) {
@@ -23,14 +25,20 @@ axios.interceptors.request.use(function (config) {
   return Promise.reject(error);
 });
 
-// wrap control log
-['log', 'debug', 'info', 'warn', 'errpr'].forEach(level => {
+// Output log in main process
+const url = new URL(window.location.href);
+const windowName = url.searchParams.get('window');
+['log', 'debug', 'info', 'warn', 'error'].forEach(level => {
   const origin = (console as any)[level];
   (console as any)[level] = (message: string, ...args: any) => {
     origin(message, ...args);
-    ipcRenderer.send('logMsg', level, message, ...args);
+    ipcRenderer.send('logMsg', level, windowName, message, ...args);
   }
 });
+
+(async () => {
+  const serviceManager = Container.get(ServiceManager);
+  await serviceManager.initializeAll();
 
 ReactDOM.render(
   <ChakraProvider>
@@ -41,7 +49,8 @@ ReactDOM.render(
   document.getElementById('root')
 );
 
-// If you want your app to work offline and load faster, you can change
-// unregister() to register() below. Note this comes with some pitfalls.
-// Learn more about service workers: https://bit.ly/CRA-PWA
-serviceWorker.unregister();
+  // If you want your app to work offline and load faster, you can change
+  // unregister() to register() below. Note this comes with some pitfalls.
+  // Learn more about service workers: https://bit.ly/CRA-PWA
+  serviceWorker.unregister();
+})();

@@ -2,7 +2,7 @@ import './Toolbar.scss';
 import React, { ChangeEvent, Component } from 'react';
 import { fabric } from 'fabric';
 import { SketchPicker } from 'react-color';
-import { SourceService } from '../../../../service/sourceService';
+import { SourceService } from '../../../../service/SourceService';
 import { Container } from 'typedi';
 
 interface ToolbarProps {
@@ -74,22 +74,11 @@ export class Toolbar extends Component<ToolbarProps, ToolbarState> {
   }
 
   componentDidMount() {
-    this.sourceSource.screenshotted.on(this, ({ base64 }) => {
-      fabric.Image.fromURL(`data:image/png;base64,${base64}`, (image) => {
-        image.scaleToWidth(this.props.canvas.width ?? 0);
-        this.props.canvas.backgroundImage = image;
-        this.props.canvas.renderAll();
-      });
-    });
     setTimeout(() => {
       this.setState({
         fontLoaded: true,
       });
     }, 0);
-  }
-
-  componentWillUnmount() {
-    this.sourceSource.screenshotted.off(this);
   }
 
   render() {
@@ -178,14 +167,19 @@ export class Toolbar extends Component<ToolbarProps, ToolbarState> {
     this.props.handleAddImageClicked();
   }
 
-  togglePreview = () => {
+  togglePreview = async () => {
     if (this.state.showPreview) {
       this.props.canvas.backgroundImage = undefined;
       this.props.canvas.renderAll();
     } else {
-      const previewSource = this.sourceSource.previewSource;
+      const previewSource = await this.sourceSource.getPreviewSource();
       if (previewSource) {
-        this.sourceSource.screenshot(previewSource);
+        const imageBase64 = await this.sourceSource.screenshot(previewSource);
+        fabric.Image.fromURL(`data:image/png;base64,${imageBase64}`, (image) => {
+          image.scaleToWidth(this.props.canvas.width ?? 0);
+          this.props.canvas.backgroundImage = image;
+          this.props.canvas.renderAll();
+        });
       }
     }
     this.setState({
