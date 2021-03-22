@@ -4,6 +4,9 @@ import { DialogWindow } from './component/dialogs/DialogWindow/DialogWindow';
 import { ExternalWindow } from './component/screens/ExternalWindow/ExternalWindow';
 import { Main } from './component/screens/Main/Main';
 import { Studio } from './component/screens/Studio/Studio';
+import { Login } from './component/screens/Login/Login'
+import { SelectSwitcher } from './component/screens/SelectSwitcher/SelectSwitcher'
+import { Switch, Route } from 'react-router-dom';
 
 export class App extends React.Component {
 
@@ -16,9 +19,17 @@ export class App extends React.Component {
       return <ExternalWindow layouts={layouts} />
     } else {
       return (
-        <Main>
-          <Studio />
-        </Main>
+        <div className="App night-theme">
+          <Switch>
+            <Route path='/' exact component={Login} />
+            <Route path='/select' exact component={SelectSwitcher} />
+            <Route path="/main" exact>
+              <Main>
+                <Studio />
+              </Main>
+            </Route>
+          </Switch>
+        </div>
       );
     }
   }

@@ -41,14 +41,15 @@ async function startApp() {
   mainWindow = new BrowserWindow({
     title: title,
     maximizable: true,
+    width: 450,
+    height: 550,
     webPreferences: {
       nodeIntegration: true,
       enableRemoteModule: true,
     }
   });
   mainWindow.removeMenu();
-  await mainWindow.loadURL(`${loadUrl}?window=main`);
-  mainWindow.setFullScreen(true);
+  mainWindow.loadURL(`${loadUrl}?window=main`);
   mainWindow.on('closed', () => {
     obsService.close();
     app.exit(0);
@@ -66,6 +67,13 @@ async function startApp() {
       }
     });
   });
+  if (isDev) {
+    mainWindow.webContents.on('before-input-event', (event, input) => {
+      if (input.key === 'F12') {
+        mainWindow?.webContents.openDevTools();
+      }
+    });
+  }
 
 
   if (isDev) {

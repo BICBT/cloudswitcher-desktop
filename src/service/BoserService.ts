@@ -5,7 +5,6 @@ import SerialPort from "serialport";
 import { AudioService } from './AudioService';
 import { ENABLE_PANEL } from '../common/constant';
 import { ServiceBase } from './ServiceBase';
-import { ExecuteInMainProcess } from './IpcService';
 import { isMainProcess } from '../common/util';
 
 const ByteLength = SerialPort.parsers.ByteLength;
