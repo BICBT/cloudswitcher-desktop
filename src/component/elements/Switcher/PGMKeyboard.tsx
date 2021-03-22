@@ -43,6 +43,7 @@ export class PGMSKeyboard extends React.Component<{}, PGMKeyboardState> {
   }
 
   public componentWillUnmount() {
+    this.sourceService.sourcesChanged.off(this);
     this.sourceService.programChanged.off(this);
   }
 
