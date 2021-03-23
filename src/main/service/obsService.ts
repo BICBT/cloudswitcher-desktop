@@ -57,6 +57,7 @@ export class ObsService {
       startOnActive: false,
       bufferSize: 0,
       enableBuffer: true,
+      reconnectDelaySec: 2,
     });
   }
 
