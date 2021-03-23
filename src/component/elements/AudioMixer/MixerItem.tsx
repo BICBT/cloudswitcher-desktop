@@ -98,17 +98,20 @@ export class MixerItem extends React.Component<MixerItemProps, MixerItemState> {
     return (
       <div className='MixerItem'>
         <div className='toolbar'>
-          <i className={`icon-button ${this.state.disabled ? 'disabled' : ''} ${this.state.audioMonitor ? 'active' : ''}`}
-             onClick={() => this.handleMonitorClicked()}>
-            {
-              this.state.audioMonitor ?
-              <i className='fas fa-headphones'/> :
-              <span className='fa-stack'>
-                <i className='fas fa-headphones fa-stack-1x'/>
-                <i className='fas fa-slash fa-stack-1x fa-xs'/>
-              </span>
-            }
-          </i>
+          {
+            !this.props.isPgm &&
+            <i className={`icon-button ${this.state.disabled ? 'disabled' : ''} ${this.state.audioMonitor ? 'active' : ''}`}
+               onClick={() => this.handleMonitorClicked()}>
+              {
+                this.state.audioMonitor ?
+                <i className='fas fa-headphones'/> :
+                <span className='fa-stack'>
+                  <i className='fas fa-headphones fa-stack-1x'/>
+                  <i className='fas fa-slash fa-stack-1x fa-xs'/>
+                </span>
+              }
+            </i>
+          }
           <div className='index'>
             {
               this.props.isPgm
