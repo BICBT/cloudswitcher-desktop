@@ -86,15 +86,18 @@ async function startApp() {
 
   // shortcuts
   mainWindow.webContents.on('before-input-event', (event, input) => {
-    ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '='].forEach((key, index) => {
-      if (input.key === key) {
-        if (input.control) {
-          sourceService.previewByIndex(index);
-        } else {
-          sourceService.takeByIndex(index);
+    if (input.type === 'keyDown') {
+      ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '='].forEach((key, index) => {
+        if (input.key === key) {
+          console.log(`key event: ${key}`);
+          if (input.control) {
+            sourceService.previewByIndex(index);
+          } else {
+            sourceService.takeByIndex(index);
+          }
         }
-      }
-    });
+      });
+    }
   });
 
 
