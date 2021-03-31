@@ -64,7 +64,7 @@ export class SourceService {
     this.previewChanged.emit({ lastSource, currentSource: this.previewSource });
   }
 
-  public async take(source: Source, transitionType: TransitionType, transitionDurationMs: number) {
+  public async take(source: Source, transitionType: TransitionType = TransitionType.Cut, transitionDurationMs: number = 2000) {
     const lastSource = this.programTransition?.source;
     this.programTransition = this.obsService.switchSource(lastSource, source, transitionType, transitionDurationMs);
     const currentSource = this.programTransition.source;
@@ -74,6 +74,9 @@ export class SourceService {
       lastSource: lastSource,
       currentSource: currentSource,
     });
+    if (lastSource) {
+      this.preview(lastSource);
+    }
   }
 
   public previewByIndex(index: number) {
@@ -83,7 +86,7 @@ export class SourceService {
     }
   }
 
-  public async takeByIndex(index: number, transitionType: TransitionType = TransitionType.Cut, transitionDurationMs: number = 1000) {
+  public async takeByIndex(index: number, transitionType: TransitionType = TransitionType.Cut, transitionDurationMs: number = 2000) {
     const source = this.sources[index];
     if (source) {
       await this.take(source, transitionType, transitionDurationMs);

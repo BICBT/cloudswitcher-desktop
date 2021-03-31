@@ -69,7 +69,7 @@ export class BoserService {
                         }
                     } else if ( receivedata[2] == 0x38 && receivedata[3] == 0x01){    //TAKE
                         if (this.sourceService.previewSource) {
-                            this.sourceService.take(this.sourceService.previewSource, TransitionType.Fade, 3000);
+                            this.sourceService.take(this.sourceService.previewSource, TransitionType.Fade);
                         }
                     }
                     break;
