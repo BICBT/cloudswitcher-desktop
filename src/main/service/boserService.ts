@@ -55,7 +55,7 @@ export class BoserService {
                         const pgmIndex = Number(receivedata[2]) - 17;
                         const pgmSource = this.sourceService.sources[pgmIndex];
                         if (pgmIndex >= 0 && pgmSource){
-                            this.sourceService.take(pgmSource, TransitionType.Cut, 0);
+                            this.sourceService.take(pgmSource);
                         }
                     } else if(24 < Number(receivedata[2]) && Number(receivedata[2]) <= 40 && receivedata[3] == 0x01){  //pvw switch
                         const pvwIndex = Number(receivedata[2]) - 33;
@@ -65,11 +65,11 @@ export class BoserService {
                         }
                     } else if ( receivedata[2] == 0x37 && receivedata[3] == 0x01){    //CUT
                         if (this.sourceService.previewSource) {
-                            this.sourceService.take(this.sourceService.previewSource, TransitionType.Cut, 0);
+                            this.sourceService.take(this.sourceService.previewSource, TransitionType.Cut, 0, true);
                         }
                     } else if ( receivedata[2] == 0x38 && receivedata[3] == 0x01){    //TAKE
                         if (this.sourceService.previewSource) {
-                            this.sourceService.take(this.sourceService.previewSource, TransitionType.Fade);
+                            this.sourceService.take(this.sourceService.previewSource, TransitionType.Fade, 2000, true);
                         }
                     }
                     break;

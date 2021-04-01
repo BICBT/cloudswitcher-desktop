@@ -46,7 +46,7 @@ export class SourceService {
     this.updateLiveUrl(output.previewUrl);
 
     ipcMain.on('preview', (event, source: Source) => this.preview(source));
-    ipcMain.on('take', (event, source: Source, transitionType: TransitionType, transitionDurationMs: number) => this.take(source, transitionType, transitionDurationMs));
+    ipcMain.on('take', (event, source: Source, transitionType: TransitionType, transitionDurationMs: number, swap: boolean) => this.take(source, transitionType, transitionDurationMs, swap));
     ipcMain.on('updateLiveUrl', (event, url: string) => this.updateLiveUrl(url));
     ipcMain.on('restart', (event, source: Source) => this.restart(source));
     ipcMain.on('updateSource', (event, source: Source, request: UpdateSourceRequest) => this.updateSource(source, request));
@@ -64,7 +64,7 @@ export class SourceService {
     this.previewChanged.emit({ lastSource, currentSource: this.previewSource });
   }
 
-  public async take(source: Source, transitionType: TransitionType = TransitionType.Cut, transitionDurationMs: number = 2000) {
+  public async take(source: Source, transitionType: TransitionType = TransitionType.Cut, transitionDurationMs: number = 2000, swap: boolean = false) {
     const lastSource = this.programTransition?.source;
     this.programTransition = this.obsService.switchSource(lastSource, source, transitionType, transitionDurationMs);
     const currentSource = this.programTransition.source;
@@ -74,22 +74,8 @@ export class SourceService {
       lastSource: lastSource,
       currentSource: currentSource,
     });
-    if (lastSource) {
+    if (swap && lastSource) {
       this.preview(lastSource);
-    }
-  }
-
-  public previewByIndex(index: number) {
-    const source = this.sources[index];
-    if (source) {
-      this.preview(source);
-    }
-  }
-
-  public async takeByIndex(index: number, transitionType: TransitionType = TransitionType.Cut, transitionDurationMs: number = 2000) {
-    const source = this.sources[index];
-    if (source) {
-      await this.take(source, transitionType, transitionDurationMs);
     }
   }
 

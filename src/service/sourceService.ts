@@ -61,8 +61,8 @@ export class SourceService {
     ipcRenderer.send('preview', source);
   }
 
-  public take(source: Source, transitionType: TransitionType = TransitionType.Cut, transitionDurationMs: number = 2000): void {
-    ipcRenderer.send('take', source, transitionType, transitionDurationMs);
+  public take(source: Source, transitionType: TransitionType = TransitionType.Cut, transitionDurationMs: number = 2000, swap: boolean = false): void {
+    ipcRenderer.send('take', source, transitionType, transitionDurationMs, swap);
   }
 
   public updateLiveUrl(url: string): void {

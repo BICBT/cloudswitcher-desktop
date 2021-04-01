@@ -30,7 +30,7 @@ export class AtemService {
       const index = Number(name) - 1;
       const source = this.sourceService.sources[index];
       if (source) {
-        this.sourceService.take(source, TransitionType.Cut, 0);
+        this.sourceService.take(source, TransitionType.Cut, 0, true);
       }
     });
 
