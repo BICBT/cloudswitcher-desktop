@@ -21,6 +21,7 @@ import { AudioService } from './service/audioService';
 import { CGService } from './service/cgService';
 import { isMac } from '../common/util';
 import { MediaService } from './service/mediaService';
+import { TransitionType } from '../common/types';
 
 const packageJson: { version: string } =
   JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../package.json'), 'utf-8'));
@@ -89,21 +90,22 @@ async function startApp() {
     if (input.type === 'keyDown') {
       ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '='].forEach((key, index) => {
         if (input.key === key) {
-          console.log(`key event: ${key}`);
-          if (input.control) {
-            sourceService.previewByIndex(index);
-          } else {
-            sourceService.takeByIndex(index);
+          const source = sourceService.sources[index];
+          if (source) {
+            if (input.control) {
+              sourceService.preview(source);
+            } else {
+              sourceService.take(source);
+            }
           }
         }
       });
     }
   });
 
-
   if (isDev) {
     mainWindow.webContents.on('before-input-event', (event, input) => {
-      if (input.key === 'F12') {
+      if (input.type === 'keyDown' && input.key === 'F12') {
         openDevTools();
       }
     });
