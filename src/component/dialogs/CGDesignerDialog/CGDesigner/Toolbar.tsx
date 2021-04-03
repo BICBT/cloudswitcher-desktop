@@ -261,6 +261,10 @@ export class Toolbar extends Component<ToolbarProps, ToolbarState> {
   }
 
   handleKeyEvents =(event: Event, input: Input) => {
+    const object = this.props.canvas?.getActiveObject();
+    if (object?.type === 'text' && (object as fabric.Textbox).isEditing) {
+      return;
+    }
     if (input.type === 'keyDown') {
       if (input.key === 'ArrowUp') {
         this.moveUp();
@@ -270,11 +274,11 @@ export class Toolbar extends Component<ToolbarProps, ToolbarState> {
         this.moveLeft();
       } else if (input.key === 'ArrowRight') {
         this.moveRight();
-      } else if (input.meta && input.key === 'c') {
+      } else if ((isMac() ? input.meta : input.control) && input.key === 'c') {
         this.copy();
       } else if ((isMac() ? input.meta : input.control) && input.key === 'v') {
         this.paste();
-      } else if (input.key === 'Backspace') {
+      } else if ((!isMac() && input.key === 'Delete') || (isMac() && input.key === 'Backspace')) {
         this.deleteObject();
       }
       this.props.canvas?.renderAll();
@@ -299,7 +303,6 @@ export class Toolbar extends Component<ToolbarProps, ToolbarState> {
   }
 
   private copy() {
-    console.log(`copy`);
     this.copiedObjects.length = 0;
     (this.props.canvas?.getActiveObjects() || []).forEach(o => {
       this.copiedObjects.push(fabric.util.object.clone(o));
@@ -307,7 +310,6 @@ export class Toolbar extends Component<ToolbarProps, ToolbarState> {
   }
 
   private paste() {
-    console.log(`paste`);
     this.copiedObjects.forEach(o => {
       const copied = fabric.util.object.clone(o);
       copied.left = (o.left ?? 0) + 10;
