@@ -76,6 +76,8 @@ export class CGDesigner extends React.Component<CGDesignerProps, CGDesignerState
       height: this.props.canvasHeight,
       preserveObjectStacking: true,
     });
+    // disable group controls
+    fabric.Group.prototype.hasControls = false;
     this.setState({
       canvas: canvas,
     }, () => {
