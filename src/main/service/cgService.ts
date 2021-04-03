@@ -50,8 +50,12 @@ export class CGService {
 
   public async updateCG(cg: CG) {
     try {
+      console.log(`cg = ${JSON.stringify(cg)}`);
       await axios.put(replaceUrlParams(UPDATE_OVERLAY_URL, { overlayId: cg.id }), cg);
       this.obsService.updateOverlay(cg);
+      if (cg.status === 'up') {
+        this.obsService.upOverlay(cg.id);
+      }
     } catch (e) {
       console.error(e);
     }
