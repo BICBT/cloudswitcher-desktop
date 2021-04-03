@@ -122,7 +122,6 @@ export class ObsService {
   public updateOverlay(overlay: Overlay) {
     obs.removeOverlay(overlay.id);
     obs.addOverlay(overlay);
-    overlay.status = 'down';
   }
 
   public removeOverlay(overlayId: string) {
