@@ -7,12 +7,12 @@ on:
       - master
 
 env:
+  ENV: ${{ github.ref == 'refs/heads/master' && 'prod' || 'test' }}
   OSS_BUCKET: ${{ secrets.OSS_BUCKET }}
   OSS_REGION: ${{ secrets.OSS_REGION }}
-  OSS_PREFIX: ${{ github.ref == 'refs/heads/master' && 'cloudswitcher-desktop' || 'cloudswitcher-desktop-test' }}
+  OSS_PREFIX: ${{ github.ref == 'refs/heads/master' && 'cloudswitcher-desktop' || 'cloudswitcher-desktop-test' }}/${{ github.sha }}
   ALICLOUD_ACCESS_KEY: ${{ secrets.OSS_ACCESS_KEY }}
   ALICLOUD_SECRET_KEY: ${{ secrets.OSS_SECRET_KEY }}
-  VERSION: ${{ github.sha }}
 
 jobs:
   build:
