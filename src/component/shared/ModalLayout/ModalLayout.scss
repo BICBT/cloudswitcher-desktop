@@ -17,12 +17,6 @@
   }
 }
 
-.modal-layout--w-side-menu {
-  .modal-layout-content {
-    overflow-y: hidden;
-  }
-}
-
 .ModalLayout-fixed {
   flex-shrink: 0;
   z-index: 1;
@@ -30,12 +24,10 @@
 
 .modal-layout-content {
   @include padding(2);
-
-  flex-grow: 1;
   height: 100%;
-  display: flex;
   position: relative;
   overflow-x: hidden;
+  overflow-y: scroll;
 
   & > * {
     width: 100%;

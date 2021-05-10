@@ -4,8 +4,7 @@ import { BrowserWindow, webContents } from 'electron';
 import * as isDev from 'electron-is-dev';
 import * as obs from 'obs-node';
 import { Overlay } from 'obs-node';
-import { Source, Transition, TransitionType, UpdateAudioRequest, UpdateSourceRequest } from '../common/types';
-import { ServiceBase } from './ServiceBase';
+import { AudioMode, Source, Transition, TransitionType } from '../common/types';
 import { ExecuteInMainProcess } from './IpcService';
 import { isMainProcess } from '../common/util';
 
@@ -23,61 +22,48 @@ const OBS_AUDIO_SETTINGS: obs.AudioSettings = {
 };
 
 @Service()
-export class ObsService extends ServiceBase {
+export class ObsService {
 
   public async initialize(): Promise<void> {
-    if (isMainProcess()) {
-      if (isDev) {
-        obs.setFontPath(path.resolve(process.cwd(), 'src/fonts'));
-      } else {
-        obs.setFontPath(path.resolve(process.resourcesPath, 'fonts'));
-      }
-      obs.startup({
-        video: OBS_VIDEO_SETTINGS,
-        audio: OBS_AUDIO_SETTINGS,
-      });
-      obs.addVolmeterCallback((sceneId: string, sourceId: string, channels: number, magnitude: number[], peak: number[], input_peak: number[]) => {
-        webContents.getAllWebContents().forEach(webContents => {
-          webContents.send('volmeterChanged', sceneId, sourceId, channels, magnitude, peak, input_peak);
-        });
-      });
+    if (!isMainProcess()) {
+      return;
     }
-  }
-
-  @ExecuteInMainProcess()
-  public async createSource(source: Source): Promise<void> {
-    obs.addScene(source.sceneId);
-    obs.addSource(source.sceneId, source.id, {
-      isFile: false,
-      type: 'MediaSource',
-      url: source.previewUrl,
-      hardwareDecoder: true,
-      startOnActive: false,
-      bufferSize: 0,
-      enableBuffer: true,
+    if (isDev) {
+      obs.setFontPath(path.resolve(process.cwd(), 'src/fonts'));
+    } else {
+      obs.setFontPath(path.resolve(process.resourcesPath, 'fonts'));
+    }
+    obs.startup({
+      video: OBS_VIDEO_SETTINGS,
+      audio: OBS_AUDIO_SETTINGS,
+    });
+    obs.addVolmeterCallback((sceneId: string, sourceId: string, channels: number, magnitude: number[], peak: number[], input_peak: number[]) => {
+      webContents.getAllWebContents().forEach(webContents => {
+        webContents.send('volmeterChanged', sourceId, channels, magnitude, peak, input_peak);
+      });
     });
   }
 
   @ExecuteInMainProcess()
-  public async updatePreviewUrl(source: Source): Promise<void> {
-    obs.updateSource(source.sceneId, source.id, {
-      url: source.previewUrl,
+  public async createSource(id: string, name: string, url: string): Promise<void> {
+    obs.addScene(id);
+    obs.addSource(id, id, {
+      name: name,
+      type: 'live',
+      url: url,
+      hardwareDecoder: true,
+      bufferingMb: 0,
     });
   }
 
   @ExecuteInMainProcess()
   public async switchSource(from: Source | undefined, to: Source, transitionType: TransitionType, transitionDurationMs: number): Promise<Transition> {
-    obs.switchToScene(to.sceneId, transitionType, transitionDurationMs);
+    obs.switchToScene(to.id, transitionType, transitionDurationMs);
     return {
       id: transitionType,
       type: transitionType,
       source: to,
     };
-  }
-
-  @ExecuteInMainProcess()
-  public async restart(source: Source): Promise<void> {
-    obs.restartSource(source.sceneId, source.id);
   }
 
   @ExecuteInMainProcess()
@@ -97,17 +83,44 @@ export class ObsService extends ServiceBase {
   }
 
   @ExecuteInMainProcess()
-  public async updateAudio(request: UpdateAudioRequest): Promise<void> {
-    obs.updateAudio({
-      masterVolume: request.masterVolume,
-      audioWithVideo: request.audioWithVideo,
-      pgmMonitor: request.pgmMonitor,
+  public async updateAudioVolume(volume: number): Promise<void> {
+    obs.updateAudio({ volume });
+  }
+
+  @ExecuteInMainProcess()
+  public async updateAudioMode(mode: AudioMode): Promise<void> {
+    obs.updateAudio({ mode });
+  }
+
+  @ExecuteInMainProcess()
+  public async updateSource(id: string, name: string, url: string): Promise<void> {
+    obs.updateSource(id, id, {
+      name: name,
+      type: 'live',
+      url: url,
+      hardwareDecoder: true,
+      bufferingMb: 0,
     });
   }
 
   @ExecuteInMainProcess()
-  public async updateSource(source: Source, request: UpdateSourceRequest): Promise<void> {
-    obs.updateSource(source.sceneId, source.id, request);
+  public async deleteSource(sourceId: string) {
+    obs.removeScene(sourceId);
+  }
+
+  @ExecuteInMainProcess()
+  public async updateSourceVolume(sourceId: string, volume: number) {
+    obs.updateSource(sourceId, sourceId, { volume });
+  }
+
+  @ExecuteInMainProcess()
+  public async updateSourceMonitor(sourceId: string, monitor: boolean) {
+    obs.updateSource(sourceId, sourceId, { monitor });
+  }
+
+  @ExecuteInMainProcess()
+  public async updateSourceAudioLock(sourceId: string, audioLock: boolean) {
+    obs.updateSource(sourceId, sourceId, { audioLock });
   }
 
   @ExecuteInMainProcess()

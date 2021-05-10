@@ -11,7 +11,7 @@ const keyNames = [
 ];
 
 type PVWKeyboardState = {
-  sources: Record<number, Source>;
+  sources: Source[];
   previewSource?: Source;
 }
 
@@ -21,7 +21,7 @@ export class PVWKeyboard extends React.Component<{}, PVWKeyboardState> {
   constructor(props: {}) {
     super(props);
     this.state = {
-      sources: {},
+      sources: [],
     };
   }
 
@@ -54,14 +54,14 @@ export class PVWKeyboard extends React.Component<{}, PVWKeyboardState> {
         <div className='keyboard'>
           {
             keyNames.map((name, index) => {
-              const source = this.state.sources[index];
+              const source = this.state.sources.find(s => s.index === index);
               return (
                 <KeyView
                   key={name}
                   name={name}
                   isPreview={!!source && this.state.previewSource?.id === source.id}
                   isProgram={false}
-                  onButtonClicked={() => this.onKeyClicked(index)}
+                  onButtonClicked={() => this.onKeyClicked(source)}
                 />
               );
             })
@@ -71,10 +71,9 @@ export class PVWKeyboard extends React.Component<{}, PVWKeyboardState> {
     );
   }
 
-  private onKeyClicked(index: number) {
-    const source = this.state.sources[index];
+  private async onKeyClicked(source?: Source) {
     if (source) {
-      this.sourceService.preview(source);
+      await this.sourceService.preview(source);
     }
   }
 }

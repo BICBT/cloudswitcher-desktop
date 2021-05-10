@@ -1,44 +1,55 @@
 import { Container, Service } from 'typedi';
-import { Audio, UpdateAudioRequest } from '../common/types';
+import { AudioResponse, AudioMode, Audio } from '../common/types';
 import { ExecuteInMainProcess, IpcEvent } from './IpcService';
 import { ObsService } from './ObsService';
-import { ServiceBase } from './ServiceBase';
-import { OBS_SERVER_URL } from '../common/constant';
-import axios from 'axios';
 import { isMainProcess } from '../common/util';
-
-const GET_AUDIO_URL = `${OBS_SERVER_URL}/v1/audio`;
-const UPDATE_AUDIO_URL = `${OBS_SERVER_URL}/v1/audio`;
+import { SwitcherService } from './SwitcherService';
 
 @Service()
-export class AudioService extends ServiceBase {
+export class AudioService {
+  private readonly switcherService = Container.get(SwitcherService);
   private readonly obsService = Container.get(ObsService);
   private audio?: Audio;
-  public audioChanged: IpcEvent<Audio> = new IpcEvent<Audio>('audioChanged');
+  public audioChanged: IpcEvent<AudioResponse> = new IpcEvent<AudioResponse>('audioChanged');
 
   public async initialize(): Promise<void> {
-    if (isMainProcess()) {
-      this.audio = (await axios.get(GET_AUDIO_URL)).data as Audio;
-      await this.obsService.updateAudio({
-        masterVolume: this.audio.masterVolume,
-        audioWithVideo: this.audio.audioWithVideo,
-      });
+    if (!isMainProcess()) {
+      return;
     }
+    const audio = await this.switcherService.getAudio();
+    this.audio = {
+      volume: audio.volume,
+      mode: audio.mode,
+      monitor: false,
+    };
+    await this.obsService.updateAudioVolume(this.audio.volume);
+    await this.obsService.updateAudioMode(this.audio.mode);
   }
 
   @ExecuteInMainProcess()
-  public async getAudio(): Promise<Audio | undefined> {
+  public async getAudio(): Promise<AudioResponse | undefined> {
     return this.audio;
   }
 
   @ExecuteInMainProcess()
-  public async updateAudio(request: UpdateAudioRequest): Promise<void> {
+  public async updateVolume(volume: number): Promise<void> {
     if (!this.audio) {
-      throw new Error(`Audio is empty`);
+      throw new Error(`Audio can't be empty`);
     }
-    await axios.patch(UPDATE_AUDIO_URL, request);
-    Object.assign(this.audio, request);
-    await this.obsService.updateAudio(request);
+    await this.switcherService.updateAudio({ volume: volume });
+    await this.obsService.updateAudioVolume(volume);
+    this.audio.volume = volume;
+    this.audioChanged.emit(this.audio);
+  }
+
+  @ExecuteInMainProcess()
+  public async updateMode(mode: AudioMode): Promise<void> {
+    if (!this.audio) {
+      throw new Error(`Audio can't be empty`);
+    }
+    await this.switcherService.updateAudio({ mode: mode });
+    await this.obsService.updateAudioMode(mode);
+    this.audio.mode = mode;
     this.audioChanged.emit(this.audio);
   }
 }

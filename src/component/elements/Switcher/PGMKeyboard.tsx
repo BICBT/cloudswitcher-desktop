@@ -11,7 +11,7 @@ const keyNames = [
 ];
 
 export class PGMKeyboardState {
-  sources: Record<number, Source>;
+  sources: Source[];
   programTransition?: Transition;
 }
 
@@ -21,7 +21,7 @@ export class PGMSKeyboard extends React.Component<{}, PGMKeyboardState> {
   constructor(props: {}) {
     super(props);
     this.state = {
-      sources: {},
+      sources: [],
     };
   }
 
@@ -54,14 +54,14 @@ export class PGMSKeyboard extends React.Component<{}, PGMKeyboardState> {
         <div className='keyboard'>
           {
             keyNames.map((name, index) => {
-              const source = this.state.sources[index];
+              const source = this.state.sources.find(s => s.index === index);
               return (
                 <KeyView
                   key={name}
                   name={name}
                   isPreview={false}
                   isProgram={!!source && this.state.programTransition?.source.id === source.id}
-                  onButtonClicked={() => this.onKeyClicked(index)}
+                  onButtonClicked={() => this.onKeyClicked(source)}
                 />
               );
             })
@@ -70,8 +70,7 @@ export class PGMSKeyboard extends React.Component<{}, PGMKeyboardState> {
       </div>
     );
   }
-  private async onKeyClicked(index: number) {
-    const source = this.state.sources[index];
+  private async onKeyClicked(source?: Source) {
     if (source) {
       await this.sourceService.take(source);
     }

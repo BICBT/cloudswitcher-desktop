@@ -24,3 +24,23 @@ h1, h2, h3, h4, h5, h6 {
   margin: 0;
   padding: 0;
 }
+
+// reset antd
+#root {
+  .ant-form-item-label {
+    label {
+      color: var(--paragraph);
+    }
+  }
+  .ant-select-selector {
+    background-color: var(--background) !important;
+    border: 1px solid var(--button) !important;
+    color: var(--paragraph) !important;
+  }
+  .ant-checkbox, .ant-checkbox-wrapper {
+    color: var(--paragraph);
+  }
+  .ant-divider-horizontal.ant-divider-with-text, .ant-divider-inner-text {
+    color: var(--paragraph);
+  }
+}

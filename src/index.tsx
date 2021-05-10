@@ -11,7 +11,8 @@ import { ChakraProvider } from '@chakra-ui/react';
 import { BrowserRouter } from "react-router-dom";
 import axios from "axios";
 import { Container } from 'typedi';
-import { ServiceManager } from './service/ServiceManager';
+import { DialogService } from './service/DialogService';
+import { IpcService } from './service/IpcService';
 
 //request interceptor to add token in header
 axios.interceptors.request.use(function (config) {
@@ -36,18 +37,21 @@ const windowName = url.searchParams.get('window');
   }
 });
 
-(async () => {
-  const serviceManager = Container.get(ServiceManager);
-  await serviceManager.initializeAll();
+const dialogService = Container.get(DialogService);
+const ipcService = Container.get(IpcService);
 
-ReactDOM.render(
-  <ChakraProvider>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
-  </ChakraProvider>,
-  document.getElementById('root')
-);
+(async () => {
+  await ipcService.initialize();
+  await dialogService.initialize();
+
+  ReactDOM.render(
+    <ChakraProvider>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </ChakraProvider>,
+    document.getElementById('root')
+  );
 
   // If you want your app to work offline and load faster, you can change
   // unregister() to register() below. Note this comes with some pitfalls.

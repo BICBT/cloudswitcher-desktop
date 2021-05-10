@@ -1,0 +1,12 @@
+.LiveTab {
+
+  .StreamUrlLabel {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    span {
+      margin-right: 5px;
+    }
+  }
+}

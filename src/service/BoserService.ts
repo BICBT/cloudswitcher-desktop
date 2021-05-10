@@ -4,17 +4,16 @@ import { Source, TransitionType } from "../common/types";
 import SerialPort from "serialport";
 import { AudioService } from './AudioService';
 import { ENABLE_PANEL } from '../common/constant';
-import { ServiceBase } from './ServiceBase';
 import { isMainProcess } from '../common/util';
 
 const ByteLength = SerialPort.parsers.ByteLength;
 
 @Service()
-export class BoserService extends ServiceBase {
+export class BoserService {
   private readonly sourceService = Container.get(SourceService);
   private readonly audioService = Container.get(AudioService);
   private boser: any;
-  private sources: Record<number, Source> = {};
+  private sources: Source[] = [];
   private previewSource?: Source;
 
   public async initialize(): Promise<void> {
@@ -58,15 +57,15 @@ export class BoserService extends ServiceBase {
         case 0x3d:
           if (Number(receivedata[2]) <= 24 && receivedata[3] === 0x01) { //pgm switch
             const pgmIndex = Number(receivedata[2]) - 17;
-            const pgmSource = await this.sources[pgmIndex];
+            const pgmSource = await this.sources.find(s => s.index === pgmIndex);
             if (pgmIndex >= 0 && pgmSource) {
               await this.sourceService.take(pgmSource, TransitionType.Cut, 0);
             }
           } else if (24 < Number(receivedata[2]) && Number(receivedata[2]) <= 40 && receivedata[3] === 0x01) {  //pvw switch
             const pvwIndex = Number(receivedata[2]) - 33;
-            const pvwSource = this.sources[pvwIndex];
+            const pvwSource = this.sources.find(s => s.index === pvwIndex);
             if (pvwIndex >= 0 && pvwSource) {
-              this.sourceService.preview(pvwSource);
+              await this.sourceService.preview(pvwSource);
             }
           } else if (receivedata[2] === 0x37 && receivedata[3] === 0x01) {
             if (this.previewSource) {
@@ -79,7 +78,7 @@ export class BoserService extends ServiceBase {
           }
           break;
         case 0x31:
-          await this.audioService.updateAudio({ masterVolume: (Math.round(Number(receivedata[3]) * 60 / 100 - 60)) });
+          await this.audioService.updateVolume(Math.round(Number(receivedata[3]) * 60 / 100 - 60));
           this.boser.write(receivedata);
           break;
         case 0x32:

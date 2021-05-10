@@ -2,8 +2,9 @@
   display: flex;
   flex-direction: column;
 
-  .AudioWithVideo {
+  .AudioMode {
     padding: 10px 20px;
+    align-self: start;
   }
 
   .AudioMixerItems {

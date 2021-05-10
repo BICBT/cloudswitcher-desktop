@@ -15,7 +15,7 @@ type SourcesProps = {
 type SourcesState = {
   rows: number;
   sourceCount: number;
-  sources: Record<number, Source>;
+  sources: Source[];
   previewSource?: Source;
   programTransition?: Transition;
 };
@@ -33,7 +33,7 @@ export class Sources extends React.Component<SourcesProps, SourcesState> {
     this.state = {
       rows: props.rows,
       sourceCount: props.sourceCount,
-      sources: {},
+      sources: [],
     };
   }
 
@@ -81,7 +81,7 @@ export class Sources extends React.Component<SourcesProps, SourcesState> {
         <div className={`SourceView-list sources${this.state.sourceCount}`}>
           {
             sequence(0, this.state.sourceCount - 1).map(index => {
-              const source = this.state.sources[index];
+              const source = this.state.sources.find(s => s.index === index);
               const isPreview = !!source && this.state.previewSource?.id === source?.id;
               const isProgram = !!source && this.state.programTransition?.source?.id === source?.id;
               return (

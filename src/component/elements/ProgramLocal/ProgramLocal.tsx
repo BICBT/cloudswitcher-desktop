@@ -21,7 +21,18 @@ export class ProgramLocal extends React.Component<{}, ProgramLocalState> {
     this.sourceService.programChanged.on(this, event => {
       this.setState({
         programTransition: event.current,
-      })
+      });
+    });
+    this.sourceService.sourcePreviewChanged.on(this, source => {
+      if (source.id === this.state.programTransition?.source?.id) {
+        const transition = this.state.programTransition;
+        this.setState({
+          programTransition: undefined,
+        });
+        this.setState({
+          programTransition: transition,
+        });
+      }
     });
     this.setState({
       programTransition: await this.sourceService.getProgramTransition(),
@@ -30,6 +41,7 @@ export class ProgramLocal extends React.Component<{}, ProgramLocalState> {
 
   public componentWillUnmount() {
     this.sourceService.programChanged.off(this);
+    this.sourceService.sourcePreviewChanged.off(this);
   }
 
   public render() {
@@ -41,7 +53,7 @@ export class ProgramLocal extends React.Component<{}, ProgramLocalState> {
               this.state.programTransition &&
               <DisplayView
                 key={this.state.programTransition.id}
-                source={this.state.programTransition.source}
+                sourceId={this.state.programTransition.source.id}
                 displayId='output'
               />
             }
