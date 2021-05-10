@@ -1,5 +1,5 @@
 import { Container, Service } from 'typedi';
-import { AudioResponse, AudioMode, Audio } from '../common/types';
+import { AudioMode, Audio } from '../common/types';
 import { ExecuteInMainProcess, IpcEvent } from './IpcService';
 import { ObsService } from './ObsService';
 import { isMainProcess } from '../common/util';
