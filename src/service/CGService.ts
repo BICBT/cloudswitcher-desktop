@@ -17,12 +17,12 @@ export class CGService {
       return;
     }
     this.cgs = (await this.switcherService.getOverlays()).filter(o => o.type === 'cg') as CG[];
-    this.cgs.forEach(cg => {
-      this.obsService.addOverlay(cg);
+    for (const cg of this.cgs) {
+      await this.obsService.addOverlay(cg);
       if (cg.status === 'up') {
-        this.obsService.upOverlay(cg.id);
+        await this.obsService.upOverlay(cg.id);
       }
-    });
+    }
   }
 
   @ExecuteInMainProcess()

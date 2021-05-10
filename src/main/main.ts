@@ -123,13 +123,10 @@ async function initialize() {
     if (input.type === 'keyDown') {
       ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '='].forEach(async (key, index) => {
         if (input.key === key) {
-          const source = (await sourceService.getSources())[index];
-          if (source) {
-            if (input.control) {
-              await sourceService.preview(source);
-            } else {
-              await sourceService.take(source);
-            }
+          if (input.control) {
+            await sourceService.previewByIndex(index);
+          } else {
+            await sourceService.takeByIndex(index);
           }
         }
       });

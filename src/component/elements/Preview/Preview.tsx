@@ -21,17 +21,8 @@ export class Preview extends React.Component<{}, PreviewState> {
     this.sourceService.previewChanged.on(this, event => {
       this.setState({
         previewSource: event.current,
-      })
-    });
-    this.sourceService.sourcePreviewChanged.on(this, source => {
-      if (source.id === this.state.previewSource?.id) {
-        this.setState({
-          previewSource: undefined,
-        });
-        this.setState({
-          previewSource: source,
-        });
-      }
+      });
+      this.forceUpdate();
     });
     this.setState({
       previewSource: await this.sourceService.getPreviewSource(),
@@ -40,7 +31,6 @@ export class Preview extends React.Component<{}, PreviewState> {
 
   public componentWillUnmount() {
     this.sourceService.previewChanged.off(this);
-    this.sourceService.sourcePreviewChanged.off(this);
   }
 
   public render() {

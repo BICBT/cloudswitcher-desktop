@@ -21,30 +21,6 @@
     overflow: auto;
   }
 
-  .ant-table {
-    background-color: transparent;
-
-    .ant-table-placeholder {
-      display: none;
-    }
-
-    .ant-table-row, {
-      background-color: transparent;
-
-      &:hover {
-        background-color: transparent;
-        > td {
-          background-color: transparent;
-        }
-      }
-    }
-
-    .ant-table-tbody > tr > td {
-      border-bottom: 1px solid var(--border);
-      padding: 8px;
-    }
-  }
-
   .UpDown-button  {
     width: 60px;
   }

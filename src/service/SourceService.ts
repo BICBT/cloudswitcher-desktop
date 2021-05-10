@@ -35,7 +35,6 @@ export class SourceService {
   public programChanged = new IpcEvent<ProgramChangedEvent>('programChanged');
   public previewChanged = new IpcEvent<PreviewChangedEvent>('previewChanged');
   public sourceChanged = new IpcEvent<Source>('sourceChanged');
-  public sourcePreviewChanged = new IpcEvent<Source>('sourcePreviewChanged');
 
   public async initialize(): Promise<void> {
     if (!isMainProcess()) {
@@ -72,6 +71,14 @@ export class SourceService {
   }
 
   @ExecuteInMainProcess()
+  public async previewByIndex(index: number): Promise<void> {
+    const source = this.sources.find(s => s.index === index);
+    if (source) {
+      await this.preview(source);
+    }
+  }
+
+  @ExecuteInMainProcess()
   public async take(source: Source, transitionType: TransitionType = TransitionType.Cut, transitionMs: number = 2000): Promise<void> {
     const previous = this.programTransition;
     await this.switcherService.switch(source, transitionType, transitionMs);
@@ -81,6 +88,14 @@ export class SourceService {
       previous: previous,
       current: current,
     });
+  }
+
+  @ExecuteInMainProcess()
+  public async takeByIndex(index: number): Promise<void> {
+    const source = this.sources.find(s => s.index === index);
+    if (source) {
+      await this.take(source);
+    }
   }
 
   @ExecuteInMainProcess()
@@ -103,9 +118,6 @@ export class SourceService {
     await this.obsService.updateSource(source.id, source.name, source.previewUrl);
     this.sourcesChanged.emit(this.sources);
     this.sourceChanged.emit(source);
-    if (lastSource.previewUrl !== source.previewUrl) {
-      this.sourcePreviewChanged.emit(source);
-    }
   }
 
   @ExecuteInMainProcess()

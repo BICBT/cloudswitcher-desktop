@@ -96,10 +96,7 @@ export class ObsService {
   public async updateSource(id: string, name: string, url: string): Promise<void> {
     obs.updateSource(id, id, {
       name: name,
-      type: 'live',
       url: url,
-      hardwareDecoder: true,
-      bufferingMb: 0,
     });
   }
 

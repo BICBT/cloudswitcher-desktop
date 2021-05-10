@@ -10,7 +10,7 @@ export class AudioService {
   private readonly switcherService = Container.get(SwitcherService);
   private readonly obsService = Container.get(ObsService);
   private audio?: Audio;
-  public audioChanged: IpcEvent<AudioResponse> = new IpcEvent<AudioResponse>('audioChanged');
+  public audioChanged: IpcEvent<Audio> = new IpcEvent<Audio>('audioChanged');
 
   public async initialize(): Promise<void> {
     if (!isMainProcess()) {
@@ -27,7 +27,7 @@ export class AudioService {
   }
 
   @ExecuteInMainProcess()
-  public async getAudio(): Promise<AudioResponse | undefined> {
+  public async getAudio(): Promise<Audio | undefined> {
     return this.audio;
   }
 

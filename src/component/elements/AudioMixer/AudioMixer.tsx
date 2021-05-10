@@ -65,6 +65,7 @@ export class AudioMixer extends React.Component<{}, AudioMixerState> {
   public componentWillUnmount() {
     this.audioService.audioChanged.off(this);
     this.sourceService.sourcesChanged.off(this);
+    this.sourceService.sourceChanged.off(this);
     this.sourceService.programChanged.off(this);
   }
 

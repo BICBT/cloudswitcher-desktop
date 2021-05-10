@@ -1,4 +1,3 @@
-import './PreferenceDialog.scss';
 import React from 'react';
 import { Tabs } from 'antd';
 import { ModalLayout } from '../../shared/ModalLayout/ModalLayout';
