@@ -21,7 +21,8 @@ export class Preview extends React.Component<{}, PreviewState> {
     this.sourceService.previewChanged.on(this, event => {
       this.setState({
         previewSource: event.current,
-      })
+      });
+      this.forceUpdate();
     });
     this.setState({
       previewSource: await this.sourceService.getPreviewSource(),
@@ -40,9 +41,9 @@ export class Preview extends React.Component<{}, PreviewState> {
             {
               this.state.previewSource &&
               <DisplayView
-                key={this.state.previewSource.sceneId}
-                source={this.state.previewSource}
-                displayId={this.state.previewSource.sceneId}
+                key={this.state.previewSource.id}
+                sourceId={this.state.previewSource.id}
+                displayId={this.state.previewSource.id}
               />
             }
           </div>

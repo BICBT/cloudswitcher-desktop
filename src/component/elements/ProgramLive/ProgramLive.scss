@@ -8,6 +8,7 @@
   padding: 0 50px;
 
   .DisplayView-container {
+    flex: 1;
     @include aspect-ratio(16, 9);
   }
 

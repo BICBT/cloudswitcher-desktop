@@ -3,7 +3,6 @@ import { ipcMain, ipcRenderer, webContents } from 'electron';
 import * as uuid from 'uuid';
 import { as, isMainProcess } from '../common/util';
 import { SimpleEvent } from '../common/event';
-import { ServiceBase } from './ServiceBase';
 
 export interface IpcMessage {
   sessionId: string;
@@ -72,9 +71,13 @@ export class IpcEvent<T> extends SimpleEvent<T> {
 }
 
 @Service()
-export class IpcService extends ServiceBase {
+export class IpcService {
   private readonly resolvers: Map<string, Resolver> = new Map<string, Resolver>();
   private readonly services: object[] = [];
+
+  public registerServices(services: object[]) {
+    this.services.push(...services);
+  }
 
   public async initialize(): Promise<void> {
     if (isMainProcess()) {
@@ -84,7 +87,7 @@ export class IpcService extends ServiceBase {
           const service = this.services.find(s => s.constructor.name === message.serviceName);
           if (!service) {
             // noinspection ExceptionCaughtLocallyJS
-            throw new Error(`Service ${message.serviceName} not existed.`);
+            throw new Error(`Service ${message.serviceName} is not registered in the IpcService.`);
           }
           let result = ((service as any)[message.method] as Function).apply(service, message.args);
           if (!(result instanceof Promise)) {
@@ -117,10 +120,6 @@ export class IpcService extends ServiceBase {
         }
       });
     }
-  }
-
-  public registerServices(services: object[]) {
-    this.services.push(...services);
   }
 
   public executeInMainProcess(service: any, method: string, args: any[]): Promise<void> {

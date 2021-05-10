@@ -4,7 +4,6 @@ import { Service } from 'typedi';
 import { isDialogWindow, isMainWindow } from '../common/util';
 import { SimpleEvent } from '../common/event';
 import { DialogComponent, DialogOptions } from '../common/types';
-import { ServiceBase } from './ServiceBase';
 
 export type SessionId = string;
 type Resolver = (result: any) => void;
@@ -13,11 +12,11 @@ export type ShowDialogRequest = {
   sessionId: SessionId;
   component: DialogComponent;
   title: string;
-  defaultValue: any;
+  default: any;
 };
 
 @Service()
-export class DialogService extends ServiceBase {
+export class DialogService {
   private readonly resolvers: Map<SessionId, Resolver> = new Map<SessionId, Resolver>();
   public showDialogRequested = new SimpleEvent<ShowDialogRequest>();
 
@@ -28,7 +27,7 @@ export class DialogService extends ServiceBase {
           sessionId: sessionId,
           component: options.component,
           title: options.title,
-          defaultValue: defaultValue,
+          default: defaultValue,
         });
         const dialogWindow = remote.getCurrentWindow();
         dialogWindow.setSize(options.width, options.height);
@@ -48,7 +47,7 @@ export class DialogService extends ServiceBase {
     }
   }
 
-  public showDialog<T>(options: DialogOptions, defaultValue?: any): Promise<T | undefined> {
+  public showDialog<T, R>(options: DialogOptions, defaultValue: T): Promise<R | undefined> {
     if (isDialogWindow()) {
       throw new Error(`Only main window can request show dialog.`);
     }

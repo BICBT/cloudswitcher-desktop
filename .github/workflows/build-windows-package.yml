@@ -2,14 +2,17 @@ name: build-windows-package
 
 on:
   push:
-    tags:
-      - '*'
+    branches:
+      - develop
+      - master
 
 env:
-  DESKTOP_OSS_BUCKET: ${{ secrets.DESKTOP_OSS_BUCKET }}
-  DESKTOP_OSS_REGION: ${{ secrets.DESKTOP_OSS_REGION }}
-  ALICLOUD_ACCESS_KEY: ${{ secrets.ALICLOUD_ACCESS_KEY }}
-  ALICLOUD_SECRET_KEY: ${{ secrets.ALICLOUD_SECRET_KEY }}
+  OSS_BUCKET: ${{ secrets.OSS_BUCKET }}
+  OSS_REGION: ${{ secrets.OSS_REGION }}
+  OSS_PREFIX: ${{ github.ref == 'refs/heads/master' && 'cloudswitcher-desktop' || 'cloudswitcher-desktop-test' }}
+  ALICLOUD_ACCESS_KEY: ${{ secrets.OSS_ACCESS_KEY }}
+  ALICLOUD_SECRET_KEY: ${{ secrets.OSS_SECRET_KEY }}
+  VERSION: ${{ github.sha }}
 
 jobs:
   build:

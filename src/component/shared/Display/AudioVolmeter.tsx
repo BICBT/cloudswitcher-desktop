@@ -2,7 +2,6 @@ import './AudioVolmeter.scss';
 import React, { RefObject } from 'react';
 import { ipcRenderer } from 'electron';
 import { compileShader, createProgram, WebGLState } from '../../../common/webgl';
-import { Source } from '../../../common/types';
 
 const CHANNEL_WIDTH = 3;
 const PADDING_WIDTH = 2;
@@ -101,7 +100,7 @@ function dbToUnitScalar(db: number) {
 }
 
 interface AudioVolmeterProps {
-  source: Source;
+  sourceId: string;
 }
 
 interface AudioVolmeterState {
@@ -132,7 +131,7 @@ export class AudioVolmeter extends React.Component<AudioVolmeterProps, AudioVolm
 
   private canvasHeightInterval: number | null;
   private renderingInitialized = false;
-  private listener: (e: Electron.Event, sceneId: string, sourceId: string, channels: number, magnitude: number[], peak: number[], input_peak: number[]) => void;
+  private listener: (e: Electron.Event, sourceId: string, channels: number, magnitude: number[], peak: number[], input_peak: number[]) => void;
 
   public constructor(props: AudioVolmeterProps) {
     super(props);
@@ -384,8 +383,8 @@ export class AudioVolmeter extends React.Component<AudioVolmeterProps, AudioVolm
   }
 
   subscribeVolmeter() {
-    this.listener = (e: Electron.Event, sceneId: string, sourceId: string, channels: number, magnitude: number[], peak: number[], input_peak: number[]) => {
-      if (sceneId !== this.props.source.sceneId || sourceId !== this.props.source.id) {
+    this.listener = (e: Electron.Event, sourceId: string, channels: number, magnitude: number[], peak: number[]) => {
+      if (sourceId !== this.props.sourceId) {
         return;
       }
       if (this.canvasWidth <= 0 || this.canvasHeight <= 0) {

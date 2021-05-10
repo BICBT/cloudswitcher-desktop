@@ -1,3 +1,4 @@
+import './App.scss';
 import React from 'react';
 import { isDialogWindow, isExternalWindow } from './common/util';
 import { DialogWindow } from './component/dialogs/DialogWindow/DialogWindow';

@@ -21,7 +21,8 @@ export class ProgramLocal extends React.Component<{}, ProgramLocalState> {
     this.sourceService.programChanged.on(this, event => {
       this.setState({
         programTransition: event.current,
-      })
+      });
+      this.forceUpdate();
     });
     this.setState({
       programTransition: await this.sourceService.getProgramTransition(),
@@ -41,7 +42,7 @@ export class ProgramLocal extends React.Component<{}, ProgramLocalState> {
               this.state.programTransition &&
               <DisplayView
                 key={this.state.programTransition.id}
-                source={this.state.programTransition.source}
+                sourceId={this.state.programTransition.source.id}
                 displayId='output'
               />
             }

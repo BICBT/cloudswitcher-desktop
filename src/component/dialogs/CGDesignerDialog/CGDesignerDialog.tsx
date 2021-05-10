@@ -1,5 +1,4 @@
 import React, { ChangeEvent } from 'react';
-import * as uuid from 'uuid';
 import { CG, DialogProps } from '../../../common/types';
 import { ModalLayout } from '../../shared/ModalLayout/ModalLayout';
 import { CGDesigner } from './CGDesigner/CGDesigner';
@@ -8,11 +7,15 @@ import { Input, Modal } from 'antd';
 const CANVAS_WIDTH = 960;
 const CANVAS_HEIGHT = 540;
 
+export interface CGDesignerDialogDefault {
+  cg?: CG;
+}
+
 export interface CGDesignerDialogResult {
   cg: CG;
 }
 
-interface CGDesignerDialogProps extends DialogProps<CGDesignerDialogResult> {
+interface CGDesignerDialogProps extends DialogProps<CGDesignerDialogDefault, CGDesignerDialogResult> {
 }
 
 interface CGDesignerDialogState {
@@ -27,7 +30,7 @@ export class CGDesignerDialog extends React.Component<CGDesignerDialogProps, CGD
   public constructor(props: CGDesignerDialogProps) {
     super(props);
     this.designerRef = React.createRef();
-    this.cg = this.props.defaultValue as CG | undefined;
+    this.cg = this.props.default?.cg;
     this.state = {
       saveModalVisible: false,
       cgName: this.cg?.name,
@@ -113,7 +116,7 @@ export class CGDesignerDialog extends React.Component<CGDesignerDialogProps, CGD
     }
     this.props.onModalDone({
       cg: {
-        id: this.cg?.id ?? uuid.v4(),
+        id: this.cg?.id ?? '',
         name: cgName,
         type: 'cg',
         status: this.cg?.status ?? 'down',

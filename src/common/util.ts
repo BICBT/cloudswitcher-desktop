@@ -4,6 +4,18 @@ export function as<T>(value: T): T {
   return value;
 }
 
+export function notNull<T>(value: T | null | undefined): T {
+  if (value === null || value === undefined) {
+    throw new Error(`value should not be empty`);
+  }
+  return value;
+}
+
+export function removeKey<T extends object, K extends keyof T>(object: T, key: K): Omit<T, K> {
+  const { [key]: deleted, ...rest } = object;
+  return rest;
+}
+
 export function isMainProcess() {
   return !(process && process.type === 'renderer');
 }
