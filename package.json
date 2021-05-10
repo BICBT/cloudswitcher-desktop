@@ -12,10 +12,10 @@
     "build-main": "tsc -p src/main",
     "build:prod": "npm run build",
     "build-main:prod": "npm run build-main",
-    "dev": "npm run build-main && env-cmd -f env/.env.${ENV:-dev} concurrently \"cross-env BROWSER=none npm start\" \"wait-on http://localhost:3000 && electron .\"",
+    "dev": "npm run build-main && env-cmd -f env/.env.dev concurrently \"cross-env BROWSER=none npm start\" \"wait-on http://localhost:3000 && electron .\"",
     "release": "bash release.sh",
-    "prepackage": "rm -rf build && npm run build:prod && npm run build-main:prod && cp env/.env.${ENV:-prod} build/.env",
-    "package:windows": "npm run prepackage && rm -rf dist && env-cmd -f env/.env.${ENV:-prod} electron-builder build -w --publish always",
+    "prepackage": "rm -rf build && npm run build:prod && npm run build-main:prod && cp env/.env.$ENV build/.env",
+    "package:windows": "npm run prepackage && rm -rf dist && env-cmd -f env/.env.$ENV electron-builder build -w --publish always",
     "postinstall": "electron-rebuild && cross-os postinstall"
   },
   "dependencies": {
