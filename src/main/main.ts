@@ -1,7 +1,6 @@
 import 'reflect-metadata';
 import * as path from 'path';
 import * as os from 'os';
-import * as dotenv from 'dotenv';
 import { app, BrowserWindow, ipcMain } from 'electron';
 import * as isDev from 'electron-is-dev';
 import * as SegfaultHandler from 'segfault-handler';
@@ -21,11 +20,6 @@ import { PreviewService } from '../service/PreviewService';
 SegfaultHandler.registerHandler("crash.log", function(signal, address, stack) {
   console.log(`Native crash appeared: ${stack}`);
 });
-
-// load env files in production package
-if (!isDev) {
-  dotenv.config({ path: path.join(__dirname, '../.env') });
-}
 
 const title = `Cloud Switcher`;
 const loadUrl = isDev ? 'http://localhost:3000' : `file://${path.join(__dirname, '../index.html')}`;
