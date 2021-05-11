@@ -142,8 +142,8 @@
         "path": "/${env.OSS_PREFIX}/${os}/${productName}.${env.PUBLISH_FILE_EXT}",
         "bucket": "${env.OSS_BUCKET}",
         "region": "${env.OSS_REGION}",
-        "accessKeyId": "${env.ALICLOUD_ACCESS_KEY}",
-        "accessKeySecret": "${env.ALICLOUD_SECRET_KEY}",
+        "accessKeyId": "${env.OSS_ACCESS_KEY}",
+        "accessKeySecret": "${env.OSS_SECRET_KEY}",
         "resumable": true,
         "timeout": 3600000
       }
