@@ -10,8 +10,8 @@ env:
   OSS_BUCKET: ${{ secrets.OSS_BUCKET }}
   OSS_REGION: ${{ secrets.OSS_REGION }}
   OSS_PREFIX: ${{ github.ref == 'refs/heads/master' && 'cloudswitcher-desktop' || 'cloudswitcher-desktop-test' }}/${{ github.sha }}
-  ALICLOUD_ACCESS_KEY: ${{ secrets.OSS_ACCESS_KEY }}
-  ALICLOUD_SECRET_KEY: ${{ secrets.OSS_SECRET_KEY }}
+  OSS_ACCESS_KEY: ${{ secrets.OSS_ACCESS_KEY }}
+  OSS_SECRET_KEY: ${{ secrets.OSS_SECRET_KEY }}
 
 jobs:
   build:
