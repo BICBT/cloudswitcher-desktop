@@ -7,7 +7,6 @@ on:
       - master
 
 env:
-  ENV: ${{ github.ref == 'refs/heads/master' && 'prod' || 'test' }}
   OSS_BUCKET: ${{ secrets.OSS_BUCKET }}
   OSS_REGION: ${{ secrets.OSS_REGION }}
   OSS_PREFIX: ${{ github.ref == 'refs/heads/master' && 'cloudswitcher-desktop' || 'cloudswitcher-desktop-test' }}/${{ github.sha }}
@@ -34,5 +33,5 @@ jobs:
         run: npm ci
 
       - name: Build and publish windows package
-        run: npm run package:windows
+        run: npm run package:windows:${{ github.ref == 'refs/heads/master' && 'prod' || 'test' }}
         shell: bash
