@@ -8,7 +8,7 @@ import { ipcRenderer } from 'electron';
 import * as serviceWorker from './serviceWorker';
 import { App } from './App';
 import { ChakraProvider } from '@chakra-ui/react';
-import { BrowserRouter } from "react-router-dom";
+import { HashRouter } from "react-router-dom";
 import axios from "axios";
 import { Container } from 'typedi';
 import { DialogService } from './service/DialogService';
@@ -46,9 +46,9 @@ const ipcService = Container.get(IpcService);
 
   ReactDOM.render(
     <ChakraProvider>
-      <BrowserRouter>
+      <HashRouter>
         <App />
-      </BrowserRouter>
+      </HashRouter>
     </ChakraProvider>,
     document.getElementById('root')
   );
