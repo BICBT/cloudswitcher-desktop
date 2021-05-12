@@ -7,6 +7,7 @@ import { Source } from '../../../common/types';
 
 type PreviewState = {
   previewSource?: Source;
+  displayKey: number;
 };
 
 export class Preview extends React.Component<{}, PreviewState> {
@@ -14,7 +15,9 @@ export class Preview extends React.Component<{}, PreviewState> {
 
   constructor(props: {}) {
     super(props);
-    this.state = {};
+    this.state = {
+      displayKey: 0,
+    };
   }
 
   public async componentDidMount() {
@@ -22,7 +25,13 @@ export class Preview extends React.Component<{}, PreviewState> {
       this.setState({
         previewSource: event.current,
       });
-      this.forceUpdate();
+    });
+    this.sourceService.sourcePreviewChanged.on(this, source => {
+      if (this.state.previewSource?.id === source.id) {
+        this.setState({
+          displayKey: this.state.displayKey + 1,
+        });
+      }
     });
     this.setState({
       previewSource: await this.sourceService.getPreviewSource(),
@@ -31,6 +40,7 @@ export class Preview extends React.Component<{}, PreviewState> {
 
   public componentWillUnmount() {
     this.sourceService.previewChanged.off(this);
+    this.sourceService.sourcePreviewChanged.off(this);
   }
 
   public render() {
@@ -41,7 +51,7 @@ export class Preview extends React.Component<{}, PreviewState> {
             {
               this.state.previewSource &&
               <DisplayView
-                key={this.state.previewSource.id}
+                key={`${this.state.previewSource.id}-${this.state.displayKey}`}
                 sourceId={this.state.previewSource.id}
                 displayId={this.state.previewSource.id}
               />

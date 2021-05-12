@@ -35,6 +35,7 @@ export class SourceService {
   public programChanged = new IpcEvent<ProgramChangedEvent>('programChanged');
   public previewChanged = new IpcEvent<PreviewChangedEvent>('previewChanged');
   public sourceChanged = new IpcEvent<Source>('sourceChanged');
+  public sourcePreviewChanged = new IpcEvent<Source>('sourcePreviewChanged');
 
   public async initialize(): Promise<void> {
     if (!isMainProcess()) {
@@ -118,6 +119,9 @@ export class SourceService {
     await this.obsService.updateSource(source.id, source.name, source.previewUrl);
     this.sourcesChanged.emit(this.sources);
     this.sourceChanged.emit(source);
+    if (lastSource.previewUrl !== source.previewUrl) {
+      this.sourcePreviewChanged.emit(source);
+    }
   }
 
   @ExecuteInMainProcess()
@@ -162,6 +166,11 @@ export class SourceService {
   public async screenshot(source: Source): Promise<string> {
     const buffer = await obs.screenshot(source.id, source.id);
     return buffer.toString('base64');
+  }
+
+  @ExecuteInMainProcess()
+  public async notifyPreviewChanged(): Promise<void> {
+    this.sources.forEach(s => this.sourcePreviewChanged.emit(s));
   }
 
   private findSource(sourceId: string): Source | undefined {

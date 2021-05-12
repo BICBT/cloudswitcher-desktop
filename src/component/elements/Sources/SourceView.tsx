@@ -15,6 +15,7 @@ export type SourceViewProps = {
 
 export type SourceViewState = {
   source?: Source;
+  displayKey: number;
 };
 
 export class SourceView extends React.Component<SourceViewProps, SourceViewState> {
@@ -25,6 +26,7 @@ export class SourceView extends React.Component<SourceViewProps, SourceViewState
     super(props);
     this.state = {
       source: props.source,
+      displayKey: 0,
     };
   }
 
@@ -34,13 +36,20 @@ export class SourceView extends React.Component<SourceViewProps, SourceViewState
         this.setState({
           source: source,
         });
-        this.forceUpdate();
+      }
+    });
+    this.sourceService.sourcePreviewChanged.on(this, source => {
+      if (source.id === this.state.source?.id) {
+        this.setState({
+          displayKey: this.state.displayKey + 1,
+        });
       }
     });
   }
 
   componentWillUnmount() {
     this.sourceService.sourceChanged.off(this);
+    this.sourceService.sourcePreviewChanged.off(this);
   }
 
   public render() {
@@ -51,7 +60,7 @@ export class SourceView extends React.Component<SourceViewProps, SourceViewState
             {
               this.state.source &&
               <DisplayView
-                key={this.state.source.id}
+                key={`${this.state.source.id}-${this.state.displayKey}`}
                 sourceId={this.state.source.id}
                 displayId={this.state.source.id}
               />

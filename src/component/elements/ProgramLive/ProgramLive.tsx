@@ -7,6 +7,7 @@ import { OutputService } from '../../../service/OutputService';
 
 type ProgramLiveState = {
   output?: Output;
+  displayKey: number;
 };
 
 export class ProgramLive extends React.Component<{}, ProgramLiveState> {
@@ -14,13 +15,16 @@ export class ProgramLive extends React.Component<{}, ProgramLiveState> {
 
   constructor(props: {}) {
     super(props);
-    this.state = {};
+    this.state = {
+      displayKey: 0,
+    };
   }
 
   public async componentDidMount() {
     this.outputService.outputChanged.on(this, output => {
       this.setState({
         output: output,
+        displayKey: this.state.displayKey + 1,
       });
     });
     this.setState({
@@ -40,7 +44,7 @@ export class ProgramLive extends React.Component<{}, ProgramLiveState> {
             {
               this.state.output &&
               <DisplayView
-                key={this.state.output.url}
+                key={`${this.state.output.id}-${this.state.displayKey}`}
                 sourceId={this.state.output.id}
                 displayId={this.state.output.id}
               />
