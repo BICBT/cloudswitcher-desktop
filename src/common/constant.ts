@@ -1,10 +1,11 @@
 import * as path from 'path';
-import * as isDev from 'electron-is-dev';
+import isDev from 'electron-is-dev';
 import * as dotenv from 'dotenv';
+import { isLocal } from './util';
 
 // load env files for production package
 if (!isDev) {
-  const p = path.resolve(path.basename(process.execPath), 'resources/app/build/.env');
+  const p = isLocal() ? path.resolve(process.cwd(), 'build/.env') : path.resolve(process.resourcesPath, 'app/build/.env');
   console.log(`Load config from ${p}`);
   dotenv.config({ path: p });
 }

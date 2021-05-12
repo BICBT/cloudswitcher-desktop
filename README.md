@@ -20,7 +20,8 @@ mostly follows this [instruction](https://www.codementor.io/@randyfindley/how-to
 1. `npm run dev`
 
 ### Release new version
-1. `npm run release`
+1. Update version code in package.json
+2. Create release in GITHUB releases
 
 ### Windows message exchange
 There are three BrowserWindows (Main, External, Dialog) in the application , to keep all windows shared with same data,

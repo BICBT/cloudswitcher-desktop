@@ -76,3 +76,7 @@ export function replaceUrlParams(url: string, params: object) {
   });
   return url;
 }
+
+export function isLocal() {
+  return process.resourcesPath.includes("node_modules");
+}

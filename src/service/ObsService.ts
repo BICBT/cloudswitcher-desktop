@@ -1,12 +1,12 @@
 import * as path from 'path';
 import { Service } from 'typedi';
 import { BrowserWindow, webContents } from 'electron';
-import * as isDev from 'electron-is-dev';
+import isDev from 'electron-is-dev';
 import * as obs from 'obs-node';
 import { Overlay } from 'obs-node';
 import { AudioMode, Source, Transition, TransitionType } from '../common/types';
 import { ExecuteInMainProcess } from './IpcService';
-import { isMainProcess } from '../common/util';
+import { isLocal, isMainProcess } from '../common/util';
 
 const OBS_VIDEO_SETTINGS: obs.VideoSettings = {
   baseWidth: 640,
@@ -28,7 +28,7 @@ export class ObsService {
     if (!isMainProcess()) {
       return;
     }
-    if (isDev) {
+    if (isDev || isLocal()) {
       obs.setFontPath(path.resolve(process.cwd(), 'src/fonts'));
     } else {
       obs.setFontPath(path.resolve(process.resourcesPath, 'fonts'));
