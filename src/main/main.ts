@@ -13,8 +13,6 @@ import { BoserService } from '../service/BoserService';
 import { CGService } from '../service/CGService';
 import { IpcService } from '../service/IpcService';
 import { OutputService } from '../service/OutputService';
-import { SwitcherService } from '../service/SwitcherService';
-import { PreviewService } from '../service/PreviewService';
 
 // register segfault handler
 SegfaultHandler.registerHandler("crash.log", function(signal, address, stack) {
@@ -35,8 +33,6 @@ const outputService = Container.get(OutputService);
 const audioService = Container.get(AudioService);
 const boserService = Container.get(BoserService);
 const cgService = Container.get(CGService);
-const switcherService = Container.get(SwitcherService);
-const previewService = Container.get(PreviewService);
 let initialized = false;
 
 function openDevTools() {
@@ -50,15 +46,7 @@ async function startApp() {
     app.quit()
     return;
   }
-  ipcService.registerServices([
-    obsService,
-    cgService,
-    sourceService,
-    switcherService,
-    outputService,
-    audioService,
-    previewService,
-  ]);
+
   await ipcService.initialize();
 
   // main window

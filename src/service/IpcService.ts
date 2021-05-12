@@ -1,90 +1,42 @@
 import { Container, Service } from 'typedi';
-import { ipcMain, ipcRenderer, webContents } from 'electron';
+import { ipcMain, ipcRenderer } from 'electron';
 import * as uuid from 'uuid';
 import { as, isMainProcess } from '../common/util';
-import { SimpleEvent } from '../common/event';
+import { IpcHandler, IpcMessage, IpcMessageChannel, IpcResult, IpcResultChannel, registerIpcHandler } from '../common/ipc';
+import { ObsService } from './ObsService';
+import { CGService } from './CGService';
+import { SourceService } from './SourceService';
+import { SwitcherService } from './SwitcherService';
+import { OutputService } from './OutputService';
+import { AudioService } from './AudioService';
+import { PreviewService } from './PreviewService';
 
-export interface IpcMessage {
-  sessionId: string;
-  serviceName: string;
-  method: string;
-  args: any[];
-}
-
-export interface IpcResult {
-  sessionId: string;
-  result?: unknown;
-  error?: unknown;
-}
-
-export interface IpcEventMessage {
-  eventName: string;
-  data: any;
-}
-
-export interface Resolver {
+interface Resolver {
   resolve: (result: any)  => void;
   reject: (error: any) => void;
 }
 
-const IpcMessageChannel = 'ipc-message';
-const IpcResultChannel = 'ipc-result';
-const IpcEventChannel = 'ipc-event';
-
-export function ExecuteInMainProcess() {
-  return function(target: unknown, property: string, descriptor: PropertyDescriptor) {
-    const origin = descriptor.value;
-    descriptor.value = function (...args: any[]) {
-      if (isMainProcess()) {
-        return origin.apply(this, args);
-      } else {
-        return Container.get(IpcService).executeInMainProcess(this, property, args);
-      }
-    };
-  };
-}
-
-export class IpcEvent<T> extends SimpleEvent<T> {
-
-  public constructor(private readonly eventName: string) {
-    super();
-    if (!isMainProcess()) {
-      ipcRenderer.on(IpcEventChannel, (event, message: IpcEventMessage) => {
-        if (message.eventName === this.eventName) {
-          super.emit(message.data);
-        }
-      });
-    }
-  }
-
-  public emit(data: T): void {
-    super.emit(data);
-    if (isMainProcess()) {
-      webContents.getAllWebContents().forEach(webContents => {
-        webContents.send(IpcEventChannel, as<IpcEventMessage>({
-          eventName: this.eventName,
-          data: data,
-        }));
-      });
-    }
-  }
-}
+const IpcServices: Record<string, object> = {
+  'ObsService': Container.get(ObsService),
+  'CGService': Container.get(CGService),
+  'SourceService': Container.get(SourceService),
+  'SwitcherService': Container.get(SwitcherService),
+  'OutputService': Container.get(OutputService),
+  'AudioService': Container.get(AudioService),
+  'PreviewService': Container.get(PreviewService),
+};
 
 @Service()
-export class IpcService {
+export class IpcService implements IpcHandler {
   private readonly resolvers: Map<string, Resolver> = new Map<string, Resolver>();
-  private readonly services: object[] = [];
-
-  public registerServices(services: object[]) {
-    this.services.push(...services);
-  }
 
   public async initialize(): Promise<void> {
+    registerIpcHandler(this);
     if (isMainProcess()) {
       // handle message
       ipcMain.on(IpcMessageChannel, async (event, message: IpcMessage) => {
         try {
-          const service = this.services.find(s => s.constructor.name === message.serviceName);
+          const service = IpcServices[message.serviceName];
           if (!service) {
             // noinspection ExceptionCaughtLocallyJS
             throw new Error(`Service ${message.serviceName} is not registered in the IpcService.`);
@@ -124,9 +76,13 @@ export class IpcService {
 
   public executeInMainProcess(service: any, method: string, args: any[]): Promise<void> {
     const sessionId = uuid.v4();
+    const serviceName = Object.keys(IpcServices).find(key => IpcServices[key] === service);
+    if (!serviceName) {
+      throw new Error(`${service.constructor.name} is not registered in the IpcServices.`);
+    }
     ipcRenderer.send(IpcMessageChannel, as<IpcMessage>({
       sessionId: sessionId,
-      serviceName: service.constructor.name,
+      serviceName: serviceName,
       method: method,
       args: args,
     }));

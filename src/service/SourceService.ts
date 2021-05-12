@@ -1,7 +1,7 @@
 import { Container, Service } from 'typedi';
 import { ObsService } from './ObsService';
 import { AddSourceRequest, Source, SourceResponse, Transition, TransitionType, UpdateSourceRequest } from '../common/types';
-import { ExecuteInMainProcess, IpcEvent } from './IpcService';
+import { ExecuteInMainProcess, IpcEvent } from '../common/ipc';
 import * as obs from 'obs-node';
 import { isMainProcess, notNull } from '../common/util';
 import { SwitcherService } from './SwitcherService';

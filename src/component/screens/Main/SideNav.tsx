@@ -1,7 +1,7 @@
 import './SideNav.scss';
 import React from 'react';
 import { ipcRenderer } from 'electron';
-import * as isDev from 'electron-is-dev';
+import isDev from 'electron-is-dev';
 import { Popover, PopoverContent, PopoverTrigger } from '@chakra-ui/react';
 import { Container } from 'typedi';
 import { DialogService } from '../../../service/DialogService';

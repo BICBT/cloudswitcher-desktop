@@ -1,4 +1,4 @@
-import { remote } from 'electron';
+import { app, remote } from 'electron';
 
 export function as<T>(value: T): T {
   return value;
@@ -75,4 +75,8 @@ export function replaceUrlParams(url: string, params: object) {
     url = url.replace(`:${key}`, value);
   });
   return url;
+}
+
+export function isLocal() {
+  return !(app || remote.app).isPackaged;
 }

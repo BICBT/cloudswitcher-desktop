@@ -1,6 +1,6 @@
 import { Container, Service } from 'typedi';
 import { AudioMode, Audio } from '../common/types';
-import { ExecuteInMainProcess, IpcEvent } from './IpcService';
+import { ExecuteInMainProcess, IpcEvent } from '../common/ipc';
 import { ObsService } from './ObsService';
 import { isMainProcess } from '../common/util';
 import { SwitcherService } from './SwitcherService';
