@@ -15,9 +15,7 @@ import { IpcService } from '../service/IpcService';
 import { OutputService } from '../service/OutputService';
 
 // register segfault handler
-SegfaultHandler.registerHandler("crash.log", function(signal, address, stack) {
-  console.log(`Native crash appeared: ${stack}`);
-});
+SegfaultHandler.registerHandler("crash.log");
 
 const title = `Cloud Switcher`;
 const loadUrl = isDev ? 'http://localhost:3000' : `file://${path.join(__dirname, '../index.html')}`;

@@ -7,6 +7,7 @@ import { Transition } from '../../../common/types';
 
 type ProgramLocalState = {
   programTransition?: Transition;
+  displayKey: number;
 };
 
 export class ProgramLocal extends React.Component<{}, ProgramLocalState> {
@@ -14,7 +15,9 @@ export class ProgramLocal extends React.Component<{}, ProgramLocalState> {
 
   constructor(props: {}) {
     super(props);
-    this.state = {};
+    this.state = {
+      displayKey: 0,
+    };
   }
 
   public async componentDidMount() {
@@ -22,7 +25,13 @@ export class ProgramLocal extends React.Component<{}, ProgramLocalState> {
       this.setState({
         programTransition: event.current,
       });
-      this.forceUpdate();
+    });
+    this.sourceService.sourcePreviewChanged.on(this, source => {
+      if (this.state.programTransition?.source.id === source.id) {
+        this.setState({
+          displayKey: this.state.displayKey + 1,
+        });
+      }
     });
     this.setState({
       programTransition: await this.sourceService.getProgramTransition(),
@@ -31,6 +40,7 @@ export class ProgramLocal extends React.Component<{}, ProgramLocalState> {
 
   public componentWillUnmount() {
     this.sourceService.programChanged.off(this);
+    this.sourceService.sourcePreviewChanged.off(this);
   }
 
   public render() {
@@ -41,7 +51,7 @@ export class ProgramLocal extends React.Component<{}, ProgramLocalState> {
             {
               this.state.programTransition &&
               <DisplayView
-                key={this.state.programTransition.id}
+                key={`${this.state.programTransition.source.id}-${this.state.displayKey}`}
                 sourceId={this.state.programTransition.source.id}
                 displayId='output'
               />
