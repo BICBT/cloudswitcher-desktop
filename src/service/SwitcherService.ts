@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { Service } from 'typedi';
 import { AddSourceRequest, AudioResponse, CG, Output, Overlay, OverlayRequestWrapper, Preview, Source, SourceResponse, StreamType, Switcher, TransitionType, UpdateAudioRequest, UpdateOutputRequest, UpdatePreviewRequest, UpdateSourceRequest } from '../common/types';
-import { ExecuteInMainProcess } from './IpcService';
+import { ExecuteInMainProcess } from '../common/ipc';
 import { as, removeKey, replaceUrlParams } from '../common/util';
 import { SWITCHER_BASE_URL } from '../common/constant';
 

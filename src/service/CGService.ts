@@ -2,7 +2,7 @@ import { Container, Service } from 'typedi';
 import { CG } from '../common/types';
 import { isMainProcess } from '../common/util';
 import { ObsService } from './ObsService';
-import { ExecuteInMainProcess, IpcEvent } from './IpcService';
+import { ExecuteInMainProcess, IpcEvent } from '../common/ipc';
 import { SwitcherService } from './SwitcherService';
 
 @Service()

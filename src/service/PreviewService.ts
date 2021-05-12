@@ -1,7 +1,7 @@
 import { Container, Service } from 'typedi';
 import { Preview, UpdatePreviewRequest } from '../common/types';
 import { SwitcherService } from './SwitcherService';
-import { ExecuteInMainProcess } from './IpcService';
+import { ExecuteInMainProcess } from '../common/ipc';
 
 @Service()
 export class PreviewService {

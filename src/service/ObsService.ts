@@ -5,7 +5,7 @@ import isDev from 'electron-is-dev';
 import * as obs from 'obs-node';
 import { Overlay } from 'obs-node';
 import { AudioMode, Source, Transition, TransitionType } from '../common/types';
-import { ExecuteInMainProcess } from './IpcService';
+import { ExecuteInMainProcess } from '../common/ipc';
 import { isLocal, isMainProcess } from '../common/util';
 
 const OBS_VIDEO_SETTINGS: obs.VideoSettings = {

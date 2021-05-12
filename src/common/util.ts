@@ -1,4 +1,4 @@
-import { remote } from 'electron';
+import { app, remote } from 'electron';
 
 export function as<T>(value: T): T {
   return value;
@@ -78,5 +78,5 @@ export function replaceUrlParams(url: string, params: object) {
 }
 
 export function isLocal() {
-  return process.resourcesPath.includes("node_modules");
+  return !(app || remote.app).isPackaged;
 }
