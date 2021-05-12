@@ -5,16 +5,20 @@
   "main": "build/main/main.js",
   "scripts": {
     "start": "rescripts start",
+    "start:prod": "cross-env ELECTRON_IS_DEV=0 NODE_ENV=production electron build/main/main.js",
     "build:main": "tsc -p src/main",
     "build:renderer": "rescripts build",
     "build": "rm -rf build && npm run build:renderer && npm run build:main",
+    "build:test": "npm run build && cp env/.env.test build/.env",
+    "build:prod": "npm run build && cp env/.env.prod build/.env",
     "test": "rescripts test",
     "eject": "react-scripts eject",
     "lint": "tsc --noEmit && tsc -p src/main --noEmit",
     "dev": "npm run build:main && env-cmd -f env/.env.dev concurrently \"cross-env BROWSER=none npm start\" \"wait-on http://localhost:3000 && electron .\"",
     "release": "bash release.sh",
-    "package:windows:test": "rm -rf dist && npm run build && cp env/.env.test build/.env && env-cmd -f build/.env electron-builder build -w --publish always",
-    "package:windows:prod": "rm -rf dist && npm run build && cp env/.env.prod build/.env && env-cmd -f build/.env electron-builder build -w --publish always",
+    "package:windows": "rm -rf dist && env-cmd -f build/.env electron-builder build -w --publish always",
+    "package:windows:test": "npm run build:test && npm run package:windows",
+    "package:windows:prod": "npm run build:prod && npm run package:windows",
     "postinstall": "electron-rebuild && cross-os postinstall"
   },
   "dependencies": {

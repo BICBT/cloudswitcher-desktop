@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import * as path from 'path';
 import * as os from 'os';
 import { app, BrowserWindow, ipcMain } from 'electron';
-import * as isDev from 'electron-is-dev';
+import isDev from 'electron-is-dev';
 import * as SegfaultHandler from 'segfault-handler';
 import { Container } from 'typedi';
 import { isMac } from '../common/util';
