@@ -170,7 +170,10 @@ export class SourceService {
 
   @ExecuteInMainProcess()
   public async notifyPreviewChanged(): Promise<void> {
-    this.sources.forEach(s => this.sourcePreviewChanged.emit(s));
+    for (const source of this.sources) {
+      await this.obsService.restartSource(source.id);
+      this.sourcePreviewChanged.emit(source);
+    }
   }
 
   private findSource(sourceId: string): Source | undefined {

@@ -3,7 +3,6 @@ import * as path from 'path';
 import * as os from 'os';
 import { app, BrowserWindow, ipcMain } from 'electron';
 import isDev from 'electron-is-dev';
-import * as SegfaultHandler from 'segfault-handler';
 import { Container } from 'typedi';
 import { isMac } from '../common/util';
 import { SourceService } from '../service/SourceService';
@@ -13,9 +12,6 @@ import { BoserService } from '../service/BoserService';
 import { CGService } from '../service/CGService';
 import { IpcService } from '../service/IpcService';
 import { OutputService } from '../service/OutputService';
-
-// register segfault handler
-SegfaultHandler.registerHandler("crash.log");
 
 const title = `Cloud Switcher`;
 const loadUrl = isDev ? 'http://localhost:3000' : `file://${path.join(__dirname, '../index.html')}`;

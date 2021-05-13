@@ -30,6 +30,14 @@ export class OutputService {
     await this.refreshOutput();
   }
 
+  @ExecuteInMainProcess()
+  public async notifyPreviewChanged(): Promise<void> {
+    if (this.output) {
+      await this.obsService.restartSource(this.output.id);
+      this.outputChanged.emit(this.output);
+    }
+  }
+
   private async refreshOutput(): Promise<void> {
     this.output = await this.switcherService.getOutput()
     await this.obsService.createSource(this.output.id, 'output', this.output.previewUrl);
