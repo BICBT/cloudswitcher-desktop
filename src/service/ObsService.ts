@@ -101,6 +101,11 @@ export class ObsService {
   }
 
   @ExecuteInMainProcess()
+  public async restartSource(sourceId: string): Promise<void> {
+    obs.restartSource(sourceId, sourceId);
+  }
+
+  @ExecuteInMainProcess()
   public async deleteSource(sourceId: string) {
     obs.removeScene(sourceId);
   }
