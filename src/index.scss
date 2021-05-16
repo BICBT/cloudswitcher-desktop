@@ -88,4 +88,14 @@ h1, h2, h3, h4, h5, h6 {
   .ant-empty-normal {
     color: var(--paragraph);
   }
+  .ant-input-group-addon {
+    background-color: var(--background);
+    border: none;
+  }
+  .ant-tabs-tab-active .ant-tabs-tab-btn, .ant-tabs-tab-btn:focus, .ant-tabs-tab-btn:active {
+      color: var(--active-tab);
+  }
+  .ant-tabs-ink-bar {
+    background-color: var(--active-tab);
+  }
 }

@@ -105,6 +105,8 @@ export class SourceView extends React.Component<SourceViewProps, SourceViewState
           type: result.type,
           url: result.url,
           customPreviewUrl: result.customPreviewUrl,
+          mediaId: result.mediaId,
+          playOnActive: result.playOnActive,
           hardwareDecoder: result.hardwareDecoder,
         });
       } else {
@@ -114,6 +116,8 @@ export class SourceView extends React.Component<SourceViewProps, SourceViewState
           type: result.type,
           url: result.url,
           customPreviewUrl: result.customPreviewUrl || undefined,
+          mediaId: result.mediaId,
+          playOnActive: result.playOnActive,
           hardwareDecoder: result.hardwareDecoder,
         });
       }

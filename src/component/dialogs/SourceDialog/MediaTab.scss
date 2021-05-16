@@ -1,0 +1,18 @@
+.MediaTab {
+
+  .SelectMedia {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border: 1px dashed var(--paragraph);
+    color: var(--paragraph);
+    cursor: pointer;
+    height: 180px;
+  }
+
+  .VideoContainer {
+    display: flex;
+    flex-direction: row;
+  }
+}

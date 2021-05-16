@@ -6,30 +6,30 @@ import { SwitcherService } from '../../../service/SwitcherService';
 import { Container } from 'typedi';
 import { SourceDialogDefault } from './SourceDialog';
 
-export interface LiveTabState {
+export interface LiveState {
   index: number;
   name?: string;
   url?: string;
-  customPreviewUrl?: string | null;
+  customPreviewUrl: string | null;
   hardwareDecoder?: boolean;
   streamType?: StreamType;
 }
 
 export interface LiveTabProps {
-  state: LiveTabState;
-  handleStateChanged: (state: LiveTabState) => void;
+  state: LiveState;
+  handleStateChanged: (state: LiveState) => void;
 }
 
 function getStreamType(url: string): StreamType {
   return url.startsWith('srt') ? StreamType.srt : StreamType.rtmp;
 }
 
-export function initLiveTabState(value: SourceDialogDefault): LiveTabState {
+export function initLiveState(value: SourceDialogDefault): LiveState {
   return {
     index: value.index,
     name: value.source?.name,
     url: value.source?.url,
-    customPreviewUrl: value.source?.customPreviewUrl,
+    customPreviewUrl: value.source?.customPreviewUrl || null,
     hardwareDecoder: value.source?.hardwareDecoder,
     streamType: value.source?.url ? getStreamType(value.source?.url) : StreamType.rtmp,
   };
