@@ -13,10 +13,15 @@ import axios from "axios";
 import { Container } from 'typedi';
 import { DialogService } from './service/DialogService';
 import { IpcService } from './service/IpcService';
+import { StorageService } from './service/StorageService';
+
+const dialogService = Container.get(DialogService);
+const ipcService = Container.get(IpcService);
+const storageService = Container.get(StorageService);
 
 //request interceptor to add token in header
-axios.interceptors.request.use(function (config) {
-  const token = localStorage.getItem('token');
+axios.interceptors.request.use(async config => {
+  const token = await storageService.getToken();
   if (token) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     config.headers.Authorization = `Bearer ${token}`;
@@ -36,9 +41,6 @@ const windowName = url.searchParams.get('window');
     ipcRenderer.send('logMsg', level, windowName, message, ...args);
   }
 });
-
-const dialogService = Container.get(DialogService);
-const ipcService = Container.get(IpcService);
 
 (async () => {
   await ipcService.initialize();

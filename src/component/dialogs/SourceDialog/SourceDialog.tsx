@@ -4,7 +4,8 @@ import { Tabs } from 'antd';
 import { DialogProps, Source, SourceType } from '../../../common/types';
 import { notNull } from '../../../common/util';
 import { ModalLayout } from '../../shared/ModalLayout/ModalLayout';
-import { initLiveTabState, LiveTab, LiveTabState } from './LiveTab';
+import { initLiveState, LiveTab, LiveState } from './LiveTab';
+import { initMediaState, MediaTab, MediaState } from './MediaTab';
 
 export type SourceDialogDefault = {
   index: number;
@@ -15,15 +16,19 @@ export type SourceDialogResult = {
   index: number;
   name: string;
   type: SourceType;
-  url: string;
+  url?: string;
   customPreviewUrl?: string | null;
+  mediaId?: string;
+  playOnActive?: boolean;
   hardwareDecoder?: boolean;
 };
 
 type SourceDialogProps = DialogProps<SourceDialogDefault, SourceDialogResult>;
 
 type SourceDialogState = {
-  live: LiveTabState;
+  type: SourceType;
+  live: LiveState;
+  media: MediaState;
 };
 
 export class SourceDialog extends React.Component<SourceDialogProps, SourceDialogState> {
@@ -31,7 +36,9 @@ export class SourceDialog extends React.Component<SourceDialogProps, SourceDialo
   constructor(props: SourceDialogProps) {
     super(props);
     this.state = {
-      live: initLiveTabState(notNull(props.default)),
+      type: props.default.source?.type ?? SourceType.live,
+      live: initLiveState(notNull(props.default)),
+      media: initMediaState(notNull(props.default)),
     };
   }
 
@@ -41,11 +48,20 @@ export class SourceDialog extends React.Component<SourceDialogProps, SourceDialo
         onDoneClicked={() => this.onModalDone()}
         onCancelClicked={() => this.props.onModalCancel()}
       >
-        <Tabs className='SourceTabs' tabPosition='left'>
-          <Tabs.TabPane tab="Live" key="live">
+        <Tabs className='SourceTabs'
+              tabPosition='left'
+              activeKey={this.state.type}
+              onChange={type => this.handleSourceTypeChanged(type as SourceType)}>
+          <Tabs.TabPane tab="Live" key={SourceType.live}>
             <LiveTab
               state={this.state.live}
               handleStateChanged={state => this.handleLiveTabStateChanged(state)}
+            />
+          </Tabs.TabPane>
+          <Tabs.TabPane tab="Media" key={SourceType.media}>
+            <MediaTab
+              state={this.state.media}
+              handleStateChanged={state => this.handleMediaTabStateChanged(state)}
             />
           </Tabs.TabPane>
         </Tabs>
@@ -53,23 +69,52 @@ export class SourceDialog extends React.Component<SourceDialogProps, SourceDialo
     )
   }
 
-  private handleLiveTabStateChanged(state: LiveTabState): void {
+  private handleSourceTypeChanged(type: SourceType) {
+    this.setState({
+      type: type,
+    });
+  }
+
+  private handleLiveTabStateChanged(state: LiveState): void {
     this.setState({
       live: state,
     });
   }
 
-  private onModalDone(): void {
-    if (!this.state.live.name || !this.state.live.url) {
-      return;
-    }
-    this.props.onModalDone({
-      index: this.state.live.index,
-      name: this.state.live.name,
-      type: SourceType.live,
-      url: this.state.live.url,
-      customPreviewUrl: this.state.live.customPreviewUrl,
-      hardwareDecoder: this.state.live.hardwareDecoder,
+  private handleMediaTabStateChanged(state: MediaState): void {
+    this.setState({
+      media: state,
     });
+  }
+
+  private onModalDone(): void {
+    switch (this.state.type) {
+      case SourceType.live:
+        if (!this.state.live.name || !this.state.live.url) {
+          return;
+        }
+        this.props.onModalDone({
+          index: this.state.live.index,
+          name: this.state.live.name,
+          type: SourceType.live,
+          url: this.state.live.url,
+          customPreviewUrl: this.state.live.customPreviewUrl,
+          hardwareDecoder: this.state.live.hardwareDecoder,
+        });
+        break;
+      case SourceType.media:
+        if (!this.state.media.name || !this.state.media.mediaId) {
+          return;
+        }
+        this.props.onModalDone({
+          index: this.state.media.index,
+          name: this.state.media.name,
+          type: SourceType.media,
+          mediaId: this.state.media.mediaId,
+          playOnActive: this.state.media.playOnActive,
+          hardwareDecoder: this.state.media.hardwareDecoder,
+        });
+        break;
+    }
   }
 }

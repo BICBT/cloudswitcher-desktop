@@ -38,14 +38,17 @@ export interface UpdateAudioRequest {
 
 export interface SourceResponse {
   id: string;
+  type: SourceType;
   index: number;
   name: string;
-  url: string;
-  customPreviewUrl: string | null;
-  previewUrl: string;
+  url?: string;
+  customPreviewUrl?: string;
+  mediaId?: string;
+  playOnActive?: boolean;
   hardwareDecoder?: boolean;
   volume: number;
   audioLock: boolean;
+  previewUrl: string;
 }
 
 export interface Source extends SourceResponse {
@@ -56,8 +59,10 @@ export interface AddSourceRequest {
   index: number;
   name: string;
   type: SourceType;
-  url: string;
+  url?: string;
   customPreviewUrl?: string;
+  mediaId?: string;
+  playOnActive?: boolean;
   hardwareDecoder?: boolean;
 }
 
@@ -66,6 +71,8 @@ export interface UpdateSourceRequest {
   type?: SourceType;
   url?: string;
   customPreviewUrl?: string | null;
+  mediaId?: string;
+  playOnActive?: boolean;
   hardwareDecoder?: boolean;
   volume?: number;
   audioLock?: boolean;
@@ -183,10 +190,17 @@ export interface OverlayRequestWrapper {
   overlay: Omit<Overlay, 'id'>;
 }
 
-export interface Image {
+export enum MediaType {
+  video = 'video',
+  image = 'image',
+}
+
+export interface Media {
   id: string;
+  type: MediaType;
   name: string;
   url: string;
+  coverUrl?: string;
 }
 
 export interface LoginInfo {

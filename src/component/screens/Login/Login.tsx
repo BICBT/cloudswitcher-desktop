@@ -5,6 +5,8 @@ import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import { AUTH_BASE_URL } from '../../../common/constant';
 import { LoginInfo, LoginResponse } from '../../../common/types';
+import { Container } from 'typedi';
+import { StorageService } from '../../../service/StorageService';
 
 export interface LoginPageState {
   LoginInfo: LoginInfo[],
@@ -17,18 +19,18 @@ export interface LoginPageProps {
 }
 
 export class Login extends React.Component<LoginPageProps, LoginPageState> {
+  private readonly storageService = Container.get(StorageService);
+
   // Interface setting and error prompt，use catch controll error
-  onFinish = (values: LoginPageProps): void => {
-    axios.post<LoginResponse>(`${AUTH_BASE_URL}/v1/token`, values).then(res => {
-      // Save token
-      const token = res.data.token;
-      window.localStorage.setItem('token', token);
-      //Jump to select page
+  onFinish = async (values: LoginPageProps): Promise<void> => {
+    try {
+      const res = (await axios.post<LoginResponse>(`${AUTH_BASE_URL}/v1/token`, values)).data as LoginResponse;
+      await this.storageService.setToken(res.token);
       this.props.history.push('/select');
-    }).catch(error => {
-      console.error(error);
-      return message.error('Please enter the correct username and password');
-    });
+    } catch (e) {
+      console.error(e);
+      message.error('Please enter the correct username and password');
+    }
   };
 
   public render(): JSX.Element {

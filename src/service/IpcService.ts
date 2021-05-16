@@ -10,6 +10,7 @@ import { SwitcherService } from './SwitcherService';
 import { OutputService } from './OutputService';
 import { AudioService } from './AudioService';
 import { PreviewService } from './PreviewService';
+import { StorageService } from './StorageService';
 
 interface Resolver {
   resolve: (result: any)  => void;
@@ -24,6 +25,7 @@ const IpcServices: Record<string, object> = {
   'OutputService': Container.get(OutputService),
   'AudioService': Container.get(AudioService),
   'PreviewService': Container.get(PreviewService),
+  'StorageService': Container.get(StorageService),
 };
 
 @Service()
