@@ -139,7 +139,9 @@ export class ObsService {
   public async updateOverlay(overlay: Overlay): Promise<void> {
     obs.removeOverlay(overlay.id);
     obs.addOverlay(overlay);
-    overlay.status = 'down';
+    if (overlay.status === 'up') {
+      obs.upOverlay(overlay.id);
+    }
   }
 
   @ExecuteInMainProcess()

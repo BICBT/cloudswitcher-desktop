@@ -76,6 +76,8 @@ export class CGDesigner extends React.Component<CGDesignerProps, CGDesignerState
       height: this.props.canvasHeight,
       preserveObjectStacking: true,
     });
+    // disable group controls
+    fabric.Group.prototype.hasControls = false;
     this.setState({
       canvas: canvas,
     }, async () => {
@@ -126,7 +128,7 @@ export class CGDesigner extends React.Component<CGDesignerProps, CGDesignerState
   }
 
   private handleAddTextClicked() {
-    this.addText(100, 100, 200, 20, 'Add Text', 18, 'SimSun', '#000000');
+    this.addText(100, 100, 200, 20, 'Add Text', 18, 'SimHei', '#000000');
   }
 
   private handleAddImageClicked() {

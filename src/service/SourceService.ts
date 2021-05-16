@@ -80,7 +80,7 @@ export class SourceService {
   }
 
   @ExecuteInMainProcess()
-  public async take(source: Source, transitionType: TransitionType = TransitionType.Cut, transitionMs: number = 2000): Promise<void> {
+  public async take(source: Source, transitionType: TransitionType = TransitionType.Cut, transitionMs: number = 2000, swap: boolean = false): Promise<void> {
     const previous = this.programTransition;
     await this.switcherService.switch(source, transitionType, transitionMs);
     const current = await this.obsService.switchSource(previous?.source, source, transitionType, transitionMs);
@@ -89,6 +89,9 @@ export class SourceService {
       previous: previous,
       current: current,
     });
+    if (swap && previous?.source) {
+      await this.preview(previous?.source);
+    }
   }
 
   @ExecuteInMainProcess()

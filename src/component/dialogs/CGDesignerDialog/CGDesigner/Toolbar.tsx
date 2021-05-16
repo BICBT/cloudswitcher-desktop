@@ -4,6 +4,8 @@ import { fabric } from 'fabric';
 import { SketchPicker } from 'react-color';
 import { SourceService } from '../../../../service/SourceService';
 import { Container } from 'typedi';
+import { Input, remote } from "electron";
+import { isMac } from '../../../../common/util';
 
 interface ToolbarProps {
   canvas: fabric.Canvas;
@@ -19,6 +21,7 @@ interface ToolbarState {
 
 export class Toolbar extends Component<ToolbarProps, ToolbarState> {
   private readonly sourceSource = Container.get(SourceService);
+  private readonly copiedObjects: fabric.Object[] = [];
 
   constructor(props: ToolbarProps) {
     super(props);
@@ -40,6 +43,12 @@ export class Toolbar extends Component<ToolbarProps, ToolbarState> {
       this.forceUpdate();
     });
     this.props.canvas.on('object:scaling', () => {
+      this.forceUpdate();
+    });
+    this.props.canvas.on('text:editing:entered', () => {
+      this.forceUpdate();
+    });
+    this.props.canvas.on('text:editing:exited', () => {
       this.forceUpdate();
     });
   }
@@ -79,6 +88,11 @@ export class Toolbar extends Component<ToolbarProps, ToolbarState> {
         fontLoaded: true,
       });
     }, 0);
+    remote.getCurrentWebContents().on('before-input-event', this.handleKeyEvents);
+  }
+
+  componentWillUnmount() {
+    remote.getCurrentWebContents().off('before-input-event', this.handleKeyEvents);
   }
 
   render() {
@@ -89,7 +103,6 @@ export class Toolbar extends Component<ToolbarProps, ToolbarState> {
           // to load fonts, we need insert an empty span
           !this.state.fontLoaded &&
           <>
-            <span style={{ fontFamily: 'SimSun' }}>&nbsp;</span>
             <span style={{ fontFamily: 'SimHei' }}>&nbsp;</span>
             <span style={{ fontFamily: 'Microsoft YaHei' }}>&nbsp;</span>
             <span style={{ fontFamily: 'KaiTi' }}>&nbsp;</span>
@@ -102,14 +115,13 @@ export class Toolbar extends Component<ToolbarProps, ToolbarState> {
              onClick={this.togglePreview}/>
         </div>
         {
-          selectedObject &&
+          selectedObject && !this.isEditing() &&
           <>
             {
               selectedObject.type === 'text' &&
               <>
                 <div className="Toolbar-item font-family-container">
                   <select onChange={this.setFontFamily} title="Font Family" value={this.fontFamily}>
-                    <option value='SimSun'>宋体</option>
                     <option value='SimHei'>黑体</option>
                     <option value='Microsoft YaHei'>微软雅黑</option>
                     <option value='KaiTi'>楷体</option>
@@ -122,11 +134,16 @@ export class Toolbar extends Component<ToolbarProps, ToolbarState> {
                     <option>14</option>
                     <option>16</option>
                     <option>18</option>
-                    <option>21</option>
+                    <option>20</option>
+                    <option>22</option>
                     <option>24</option>
+                    <option>26</option>
                     <option>28</option>
+                    <option>30</option>
                     <option>32</option>
+                    <option>34</option>
                     <option>36</option>
+                    <option>38</option>
                     <option>40</option>
                   </select>
                 </div>
@@ -238,11 +255,77 @@ export class Toolbar extends Component<ToolbarProps, ToolbarState> {
   }
 
   private setTextOptions(options: fabric.TextOptions) {
-    const object = this.props.canvas.getActiveObject();
-    if (object && object.type === 'text') {
-      object.setOptions(options);
-      this.props.canvas.renderAll();
-      this.forceUpdate();
+    this.props.canvas.getActiveObjects().forEach(object => {
+      if (object && object.type === 'text') {
+        const text = object as fabric.Textbox;
+        text.setOptions(options);
+      }
+    });
+    this.props.canvas.renderAll();
+    this.forceUpdate();
+  }
+
+  handleKeyEvents =(event: Event, input: Input) => {
+    if (this.isEditing() || input.type !== 'keyDown') {
+      return;
     }
+    if (input.key === 'ArrowUp') {
+      this.moveUp();
+    } else if (input.key === 'ArrowDown') {
+      this.moveDown();
+    } else if (input.key === 'ArrowLeft') {
+      this.moveLeft();
+    } else if (input.key === 'ArrowRight') {
+      this.moveRight();
+    } else if ((isMac() ? input.meta : input.control) && input.key === 'c') {
+      this.copy();
+    } else if ((isMac() ? input.meta : input.control) && input.key === 'v') {
+      this.paste();
+    } else if ((!isMac() && input.key === 'Delete') || (isMac() && input.key === 'Backspace')) {
+      this.deleteObject();
+    }
+    this.props.canvas?.renderAll();
+    this.forceUpdate();
+  }
+
+  private moveUp() {
+    (this.props.canvas?.getActiveObjects() || []).forEach(o => o.top = (o.top ?? 0) - 1);
+  }
+
+  private moveDown() {
+    (this.props.canvas?.getActiveObjects() || []).forEach(o => o.top = (o.top ?? 0) + 1);
+  }
+
+  private moveLeft() {
+    (this.props.canvas?.getActiveObjects() || []).forEach(o => o.left = (o.left ?? 0) - 1);
+  }
+
+  private moveRight() {
+    (this.props.canvas?.getActiveObjects() || []).forEach(o => o.left = (o.left ?? 0) + 1);
+  }
+
+  private copy() {
+    this.copiedObjects.length = 0;
+    (this.props.canvas?.getActiveObjects() || []).forEach(o => {
+      this.copiedObjects.push(fabric.util.object.clone(o));
+    });
+  }
+
+  private paste() {
+    const copiedObjects = [...this.copiedObjects];
+    this.copiedObjects.length = 0;
+    copiedObjects.forEach(o => {
+      const copied = fabric.util.object.clone(o);
+      copied.left = (o.left ?? 0) + 10;
+      copied.top = (o.top ?? 0) + 10;
+      this.copiedObjects.push(copied);
+      this.props.canvas?.add(copied);
+      this.props.canvas?.setActiveObject(copied);
+      this.props.canvas?.renderAll();
+    });
+  }
+
+  private isEditing(): boolean {
+    return this.props.canvas.getActiveObjects().some(o => o.type === 'text' && (o as fabric.Textbox).isEditing);
   }
 }
