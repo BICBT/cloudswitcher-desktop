@@ -45,6 +45,12 @@ export class Toolbar extends Component<ToolbarProps, ToolbarState> {
     this.props.canvas.on('object:scaling', () => {
       this.forceUpdate();
     });
+    this.props.canvas.on('text:editing:entered', () => {
+      this.forceUpdate();
+    });
+    this.props.canvas.on('text:editing:exited', () => {
+      this.forceUpdate();
+    });
   }
 
   get fontFamily(): string {
@@ -109,7 +115,7 @@ export class Toolbar extends Component<ToolbarProps, ToolbarState> {
              onClick={this.togglePreview}/>
         </div>
         {
-          selectedObject &&
+          selectedObject && !this.isEditing() &&
           <>
             {
               selectedObject.type === 'text' &&
@@ -249,38 +255,37 @@ export class Toolbar extends Component<ToolbarProps, ToolbarState> {
   }
 
   private setTextOptions(options: fabric.TextOptions) {
-    const object = this.props.canvas.getActiveObject();
-    if (object && object.type === 'text') {
-      object.setOptions(options);
-      this.props.canvas.renderAll();
-      this.forceUpdate();
-    }
+    this.props.canvas.getActiveObjects().forEach(object => {
+      if (object && object.type === 'text') {
+        const text = object as fabric.Textbox;
+        text.setOptions(options);
+      }
+    });
+    this.props.canvas.renderAll();
+    this.forceUpdate();
   }
 
   handleKeyEvents =(event: Event, input: Input) => {
-    const object = this.props.canvas?.getActiveObject();
-    if (object?.type === 'text' && (object as fabric.Textbox).isEditing) {
+    if (this.isEditing() || input.type !== 'keyDown') {
       return;
     }
-    if (input.type === 'keyDown') {
-      if (input.key === 'ArrowUp') {
-        this.moveUp();
-      } else if (input.key === 'ArrowDown') {
-        this.moveDown();
-      } else if (input.key === 'ArrowLeft') {
-        this.moveLeft();
-      } else if (input.key === 'ArrowRight') {
-        this.moveRight();
-      } else if ((isMac() ? input.meta : input.control) && input.key === 'c') {
-        this.copy();
-      } else if ((isMac() ? input.meta : input.control) && input.key === 'v') {
-        this.paste();
-      } else if ((!isMac() && input.key === 'Delete') || (isMac() && input.key === 'Backspace')) {
-        this.deleteObject();
-      }
-      this.props.canvas?.renderAll();
-      this.forceUpdate();
+    if (input.key === 'ArrowUp') {
+      this.moveUp();
+    } else if (input.key === 'ArrowDown') {
+      this.moveDown();
+    } else if (input.key === 'ArrowLeft') {
+      this.moveLeft();
+    } else if (input.key === 'ArrowRight') {
+      this.moveRight();
+    } else if ((isMac() ? input.meta : input.control) && input.key === 'c') {
+      this.copy();
+    } else if ((isMac() ? input.meta : input.control) && input.key === 'v') {
+      this.paste();
+    } else if ((!isMac() && input.key === 'Delete') || (isMac() && input.key === 'Backspace')) {
+      this.deleteObject();
     }
+    this.props.canvas?.renderAll();
+    this.forceUpdate();
   }
 
   private moveUp() {
@@ -307,13 +312,20 @@ export class Toolbar extends Component<ToolbarProps, ToolbarState> {
   }
 
   private paste() {
-    this.copiedObjects.forEach(o => {
+    const copiedObjects = [...this.copiedObjects];
+    this.copiedObjects.length = 0;
+    copiedObjects.forEach(o => {
       const copied = fabric.util.object.clone(o);
       copied.left = (o.left ?? 0) + 10;
       copied.top = (o.top ?? 0) + 10;
+      this.copiedObjects.push(copied);
       this.props.canvas?.add(copied);
       this.props.canvas?.setActiveObject(copied);
       this.props.canvas?.renderAll();
     });
+  }
+
+  private isEditing(): boolean {
+    return this.props.canvas.getActiveObjects().some(o => o.type === 'text' && (o as fabric.Textbox).isEditing);
   }
 }
