@@ -60,7 +60,7 @@ export class TransitionView extends React.Component<{}, TransitionViewState> {
   private async onTakeClicked(transitionType: TransitionType) {
     const source = await this.sourceService.getPreviewSource();
     if (source) {
-      await this.sourceService.take(source, transitionType);
+      await this.sourceService.take(source, transitionType, 2000, true);
     }
   }
 }

@@ -3,7 +3,6 @@ import { SourceService } from './SourceService';
 import { Source, TransitionType } from "../common/types";
 import SerialPort from "serialport";
 import { AudioService } from './AudioService';
-import { ENABLE_PANEL } from '../common/constant';
 import { isMainProcess } from '../common/util';
 
 const ByteLength = SerialPort.parsers.ByteLength;
@@ -17,7 +16,7 @@ export class BoserService {
   private previewSource?: Source;
 
   public async initialize(): Promise<void> {
-    if (!isMainProcess() || !ENABLE_PANEL) {
+    if (!isMainProcess()) {
       return;
     }
     const ports = await SerialPort.list();
@@ -59,7 +58,7 @@ export class BoserService {
             const pgmIndex = Number(receivedata[2]) - 17;
             const pgmSource = await this.sources.find(s => s.index === pgmIndex);
             if (pgmIndex >= 0 && pgmSource) {
-              await this.sourceService.take(pgmSource, TransitionType.Cut, 0);
+              await this.sourceService.take(pgmSource);
             }
           } else if (24 < Number(receivedata[2]) && Number(receivedata[2]) <= 40 && receivedata[3] === 0x01) {  //pvw switch
             const pvwIndex = Number(receivedata[2]) - 33;
@@ -69,11 +68,11 @@ export class BoserService {
             }
           } else if (receivedata[2] === 0x37 && receivedata[3] === 0x01) {
             if (this.previewSource) {
-              await this.sourceService.take(this.previewSource, TransitionType.Cut, 0);
+              await this.sourceService.take(this.previewSource, TransitionType.Cut, 0, true);
             }
           } else if (receivedata[2] === 0x38 && receivedata[3] === 0x01) {
             if (this.previewSource) {
-              await this.sourceService.take(this.previewSource, TransitionType.Fade, 3000);
+              await this.sourceService.take(this.previewSource, TransitionType.Fade, 2000, true);
             }
           }
           break;
