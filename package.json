@@ -1,6 +1,6 @@
 {
   "name": "cloudswitcher-desktop",
-  "version": "1.0.7",
+  "version": "1.1.0",
   "homepage": "./",
   "main": "build/main/main.js",
   "scripts": {
@@ -144,7 +144,7 @@
       {
         "provider": "custom",
         "providerName": "alioss",
-        "path": "/${env.OSS_PREFIX}/${os}/${productName}.${env.PUBLISH_FILE_EXT}",
+        "path": "/desktop/${env.VERSION}/${os}/${productName}.${env.PUBLISH_FILE_EXT}",
         "bucket": "${env.OSS_BUCKET}",
         "region": "${env.OSS_REGION}",
         "accessKeyId": "${env.OSS_ACCESS_KEY}",
