@@ -69,11 +69,13 @@ export class ObsService {
   }
 
   public switchSource(from: Source | undefined, to: Source, transitionType: TransitionType, transitionDurationMs: number): Transition {
+    const timestamp = obs.getSwitchTimestamp(to.sceneId, to.id);
     obs.switchToScene(to.sceneId, transitionType, transitionDurationMs);
     return {
       id: transitionType,
       type: transitionType,
       source: to,
+      timestamp: timestamp,
     };
   }
 

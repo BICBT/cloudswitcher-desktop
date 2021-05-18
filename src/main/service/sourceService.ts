@@ -68,7 +68,8 @@ export class SourceService {
     const lastSource = this.programTransition?.source;
     this.programTransition = this.obsService.switchSource(lastSource, source, transitionType, transitionDurationMs);
     const currentSource = this.programTransition.source;
-    await this.obsHeadlessService.switchSource(source, transitionType, transitionDurationMs);
+    const switchTimestamp = this.programTransition.timestamp;
+    await this.obsHeadlessService.syncSwitchSource(source, transitionType, transitionDurationMs, switchTimestamp);
     broadcastMessage('programChanged', this.programTransition);
     this.programChanged.emit({
       lastSource: lastSource,

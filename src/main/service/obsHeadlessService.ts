@@ -62,11 +62,12 @@ export class ObsHeadlessService {
     return { sources, output };
   }
 
-  public async switchSource(source: Source, transitionType: TransitionType, transitionDurationMs: number) {
+  public async syncSwitchSource(source: Source, transitionType: TransitionType, transitionDurationMs: number, switchTimestamp: number) {
     try {
       await axios.post(replaceUrlParams(SWITCH_URL, { sceneId: source.sceneId }), {
         transitionType: transitionType,
         transitionMs: transitionDurationMs,
+        switchTimestamp: switchTimestamp,
       });
     } catch (e) {
       console.log(`Failed to switch scene: ${e.message || e}`);
