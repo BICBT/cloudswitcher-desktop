@@ -1,35 +1,39 @@
 import './ProgramLive.scss';
 import React from 'react';
 import { Container } from 'typedi';
-import { SourceService } from '../../../service/sourceService';
 import { DisplayView } from '../../shared/Display/DisplayView';
-import { Source } from '../../../common/types';
+import { Output } from '../../../common/types';
+import { OutputService } from '../../../service/OutputService';
 
 type ProgramLiveState = {
-  liveSource?: Source;
+  output?: Output;
+  displayKey: number;
 };
 
 export class ProgramLive extends React.Component<{}, ProgramLiveState> {
-  private readonly sourceService: SourceService = Container.get(SourceService);
+  private readonly outputService = Container.get(OutputService);
 
   constructor(props: {}) {
     super(props);
-    this.state = {};
+    this.state = {
+      displayKey: 0,
+    };
   }
 
-  public componentDidMount() {
-    this.setState({
-      liveSource: this.sourceService.liveSource,
-    });
-    this.sourceService.liveChanged.on(this, source => {
+  public async componentDidMount() {
+    this.outputService.outputChanged.on(this, output => {
       this.setState({
-        liveSource: source,
+        output: output,
+        displayKey: this.state.displayKey + 1,
       });
+    });
+    this.setState({
+      output: await this.outputService.getOutput(),
     });
   }
 
   public componentWillUnmount() {
-    this.sourceService.liveChanged.off(this);
+    this.outputService.outputChanged.off(this);
   }
 
   public render() {
@@ -38,11 +42,11 @@ export class ProgramLive extends React.Component<{}, ProgramLiveState> {
         <div className='DisplayView-container'>
           <div className='content'>
             {
-              this.state.liveSource &&
+              this.state.output &&
               <DisplayView
-                key={this.state.liveSource.url}
-                source={this.state.liveSource}
-                displayId={this.state.liveSource.id}
+                key={`${this.state.output.id}-${this.state.displayKey}`}
+                sourceId={this.state.output.id}
+                displayId={this.state.output.id}
               />
             }
           </div>

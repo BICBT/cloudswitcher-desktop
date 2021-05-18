@@ -1,86 +1,74 @@
 import 'reflect-metadata';
-import * as isDev from 'electron-is-dev';
 import * as path from 'path';
 import * as os from 'os';
-import * as fs from 'fs';
-import * as dotenv from 'dotenv';
-
-// TODO: load env from local path when in the production, remove this in the future
-if (!isDev) {
-  dotenv.config({ path: path.join(__dirname, '../server.env') });
-}
-
 import { app, BrowserWindow, ipcMain } from 'electron';
+import isDev from 'electron-is-dev';
 import { Container } from 'typedi';
-import { SourceService } from './service/sourceService';
-import { AtemService } from './service/atemService';
-import { ATEM_DEVICE_IP, ENABLE_ATEM } from '../common/constant';
-import { BoserService } from "./service/boserService";
-import { ENABLE_BOSER } from '../common/constant'
-import { ObsService } from './service/obsService';
-import { AudioService } from './service/audioService';
+import { isMac } from '../common/util';
+import { SourceService } from '../service/SourceService';
+import { ObsService } from '../service/ObsService';
+import { AudioService } from '../service/AudioService';
+import { BoserService } from '../service/BoserService';
+import { CGService } from '../service/CGService';
+import { IpcService } from '../service/IpcService';
+import { OutputService } from '../service/OutputService';
 
-const packageJson: { version: string } =
-  JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../package.json'), 'utf-8'));
-const title = `CloudSwitcher - ${packageJson.version}`;
-
+const title = `Cloud Switcher`;
 const loadUrl = isDev ? 'http://localhost:3000' : `file://${path.join(__dirname, '../index.html')}`;
-const sourceService = Container.get(SourceService);
-const atemService = Container.get(AtemService);
-const boserService = Container.get(BoserService);
-const obsService = Container.get(ObsService);
-const audioService = Container.get(AudioService);
 
 let mainWindow: BrowserWindow | undefined;
 let dialogWindow: BrowserWindow | undefined;
 let externalWindow: BrowserWindow | undefined;
 
+const ipcService = Container.get(IpcService);
+const obsService = Container.get(ObsService);
+const sourceService = Container.get(SourceService);
+const outputService = Container.get(OutputService);
+const audioService = Container.get(AudioService);
+const boserService = Container.get(BoserService);
+const cgService = Container.get(CGService);
+let initialized = false;
+
+function openDevTools() {
+  mainWindow?.webContents.openDevTools();
+  dialogWindow?.webContents.openDevTools();
+  externalWindow?.webContents.openDevTools();
+}
+
 async function startApp() {
-  await sourceService.initialize();
-  await audioService.initialized();
-  if (ENABLE_ATEM) {
-    await atemService.initialize(ATEM_DEVICE_IP);
-  }
-  if (ENABLE_BOSER) {
-    await boserService.initialize();
+  if (!app.requestSingleInstanceLock()) {
+    app.quit()
+    return;
   }
 
-  // Main window
+  await ipcService.initialize();
+
+  // main window
   mainWindow = new BrowserWindow({
     title: title,
     maximizable: true,
+    width: 450,
+    height: 550,
     webPreferences: {
       nodeIntegration: true,
       enableRemoteModule: true,
     }
   });
   mainWindow.removeMenu();
-  mainWindow.loadURL(`${loadUrl}?window=main`);
-  mainWindow.setFullScreen(true);
+  await mainWindow.loadURL(`${loadUrl}?window=main`);
   mainWindow.on('closed', () => {
-    obsService.close();
+    if (initialized) {
+      obsService.close();
+    }
     app.exit(0);
   });
 
-  // shortcuts
-  mainWindow.webContents.on('before-input-event', (event, input) => {
-    ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '='].forEach((key, index) => {
-      if (input.key === key) {
-        if (input.control) {
-          sourceService.previewByIndex(index);
-        } else {
-          sourceService.takeByIndex(index);
-        }
-      }
-    });
-  });
-
-
-  // Dialog window
+  // dialog window
   dialogWindow = new BrowserWindow({
     title: title,
-    parent: mainWindow,
+    parent: isMac() ? undefined : mainWindow,
     modal: true,
+    fullscreen: false,
     frame: false,
     titleBarStyle: 'hidden',
     show: false,
@@ -90,20 +78,55 @@ async function startApp() {
     },
   });
   dialogWindow.removeMenu();
-  dialogWindow.loadURL(`${loadUrl}?window=dialog`);
+  await dialogWindow.loadURL(`${loadUrl}?window=dialog`);
   dialogWindow.on('close', e => {
     // Prevent the window from actually closing
     e.preventDefault();
   });
 }
 
-// Fix windows scale factor
+async function initialize() {
+  // initialize
+  await obsService.initialize();
+  await sourceService.initialize();
+  await outputService.initialize();
+  await audioService.initialize();
+  await boserService.initialize();
+  await cgService.initialize();
+
+  // shortcuts
+  mainWindow?.webContents.on('before-input-event', (event, input) => {
+    if (input.type === 'keyDown') {
+      ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '='].forEach(async (key, index) => {
+        if (input.key === key) {
+          if (input.control) {
+            await sourceService.previewByIndex(index);
+          } else {
+            await sourceService.takeByIndex(index);
+          }
+        }
+      });
+    }
+  });
+  if (isDev) {
+    mainWindow?.webContents.on('before-input-event', (event, input) => {
+      if (input.type === 'keyDown' && input.key === 'F12') {
+        openDevTools();
+      }
+    });
+  }
+
+  initialized = true;
+  mainWindow?.webContents.send('initialized');
+}
+
+app.allowRendererProcessReuse = false;
 if (os.platform() === 'win32') {
   app.commandLine.appendSwitch('high-dpi-support', '1');
   app.commandLine.appendSwitch('force-device-scale-factor', '1');
 }
 
-app.on('ready', startApp);
+app.on('ready', () => startApp());
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
@@ -111,39 +134,30 @@ app.on('window-all-closed', () => {
   }
 });
 
-app.on('activate', () => {
+app.on('activate', async () => {
   if (mainWindow === null) {
-    startApp();
+    await startApp();
   }
 });
 
-// Show renderer log in main
-const color = (str: string) => `\x1b[35m${str}\x1b[0m`;
-ipcMain.on('logMsg', (event, level, message, ...args) => {
-  (console as any)[level](`${color('[renderer]')}${message}`, args);
-});
+// Initialize
+ipcMain.on('switcherSelected', async () => await initialize());
 
-// Dialog
-ipcMain.on('showDialog', (event, sessionId, options, defaultValue) => {
-  if (dialogWindow) {
-    dialogWindow.webContents.send('showDialog', sessionId, options, defaultValue);
-  }
+// Dialog window
+ipcMain.on('showDialog', async (event, sessionId, options, defaultValue) => {
+  dialogWindow?.webContents.send('showDialog', sessionId, options, defaultValue);
+  dialogWindow?.show();
 });
 
 ipcMain.on('dialogClosed', (event, sessionId, result) => {
   mainWindow?.webContents.send('dialogClosed', sessionId, result);
 });
 
-// Open DevTools
-ipcMain.on('openDevTools', () => {
-  mainWindow?.webContents.openDevTools();
-});
-
 // External window
-ipcMain.on('showExternalWindow', (event, layouts) => {
+ipcMain.on('showExternalWindow', async (event, layouts) => {
   if (externalWindow) {
-    externalWindow.show();
     externalWindow.webContents.send('layoutsUpdated', layouts);
+    externalWindow.show();
   } else {
     externalWindow = new BrowserWindow({
       title: title,
@@ -155,11 +169,22 @@ ipcMain.on('showExternalWindow', (event, layouts) => {
       }
     });
     externalWindow.removeMenu();
-    externalWindow.loadURL(`${loadUrl}?window=external&layouts=${layouts}`);
-    externalWindow.on('close', e => {
+    await externalWindow.loadURL(`${loadUrl}?window=external&layouts=${layouts}`);
+    externalWindow.on('close', () => {
       externalWindow = undefined;
     });
   }
+});
+
+// Show renderer log in main process
+const color = (str: string) => `\x1b[35m${str}\x1b[0m`;
+ipcMain.on('logMsg', (event, level, windowName, message, ...args) => {
+  (console as any)[level](`${color(`[${windowName}]`)}${message}`, args);
+});
+
+// Open devtools
+ipcMain.on('openDevTools', () => {
+  openDevTools();
 });
 
 // Exit

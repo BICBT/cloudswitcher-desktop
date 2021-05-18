@@ -6,7 +6,6 @@
 
   > .header {
     text-align: center;
-    padding: 5px;
   }
 
   > .keyboard {
@@ -14,5 +13,6 @@
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
+    justify-content: center;
   }
 }

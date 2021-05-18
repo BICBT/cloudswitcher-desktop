@@ -7,6 +7,7 @@
     padding: 5px;
     display: flex;
     flex-direction: row;
+    border-bottom: 1px solid var(--border);
 
     h2 {
       flex: 1;
@@ -14,11 +15,13 @@
     }
   }
 
-  .rdt_Table {
-    .rdt_TableCol_Sortable {
-      &:hover, &:focus {
-        color: white;
-      }
-    }
+  .CGTable-content {
+    flex: 1;
+    flex-basis: 0;
+    overflow: auto;
+  }
+
+  .UpDown-button  {
+    width: 60px;
   }
 }

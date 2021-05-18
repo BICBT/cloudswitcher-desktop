@@ -1,0 +1,13 @@
+.SelectPage{
+    flex:1;
+    display:block ;
+    justify-content: center;
+    padding: 20px;
+    background-color: var(--background);
+    height: auto;
+
+    .title {
+        font-size: 20px;
+        color: var(--paragraph);
+    }
+}

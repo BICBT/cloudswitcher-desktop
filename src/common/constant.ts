@@ -1,9 +1,19 @@
-export const OBS_SERVER_URL = process.env.REACT_APP_OBS_SERVER_URL;
+import * as path from 'path';
+import isDev from 'electron-is-dev';
+import * as dotenv from 'dotenv';
+import { isLocal } from './util';
 
-export const ENABLE_ATEM = process.env.REACT_APP_ENABLE_ATEM === 'true';
+// load env files for production package
+if (!isDev) {
+  const p = isLocal() ? path.resolve(process.cwd(), 'build/.env') : path.resolve(process.resourcesPath, 'app/build/.env');
+  console.log(`Load config from ${p}`);
+  dotenv.config({ path: p });
+}
 
-export const ATEM_DEVICE_IP = process.env.REACT_APP_ATEM_DEVICE_IP || '';
+export const AUTH_BASE_URL = process.env.REACT_APP_AUTH_BASE_URL || '';
 
-export const ENABLE_BOSER = process.env.REACT_APP_ENABLE_BOSER === 'true';
+export const SWITCHER_BASE_URL = process.env.REACT_APP_SWITCHER_BASE_URL || '';
+
+export const MEDIA_BASE_URL = process.env.REACT_APP_MEDIA_BASE_URL || '';
 
 export const SOURCE_COUNT = 12;

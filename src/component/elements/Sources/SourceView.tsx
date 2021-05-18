@@ -1,9 +1,11 @@
 import './SourceView.scss';
 import React from 'react';
 import { Container } from 'typedi';
-import { SourceService } from '../../../service/sourceService';
+import { SourceService } from '../../../service/SourceService';
 import { DisplayView } from '../../shared/Display/DisplayView';
 import { Source } from '../../../common/types';
+import { DialogService } from '../../../service/DialogService';
+import { SourceDialogDefault, SourceDialogResult } from '../../dialogs/SourceDialog/SourceDialog';
 
 export type SourceViewProps = {
   index: number;
@@ -13,15 +15,18 @@ export type SourceViewProps = {
 
 export type SourceViewState = {
   source?: Source;
+  displayKey: number;
 };
 
 export class SourceView extends React.Component<SourceViewProps, SourceViewState> {
   private readonly sourceService = Container.get(SourceService);
+  private readonly dialogService = Container.get(DialogService);
 
   public constructor(props: SourceViewProps) {
     super(props);
     this.state = {
       source: props.source,
+      displayKey: 0,
     };
   }
 
@@ -33,13 +38,10 @@ export class SourceView extends React.Component<SourceViewProps, SourceViewState
         });
       }
     });
-    this.sourceService.sourceRestarted.on(this, source => {
+    this.sourceService.sourcePreviewChanged.on(this, source => {
       if (source.id === this.state.source?.id) {
         this.setState({
-          source: undefined,
-        });
-        this.setState({
-          source: source,
+          displayKey: this.state.displayKey + 1,
         });
       }
     });
@@ -47,7 +49,7 @@ export class SourceView extends React.Component<SourceViewProps, SourceViewState
 
   componentWillUnmount() {
     this.sourceService.sourceChanged.off(this);
-    this.sourceService.sourceRestarted.off(this);
+    this.sourceService.sourcePreviewChanged.off(this);
   }
 
   public render() {
@@ -58,7 +60,8 @@ export class SourceView extends React.Component<SourceViewProps, SourceViewState
             {
               this.state.source &&
               <DisplayView
-                source={this.state.source}
+                key={`${this.state.source.id}-${this.state.displayKey}`}
+                sourceId={this.state.source.id}
                 displayId={this.state.source.id}
               />
             }
@@ -70,7 +73,8 @@ export class SourceView extends React.Component<SourceViewProps, SourceViewState
           {
             !this.props.hideSetting &&
             <>
-              <i className="icon-reset icon-button" onClick={() => this.onRestartClicked()} />
+              <i className="icon-button fas fa-minus" onClick={() => this.handleDeleteSourceClicked()} />
+              <i className="icon-button fas fa-cog" onClick={() => this.handleSourceSettingsClicked()} />
             </>
           }
         </div>
@@ -78,9 +82,45 @@ export class SourceView extends React.Component<SourceViewProps, SourceViewState
     );
   }
 
-  private onRestartClicked() {
+  private async handleDeleteSourceClicked() {
     if (this.state.source) {
-      this.sourceService.restart(this.state.source);
+      await this.sourceService.deleteSource(this.state.source.id);
+    }
+  }
+
+  private async handleSourceSettingsClicked() {
+    const result = await this.dialogService.showDialog<SourceDialogDefault, SourceDialogResult>({
+      title: 'Source Properties',
+      component: 'SourceDialog',
+      width: 800,
+      height: 600,
+    }, {
+      index: this.props.index,
+      source: this.state.source,
+    });
+    if (result) {
+      if (this.state.source) {
+        await this.sourceService.updateSource(this.state.source.id, {
+          name: result.name,
+          type: result.type,
+          url: result.url,
+          customPreviewUrl: result.customPreviewUrl,
+          mediaId: result.mediaId,
+          playOnActive: result.playOnActive,
+          hardwareDecoder: result.hardwareDecoder,
+        });
+      } else {
+        await this.sourceService.addSource({
+          index: result.index,
+          name: result.name,
+          type: result.type,
+          url: result.url,
+          customPreviewUrl: result.customPreviewUrl || undefined,
+          mediaId: result.mediaId,
+          playOnActive: result.playOnActive,
+          hardwareDecoder: result.hardwareDecoder,
+        });
+      }
     }
   }
 }

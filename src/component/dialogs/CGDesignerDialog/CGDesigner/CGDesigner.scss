@@ -1,0 +1,18 @@
+.CGDesigner {
+  display: flex;
+  flex-direction: column;
+
+  .Canvas-container {
+    flex: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    .canvas-area {
+      background-color: white;
+      box-shadow: 2px 2px 2px var(--shadow);
+      border: solid 1px var(--border);
+    }
+  }
+}

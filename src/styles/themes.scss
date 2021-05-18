@@ -98,7 +98,7 @@ $dark-5: #4f5e65;
   --link: #{$light-4};
   --link-active: #{$light-1};
   --input-bg: transparent;
-  --focus-border: lighten(#{$dark-5}, 4%);
+  --focus-border: #4F5E65;
   --solid-input: #{$dark-4};
   --dropdown-bg: #{$dark-4};
   --dropdown-alt-bg: darken(#{$dark-4}, 4%);
@@ -113,7 +113,8 @@ $dark-5: #4f5e65;
   --button-text: #{$dark-1};
   --display-bg: #{$dark-2};
   --button-key: #{$light-1};
-  --preview: #{$green};
-  --program: #{$red};
-  --action-icon-button: #{$blue}
+  --preview: #09B400;
+  --program: #FF1629;
+  --action-icon-button: #{$blue};
+  --active-tab: #{$blue};
 }
