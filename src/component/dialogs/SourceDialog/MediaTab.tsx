@@ -2,7 +2,7 @@ import './MediaTab.scss';
 import 'video.js/dist/video-js.css';
 import React, { RefObject } from 'react';
 import videojs from 'video.js';
-import { Checkbox, Drawer, Form, Input } from 'antd';
+import { Checkbox, Drawer, Form, Input, Tooltip } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import { SourceDialogDefault } from './SourceDialog';
 import { MediaPanel } from '../../shared/MediaPanel/MediaPanel';
@@ -16,6 +16,7 @@ export interface MediaState {
   mediaId?: string;
   playOnActive?: boolean;
   hardwareDecoder?: boolean;
+  showValidation: boolean,
 }
 
 export interface MediaTabProps {
@@ -35,6 +36,7 @@ export function initMediaState(value: SourceDialogDefault): MediaState {
     mediaId: value.source?.mediaId,
     playOnActive: value.source?.playOnActive,
     hardwareDecoder: value.source?.hardwareDecoder,
+    showValidation: false,
   };
 }
 
@@ -66,7 +68,10 @@ export class MediaTab extends React.Component<MediaTabProps, MediaTabState> {
   public render() {
     return (
       <Form className='MediaTab' layout="vertical">
-        <Form.Item label="Name">
+        <Form.Item
+          validateStatus={this.props.state.showValidation && !this.props.state.name ? 'error' : undefined }
+          help={this.props.state.showValidation && !this.props.state.name ? `Name can't be empty` : undefined }
+          label="Name">
           <Input value={this.props.state.name} onChange={e => this.handleNameChanged(e.target.value)} />
         </Form.Item>
         <Form.Item label="Media">
@@ -88,7 +93,12 @@ export class MediaTab extends React.Component<MediaTabProps, MediaTabState> {
         </Form.Item>
         <Form.Item>
           <Checkbox checked={this.props.state.playOnActive} onChange={e => this.handlePlayOnActiveChanged(e.target.checked)}>
-            Play On Active
+            <div className="PlayOnActiveLabel">
+              <span>Play On Active</span>
+              <Tooltip title="Start playing media after source is outputted">
+                <i className="fas fa-info-circle"/>
+              </Tooltip>
+            </div>
           </Checkbox>
         </Form.Item>
         <Form.Item>

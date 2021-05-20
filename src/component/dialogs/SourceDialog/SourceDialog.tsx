@@ -87,10 +87,16 @@ export class SourceDialog extends React.Component<SourceDialogProps, SourceDialo
     });
   }
 
-  private onModalDone(): void {
+  private async onModalDone(): Promise<void> {
     switch (this.state.type) {
       case SourceType.live:
         if (!this.state.live.name || !this.state.live.url) {
+          this.setState({
+            live: {
+              ...this.state.live,
+              showValidation: true,
+            }
+          });
           return;
         }
         this.props.onModalDone({
@@ -104,6 +110,12 @@ export class SourceDialog extends React.Component<SourceDialogProps, SourceDialo
         break;
       case SourceType.media:
         if (!this.state.media.name || !this.state.media.mediaId) {
+          this.setState({
+            media: {
+              ...this.state.media,
+              showValidation: true,
+            }
+          });
           return;
         }
         this.props.onModalDone({
