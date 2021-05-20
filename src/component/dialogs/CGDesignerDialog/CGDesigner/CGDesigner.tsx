@@ -3,8 +3,8 @@ import React from 'react';
 import { Toolbar } from './Toolbar';
 import { fabric } from 'fabric';
 import { Drawer } from 'antd';
-import { ImagePanel } from './ImagePanel';
-import { CG, CGImage, CGItem, CGText } from '../../../../common/types';
+import { MediaPanel } from '../../../shared/MediaPanel/MediaPanel';
+import { CG, CGImage, CGItem, CGText, Media, MediaType } from '../../../../common/types';
 
 interface CGDesignerProps {
   cg?: CG;
@@ -80,9 +80,9 @@ export class CGDesigner extends React.Component<CGDesignerProps, CGDesignerState
     fabric.Group.prototype.hasControls = false;
     this.setState({
       canvas: canvas,
-    }, () => {
+    }, async () => {
       if (this.props.cg) {
-        this.loadCG(this.props.cg);
+        await this.loadCG(this.props.cg);
       }
     });
   }
@@ -94,8 +94,8 @@ export class CGDesigner extends React.Component<CGDesignerProps, CGDesignerState
           this.state.canvas &&
           <Toolbar
             canvas={this.state.canvas}
-            handleAddTextClicked={this.handleAddTextClicked.bind(this)}
-            handleAddImageClicked={this.handleAddImageClicked.bind(this)}
+            handleAddTextClicked={() => this.handleAddTextClicked()}
+            handleAddImageClicked={() => this.handleAddImageClicked()}
           />
         }
         <div className='Canvas-container'>
@@ -116,9 +116,9 @@ export class CGDesigner extends React.Component<CGDesignerProps, CGDesignerState
               closable={false}
               visible={this.state.showImagePanel}
               onClose={this.closeImagePanel.bind(this)}>
-              <ImagePanel
-                canvas={this.state.canvas}
-                handleImageAddClicked={this.handleImageAddClicked.bind(this)}
+              <MediaPanel
+                type={MediaType.image}
+                handleMediaClicked={media => this.handleImageClicked(media)}
               />
             </Drawer>
           }
@@ -137,8 +137,8 @@ export class CGDesigner extends React.Component<CGDesignerProps, CGDesignerState
     });
   }
 
-  private async handleImageAddClicked(url: string) {
-    await this.addImage(100, 100, 200, url);
+  private async handleImageClicked(media: Media) {
+    await this.addImage(100, 100, 200, media.url);
     this.setState({
       showImagePanel: false,
     });

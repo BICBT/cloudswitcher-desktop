@@ -1,0 +1,47 @@
+.MediaPanel {
+  display: flex;
+  flex-direction: column;
+
+  .Upload {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-top: 20px;
+    height: 60px;
+    border: 1px dashed var(--paragraph);
+
+    .UploadButton {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--paragraph);
+    }
+  }
+
+  .MediaList {
+    flex: 1;
+    margin-top: 10px;
+
+    .MediaListItem {
+      height: 92px;
+      width: 92px;
+      border-radius: 5px;
+      cursor: pointer;
+
+      .MediaContainer {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+
+        span {
+          margin-top: 10px;
+          width: 80%;
+          font-size: 12px;
+          color: var(--paragraph);
+        }
+      }
+    }
+  }
+}

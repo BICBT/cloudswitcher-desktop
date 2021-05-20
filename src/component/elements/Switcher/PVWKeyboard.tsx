@@ -2,7 +2,7 @@ import './PVWKeyboard.scss';
 import React from 'react';
 import { KeyView } from './KeyView';
 import { Container } from 'typedi';
-import { SourceService } from '../../../service/sourceService';
+import { SourceService } from '../../../service/SourceService';
 import { Source } from '../../../common/types';
 
 const keyNames = [
@@ -11,7 +11,7 @@ const keyNames = [
 ];
 
 type PVWKeyboardState = {
-  sources: Record<number, Source>;
+  sources: Source[];
   previewSource?: Source;
 }
 
@@ -21,25 +21,29 @@ export class PVWKeyboard extends React.Component<{}, PVWKeyboardState> {
   constructor(props: {}) {
     super(props);
     this.state = {
-      sources: this.sourceService.sources,
-      previewSource: this.sourceService.previewSource,
+      sources: [],
     };
   }
 
-  public componentDidMount() {
+  public async componentDidMount() {
     this.sourceService.sourcesChanged.on(this, sources => {
       this.setState({
         sources: sources,
       });
     });
-    this.sourceService.previewChanged.on(this, source => {
+    this.sourceService.previewChanged.on(this, event => {
       this.setState({
-        previewSource: source,
+        previewSource: event.current,
       });
+    });
+    this.setState({
+      sources: await this.sourceService.getSources(),
+      previewSource: await this.sourceService.getPreviewSource(),
     });
   }
 
   public componentWillUnmount() {
+    this.sourceService.sourcesChanged.off(this);
     this.sourceService.previewChanged.off(this);
   }
 
@@ -50,14 +54,14 @@ export class PVWKeyboard extends React.Component<{}, PVWKeyboardState> {
         <div className='keyboard'>
           {
             keyNames.map((name, index) => {
-              const source = this.state.sources[index];
+              const source = this.state.sources.find(s => s.index === index);
               return (
                 <KeyView
                   key={name}
                   name={name}
                   isPreview={!!source && this.state.previewSource?.id === source.id}
                   isProgram={false}
-                  onButtonClicked={() => this.onKeyClicked(index)}
+                  onButtonClicked={() => this.onKeyClicked(source)}
                 />
               );
             })
@@ -67,10 +71,9 @@ export class PVWKeyboard extends React.Component<{}, PVWKeyboardState> {
     );
   }
 
-  private onKeyClicked(index: number) {
-    const source = this.state.sources[index];
+  private async onKeyClicked(source?: Source) {
     if (source) {
-      this.sourceService.preview(source);
+      await this.sourceService.preview(source);
     }
   }
 }

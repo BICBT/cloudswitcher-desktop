@@ -1,22 +1,24 @@
 {
-  "name": "streaming-desktop",
-  "version": "1.0.7",
+  "name": "cloudswitcher-desktop",
+  "version": "1.1.0",
   "homepage": "./",
   "main": "build/main/main.js",
   "scripts": {
+    "build-main": "tsc -p src/main",
+    "build-renderer": "rescripts build",
+    "build": "rm -rf build && npm run build-renderer && npm run build-main",
+    "build:test": "env-cmd -f env/.env.test npm run build && cp env/.env.test build/.env",
+    "build:prod": "env-cmd -f env/.env.prod npm run build && cp env/.env.prod build/.env",
     "start": "rescripts start",
-    "build": "rescripts build",
+    "start:test": "npm run build:test && cross-env ELECTRON_IS_DEV=0 electron build/main/main.js",
+    "start:prod": "npm run build:prod && cross-env ELECTRON_IS_DEV=0 electron build/main/main.js",
     "test": "rescripts test",
     "eject": "react-scripts eject",
     "lint": "tsc --noEmit && tsc -p src/main --noEmit",
-    "build-main": "tsc -p src/main",
-    "local": "npm run build-main && env-cmd -f env/local.env concurrently \"cross-env BROWSER=none npm start\" \"wait-on http://localhost:3000 && electron .\"",
-    "server": "npm run build-main && env-cmd -f env/server.env concurrently \"cross-env BROWSER=none npm start\" \"wait-on http://localhost:3000 && electron .\"",
-    "build:prod": "npm run build",
-    "build-main:prod": "npm run build-main",
-    "prepackage": "rm -rf build && npm run build:prod && npm run build-main:prod && cp env/server.env build",
-    "package:windows": "npm run prepackage && rm -rf dist && electron-builder build -w --publish always",
-    "package:mac": "npm run prepackage && rm -rf dist && electron-builder build -m --publish always",
+    "dev": "npm run build-main && env-cmd -f env/.env.dev concurrently \"cross-env BROWSER=none npm start\" \"wait-on http://localhost:3000 && electron .\"",
+    "package:windows": "rm -rf dist && electron-builder build -w --publish always",
+    "package:windows:test": "npm run build:test && npm run package:windows",
+    "package:windows:prod": "npm run build:prod && npm run package:windows",
     "postinstall": "electron-rebuild && cross-os postinstall"
   },
   "dependencies": {
@@ -28,7 +30,6 @@
     "atem": "^0.1.8",
     "axios": "^0.19.2",
     "classnames": "^2.2.6",
-    "cross-env": "^7.0.2",
     "dotenv": "^8.2.0",
     "electron-is-dev": "^1.2.0",
     "electron-store": "^5.2.0",
@@ -39,7 +40,7 @@
     "fs-extra": "^9.0.0",
     "moment": "^2.27.0",
     "nan": "^2.14.0",
-    "obs-node": "git+https://github.com/BICBT/obs-node.git#v1.0.61",
+    "obs-node": "git+https://github.com/BICBT/obs-node.git#v1.0.71",
     "react": "^16.13.1",
     "react-color": "^2.19.3",
     "react-data-table-component": "^6.11.0",
@@ -50,10 +51,11 @@
     "react-select": "^3.1.0",
     "react-tabs": "^3.1.2",
     "reflect-metadata": "^0.1.13",
-    "serialport": "^9.0.6",
+    "serialport": "^9.0.7",
     "styled-components": "^5.1.1",
     "typedi": "^0.8.0",
-    "uuid": "^8.3.0"
+    "uuid": "^8.3.0",
+    "video.js": "^7.11.8"
   },
   "devDependencies": {
     "@rescripts/cli": "0.0.14",
@@ -68,8 +70,10 @@
     "@types/react-select": "^3.0.16",
     "@types/serialport": "^8.0.1",
     "@types/uuid": "^8.0.0",
+    "@types/video.js": "^7.3.17",
     "colors": "^1.4.0",
     "concurrently": "^5.2.0",
+    "cross-env": "^7.0.3",
     "cross-os": "^1.4.0",
     "electron": "^10.1.5",
     "electron-builder": "22.7.0",
@@ -106,8 +110,8 @@
     "node-win32-np": "1.0.6"
   },
   "build": {
-    "appId": "com.mengli619.streaming-desktop",
-    "productName": "streaming-desktop",
+    "appId": "com.icbtlive.cloudswitcher-desktop",
+    "productName": "cloudswitcher-desktop",
     "asar": false,
     "extraMetadata": {
       "main": "build/main/main.js"
@@ -140,11 +144,11 @@
       {
         "provider": "custom",
         "providerName": "alioss",
-        "path": "/${name}/${os}/${productName}-${version}.${env.PUBLISH_FILE_EXT}",
-        "bucket": "${env.DESKTOP_OSS_BUCKET}",
-        "region": "${env.DESKTOP_OSS_REGION}",
-        "accessKeyId": "${env.ALICLOUD_ACCESS_KEY}",
-        "accessKeySecret": "${env.ALICLOUD_SECRET_KEY}",
+        "path": "/desktop/${env.VERSION}/${os}/${productName}.${env.PUBLISH_FILE_EXT}",
+        "bucket": "${env.OSS_BUCKET}",
+        "region": "${env.OSS_REGION}",
+        "accessKeyId": "${env.OSS_ACCESS_KEY}",
+        "accessKeySecret": "${env.OSS_SECRET_KEY}",
         "resumable": true,
         "timeout": 3600000
       }

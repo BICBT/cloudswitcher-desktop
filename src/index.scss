@@ -24,3 +24,84 @@ h1, h2, h3, h4, h5, h6 {
   margin: 0;
   padding: 0;
 }
+
+// reset antd
+#root {
+  .ant-tabs-tab {
+    color: var(--paragraph);
+  }
+  .ant-form-item-label {
+    label {
+      color: var(--paragraph);
+    }
+  }
+  .ant-select-selector {
+    background-color: var(--background) !important;
+    border: 1px solid var(--button) !important;
+    color: var(--paragraph) !important;
+  }
+  .ant-checkbox, .ant-checkbox-wrapper {
+    color: var(--paragraph);
+  }
+  .ant-divider-horizontal.ant-divider-with-text, .ant-divider-inner-text {
+    color: var(--paragraph);
+  }
+  .ant-drawer-body {
+    background-color: var(--background);
+  }
+  .ant-table {
+    background-color: transparent;
+    .ant-table-placeholder {
+      display: none;
+    }
+    .ant-table-thead > tr > th {
+      color: var(--paragraph);
+      background: var(--background);
+    }
+    .ant-table-tbody > tr.ant-table-row:hover > td,
+    .ant-table-tbody > tr.ant-table-row-selected > td {
+      background: var(--background);
+    }
+    .ant-table-tbody > tr > td {
+      border-bottom: 1px solid var(--border);
+      padding: 8px;
+    }
+    table tbody tr:nth-child(odd) {
+      background: var(--background);
+    }
+    .ant-table-row, {
+      background-color: transparent;
+      &:hover {
+        background-color: transparent;
+        > td {
+          background-color: transparent;
+        }
+      }
+    }
+  }
+  .ant-input-affix-wrapper {
+    background-color: var(--background);
+  }
+  .ant-input-password-icon{
+    color: white;
+  }
+  .ant-empty-normal {
+    color: var(--paragraph);
+  }
+  .ant-input-group-addon {
+    background-color: var(--background);
+    border: none;
+  }
+  .ant-tabs-tab-active .ant-tabs-tab-btn, .ant-tabs-tab-btn:focus, .ant-tabs-tab-btn:active {
+      color: var(--active-tab);
+  }
+  .ant-tabs-ink-bar {
+    background-color: var(--active-tab);
+  }
+  .ant-form-item-has-error .ant-input,
+  .ant-form-item-has-error .ant-input-affix-wrapper,
+  .ant-form-item-has-error .ant-input:hover,
+  .ant-form-item-has-error .ant-input-affix-wrapper:hover {
+    background-color: var(--background);
+  }
+}

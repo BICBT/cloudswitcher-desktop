@@ -1,12 +1,13 @@
 import './ProgramLocal.scss';
 import React from 'react';
 import { Container } from 'typedi';
-import { SourceService } from '../../../service/sourceService';
+import { SourceService } from '../../../service/SourceService';
 import { DisplayView } from '../../shared/Display/DisplayView';
 import { Transition } from '../../../common/types';
 
 type ProgramLocalState = {
   programTransition?: Transition;
+  displayKey: number;
 };
 
 export class ProgramLocal extends React.Component<{}, ProgramLocalState> {
@@ -14,22 +15,32 @@ export class ProgramLocal extends React.Component<{}, ProgramLocalState> {
 
   constructor(props: {}) {
     super(props);
-    this.state = {};
+    this.state = {
+      displayKey: 0,
+    };
   }
 
-  public componentDidMount() {
-    this.setState({
-      programTransition: this.sourceService.programTransition,
-    });
-    this.sourceService.programChanged.on(this, transition => {
+  public async componentDidMount() {
+    this.sourceService.programChanged.on(this, event => {
       this.setState({
-        programTransition: transition,
-      })
+        programTransition: event.current,
+      });
+    });
+    this.sourceService.sourcePreviewChanged.on(this, source => {
+      if (this.state.programTransition?.source.id === source.id) {
+        this.setState({
+          displayKey: this.state.displayKey + 1,
+        });
+      }
+    });
+    this.setState({
+      programTransition: await this.sourceService.getProgramTransition(),
     });
   }
 
   public componentWillUnmount() {
     this.sourceService.programChanged.off(this);
+    this.sourceService.sourcePreviewChanged.off(this);
   }
 
   public render() {
@@ -40,8 +51,8 @@ export class ProgramLocal extends React.Component<{}, ProgramLocalState> {
             {
               this.state.programTransition &&
               <DisplayView
-                key={this.state.programTransition.id}
-                source={this.state.programTransition.source}
+                key={`${this.state.programTransition.source.id}-${this.state.displayKey}`}
+                sourceId={this.state.programTransition.source.id}
                 displayId='output'
               />
             }

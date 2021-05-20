@@ -2,14 +2,18 @@ name: build-windows-package
 
 on:
   push:
+    branches:
+      - develop
+      - master
     tags:
       - '*'
 
 env:
-  DESKTOP_OSS_BUCKET: ${{ secrets.DESKTOP_OSS_BUCKET }}
-  DESKTOP_OSS_REGION: ${{ secrets.DESKTOP_OSS_REGION }}
-  ALICLOUD_ACCESS_KEY: ${{ secrets.ALICLOUD_ACCESS_KEY }}
-  ALICLOUD_SECRET_KEY: ${{ secrets.ALICLOUD_SECRET_KEY }}
+  OSS_BUCKET: ${{ github.ref == 'refs/heads/master' && 'cbt-cloudswitcher-prod' || 'cbt-cloudswitcher-test' }}
+  OSS_REGION: ${{ secrets.OSS_REGION }}
+  OSS_ACCESS_KEY: ${{ secrets.OSS_ACCESS_KEY }}
+  OSS_SECRET_KEY: ${{ secrets.OSS_SECRET_KEY }}
+  VERSION: ${{ github.sha }}
 
 jobs:
   build:
@@ -29,7 +33,13 @@ jobs:
 
       - name: Npm install
         run: npm ci
+        shell: bash
+
+      - name: Update VERSION for releases
+        if: startsWith(github.ref, 'refs/tags/')
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+        shell: bash
 
       - name: Build and publish windows package
-        run: npm run package:windows
+        run: npm run package:windows:${{ github.ref == 'refs/heads/master' && 'prod' || 'test' }}
         shell: bash

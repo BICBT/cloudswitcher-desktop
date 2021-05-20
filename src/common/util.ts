@@ -1,16 +1,45 @@
-import { remote, webContents } from 'electron';
+import { app, remote } from 'electron';
+
+export function as<T>(value: T): T {
+  return value;
+}
+
+export function notNull<T>(value: T | null | undefined): T {
+  if (value === null || value === undefined) {
+    throw new Error(`value should not be empty`);
+  }
+  return value;
+}
+
+export function removeKey<T extends object, K extends keyof T>(object: T, key: K): Omit<T, K> {
+  const { [key]: deleted, ...rest } = object;
+  return rest;
+}
+
+export function isMainProcess() {
+  return !(process && process.type === 'renderer');
+}
 
 export function isMainWindow() {
+  if (isMainProcess()) {
+    return false;
+  }
   const url = new URL(window.location.href);
   return url.searchParams.get('window') === 'main';
 }
 
 export function isDialogWindow() {
+  if (isMainProcess()) {
+    return false;
+  }
   const url = new URL(window.location.href);
   return url.searchParams.get('window') === 'dialog';
 }
 
 export function isExternalWindow() {
+  if (isMainProcess()) {
+    return false;
+  }
   const url = new URL(window.location.href);
   return url.searchParams.get('window') === 'external';
 }
@@ -48,8 +77,6 @@ export function replaceUrlParams(url: string, params: object) {
   return url;
 }
 
-export function broadcastMessage(channel: string, ...args: any[]) {
-  webContents.getAllWebContents().forEach(webContents => {
-    webContents.send(channel, ...args);
-  });
+export function isLocal() {
+  return !(app || remote.app).isPackaged;
 }

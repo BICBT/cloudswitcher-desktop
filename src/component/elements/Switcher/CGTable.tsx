@@ -1,11 +1,11 @@
 import './CGTable.scss';
 import React from 'react';
-import { DialogService } from '../../../service/dialogService';
+import { DialogService } from '../../../service/DialogService';
 import { Container } from 'typedi';
-import { CGDesignerDialogResult } from '../../dialogs/CGDesignerDialog/CGDesignerDialog';
+import { CGDesignerDialogDefault, CGDesignerDialogResult } from '../../dialogs/CGDesignerDialog/CGDesignerDialog';
 import { Table } from 'antd';
 import { CG } from '../../../common/types';
-import { CGService } from '../../../service/cgService';
+import { CGService } from '../../../service/CGService';
 import { ColumnType } from 'antd/lib/table/interface';
 
 interface CGTableState {
@@ -51,16 +51,19 @@ export class CGTable extends React.Component<unknown, CGTableState> {
   public constructor(props: unknown) {
     super(props);
     this.state = {
-      cgs: this.cgService.getCGs(),
+      cgs: [],
     };
   }
 
-  public componentDidMount() {
+  public async componentDidMount() {
     this.cgService.cgsChanged.on(this, cgs => {
       this.setState({
         cgs: [...cgs],
       });
       this.forceUpdate();
+    });
+    this.setState({
+      cgs: await this.cgService.getCGs(),
     });
   }
 
@@ -102,12 +105,14 @@ export class CGTable extends React.Component<unknown, CGTableState> {
   }
 
   private async addOrUpdateCG(cg?: CG) {
-    const result = await this.dialogService.showDialog<CGDesignerDialogResult>({
+    const result = await this.dialogService.showDialog<CGDesignerDialogDefault, CGDesignerDialogResult>({
       title: 'CG Designer',
       component: 'CGDesignerDialog',
       width: 1000,
       height: 700,
-    }, cg);
+    }, {
+      cg: cg,
+    });
     if (result?.cg) {
       if (!cg) {
         await this.cgService.addCG(result.cg);

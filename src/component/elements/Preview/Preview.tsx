@@ -1,12 +1,13 @@
 import './Preview.scss';
 import React from 'react';
 import { Container } from 'typedi';
-import { SourceService } from '../../../service/sourceService';
+import { SourceService } from '../../../service/SourceService';
 import { DisplayView } from '../../shared/Display/DisplayView';
 import { Source } from '../../../common/types';
 
 type PreviewState = {
   previewSource?: Source;
+  displayKey: number;
 };
 
 export class Preview extends React.Component<{}, PreviewState> {
@@ -15,20 +16,31 @@ export class Preview extends React.Component<{}, PreviewState> {
   constructor(props: {}) {
     super(props);
     this.state = {
-      previewSource: this.sourceService.previewSource,
+      displayKey: 0,
     };
   }
 
-  public componentDidMount() {
-    this.sourceService.previewChanged.on(this, source => {
+  public async componentDidMount() {
+    this.sourceService.previewChanged.on(this, event => {
       this.setState({
-        previewSource: source,
-      })
+        previewSource: event.current,
+      });
+    });
+    this.sourceService.sourcePreviewChanged.on(this, source => {
+      if (this.state.previewSource?.id === source.id) {
+        this.setState({
+          displayKey: this.state.displayKey + 1,
+        });
+      }
+    });
+    this.setState({
+      previewSource: await this.sourceService.getPreviewSource(),
     });
   }
 
   public componentWillUnmount() {
     this.sourceService.previewChanged.off(this);
+    this.sourceService.sourcePreviewChanged.off(this);
   }
 
   public render() {
@@ -39,9 +51,9 @@ export class Preview extends React.Component<{}, PreviewState> {
             {
               this.state.previewSource &&
               <DisplayView
-                key={this.state.previewSource.sceneId}
-                source={this.state.previewSource}
-                displayId={this.state.previewSource.sceneId}
+                key={`${this.state.previewSource.id}-${this.state.displayKey}`}
+                sourceId={this.state.previewSource.id}
+                displayId={this.state.previewSource.id}
               />
             }
           </div>

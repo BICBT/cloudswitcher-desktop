@@ -1,23 +1,108 @@
-export interface Audio {
-  masterVolume: number;
-  audioWithVideo: boolean;
+export type AudioMode = 'follow' | 'standalone';
+
+export enum RateControl {
+  CBR = 'CBR',
+  VBR = 'VBR',
 }
 
-export interface Source {
+export enum Preset {
+  ultrafast = 'ultrafast',
+  veryfast = 'veryfast',
+  fast = 'fast',
+  medium = 'medium',
+}
+
+export enum Profile {
+  baseline = 'baseline',
+  main = 'main',
+}
+
+export enum Tune {
+  zerolatency = 'zerolatency',
+  default = 'default',
+}
+
+export interface AudioResponse {
+  volume: number;
+  mode: AudioMode;
+}
+
+export interface Audio extends AudioResponse {
+  monitor: boolean;
+}
+
+export interface UpdateAudioRequest {
+  volume?: number;
+  mode?: AudioMode;
+}
+
+export interface SourceResponse {
   id: string;
+  type: SourceType;
   index: number;
-  sceneId: string;
   name: string;
-  url: string;
-  previewUrl: string;
+  url?: string;
+  customPreviewUrl?: string;
+  mediaId?: string;
+  playOnActive?: boolean;
+  hardwareDecoder?: boolean;
   volume: number;
   audioLock: boolean;
-  audioMonitor: boolean;
+  previewUrl: string;
+}
+
+export interface Source extends SourceResponse {
+  monitor: boolean;
+}
+
+export interface AddSourceRequest {
+  index: number;
+  name: string;
+  type: SourceType;
+  url?: string;
+  customPreviewUrl?: string;
+  mediaId?: string;
+  playOnActive?: boolean;
+  hardwareDecoder?: boolean;
+}
+
+export interface UpdateSourceRequest {
+  name?: string;
+  type?: SourceType;
+  url?: string;
+  customPreviewUrl?: string | null;
+  mediaId?: string;
+  playOnActive?: boolean;
+  hardwareDecoder?: boolean;
+  volume?: number;
+  audioLock?: boolean;
+}
+
+export interface Encoding {
+  width: number;
+  height: number;
+  fpsNum: number;
+  fpsDen: number;
+  rateControl: RateControl;
+  preset: Preset;
+  profile: Profile;
+  tune: Tune;
+  keyIntSec: number;
+  videoBitrateKbps: number;
+  samplerate: number;
+  audioBitrateKbps: number;
+  hardwareEnable: boolean;
 }
 
 export interface Output {
+  id: string;
   url: string;
+  encoding: Encoding;
   previewUrl: string;
+}
+
+export interface Preview  {
+  encoding: Encoding;
 }
 
 export enum TransitionType {
@@ -46,33 +131,15 @@ export interface Volmeter {
   inputPeak: number[];
 }
 
-export interface GetSourceResponse {
-  volume: number;
-  audioLock: boolean;
-  audioMonitor: boolean;
-}
-
-export interface UpdateSourceRequest {
-  volume?: number;
-  audioLock?: boolean;
-  audioMonitor?: boolean;
-}
-
-export interface UpdateAudioRequest {
-  audioWithVideo?: boolean;
-  masterVolume?: number;
-  pgmMonitor?: boolean;
-}
-
-export interface DialogProps<T> {
+export interface DialogProps<Default, Result> {
   onModalCancel: () => void;
-  onModalDone: (result: T) => void;
-  defaultValue: any;
+  onModalDone: (result: Result) => void;
+  default: Default;
 }
 
 export type DialogComponent =
-  | 'AddSourceDialog'
-  | 'OutputSettingDialog'
+  | 'SourceDialog'
+  | 'PreferenceDialog'
   | 'CGDesignerDialog';
 
 export interface DialogOptions {
@@ -119,8 +186,60 @@ export interface CGImage extends CGItem {
   url: string;
 }
 
-export interface Image {
+export interface OverlayRequestWrapper {
+  overlay: Omit<Overlay, 'id'>;
+}
+
+export enum MediaType {
+  video = 'video',
+  image = 'image',
+}
+
+export interface Media {
   id: string;
+  type: MediaType;
   name: string;
   url: string;
+  coverUrl?: string;
+}
+
+export interface LoginInfo {
+  username: string,
+  password: string;
+}
+
+export interface LoginResponse {
+  token: string;
+}
+
+export interface Switcher {
+  id: string;
+  name: string;
+  bitrate: number;
+  code: string;
+  format: string;
+  region: string;
+  recordingenable: boolean;
+  switcherstatus:string;
+  host: string;
+  baseUrl: string;
+}
+
+export enum SourceType {
+  live = 'live',
+  media = 'media',
+}
+
+export enum StreamType {
+  rtmp = 'rtmp',
+  srt = 'srt'
+}
+
+export interface UpdateOutputRequest {
+  url: string;
+  encoding: Encoding;
+}
+
+export interface UpdatePreviewRequest {
+  encoding: Encoding;
 }

@@ -4,7 +4,7 @@ import React, { RefObject } from 'react';
 import electron from "electron";
 import { getCurrentDisplay, isMac } from '../../../common/util';
 import { Container } from 'typedi';
-import { DisplayService } from '../../../service/displayService';
+import { ObsService } from '../../../service/ObsService';
 import { Bounds } from '../../../common/types';
 
 type DisplayProps = {
@@ -18,7 +18,7 @@ type DisplayState = {
 const DISPLAY_ELEMENT_POLLING_INTERVAL = 500;
 
 export class Display extends React.Component<DisplayProps, DisplayState> {
-  private readonly displayService = Container.get(DisplayService);
+  private readonly obsService = Container.get(ObsService);
   private readonly electronWindowId: number;
   private readonly name: string;
   private currentPosition: Bounds = { x: 0, y: 0, width: 0, height: 0 };
@@ -34,19 +34,19 @@ export class Display extends React.Component<DisplayProps, DisplayState> {
     };
   }
 
-  public componentDidMount() {
+  public async componentDidMount() {
+    const scaleFactor = getCurrentDisplay().scaleFactor;
+    await this.obsService.createOBSDisplay(this.name, this.electronWindowId, scaleFactor, this.props.displayId);
     if (this.ref.current) {
-      const scaleFactor = getCurrentDisplay().scaleFactor;
-      this.displayService.createOBSDisplay(this.name, this.electronWindowId, scaleFactor, this.props.displayId);
-      this.trackElement(this.ref.current);
+      await this.trackElement(this.ref.current);
     }
   }
 
-  public componentWillUnmount() {
+  public async componentWillUnmount() {
     if (this.trackingInterval) {
       clearInterval(this.trackingInterval);
     }
-    this.displayService.destroyOBSDisplay(this.name)
+    await this.obsService.destroyOBSDisplay(this.name)
   }
 
   public render() {
@@ -61,21 +61,21 @@ export class Display extends React.Component<DisplayProps, DisplayState> {
     );
   }
 
-  private trackElement(element: HTMLElement) {
+  private async trackElement(element: HTMLElement) {
     if (this.trackingInterval) {
       clearInterval(this.trackingInterval);
     }
-    const trackingFun = () => {
+    const trackingFun = async () => {
       const rect = this.getCurrentPosition(element.getBoundingClientRect());
       if (
         rect.x !== this.currentPosition.x ||
         rect.y !== this.currentPosition.y ||
         rect.width !== this.currentPosition.width ||
         rect.height !== this.currentPosition.height) {
-        this.move(rect.x, rect.y, rect.width, rect.height);
+        await this.move(rect.x, rect.y, rect.width, rect.height);
       }
     };
-    trackingFun();
+    await trackingFun();
     this.trackingInterval = window.setInterval(trackingFun, DISPLAY_ELEMENT_POLLING_INTERVAL);
   }
 
@@ -92,31 +92,31 @@ export class Display extends React.Component<DisplayProps, DisplayState> {
     };
   }
 
-  private move(x: number, y: number, width: number, height: number) {
+  private async move(x: number, y: number, width: number, height: number) {
     this.currentPosition.x = x;
     this.currentPosition.y = y;
     this.currentPosition.width = width;
     this.currentPosition.height = height;
-    this.displayService.moveOBSDisplay(this.name, x, y, width, height);
+    await this.obsService.moveOBSDisplay(this.name, x, y, width, height);
   }
 
-  private showFullscreen() {
+  private async showFullscreen() {
     if (this.trackingInterval) {
       clearInterval(this.trackingInterval);
     }
     const bounds = getCurrentDisplay().bounds;
-    this.move(0, 0, bounds.width, bounds.height);
+    await this.move(0, 0, bounds.width, bounds.height);
     this.setState({
       fullscreen: true,
     });
   }
 
-  private hideFullscreen() {
+  private async hideFullscreen() {
     this.setState({
       fullscreen: false,
     });
     if (this.ref.current) {
-      this.trackElement(this.ref.current);
+      await this.trackElement(this.ref.current);
     }
   }
 }

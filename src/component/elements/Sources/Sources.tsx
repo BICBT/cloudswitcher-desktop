@@ -3,7 +3,7 @@ import React from 'react';
 import { Container } from 'typedi';
 import { sequence } from '../../../common/util';
 import { SourceView } from './SourceView';
-import { SourceService } from '../../../service/sourceService';
+import { SourceService } from '../../../service/SourceService';
 import { Source, Transition } from '../../../common/types';
 
 type SourcesProps = {
@@ -15,7 +15,7 @@ type SourcesProps = {
 type SourcesState = {
   rows: number;
   sourceCount: number;
-  sources: Record<number, Source>;
+  sources: Source[];
   previewSource?: Source;
   programTransition?: Transition;
 };
@@ -33,27 +33,30 @@ export class Sources extends React.Component<SourcesProps, SourcesState> {
     this.state = {
       rows: props.rows,
       sourceCount: props.sourceCount,
-      sources: this.sourceService.sources,
-      previewSource: this.sourceService.previewSource,
-      programTransition: this.sourceService.programTransition,
+      sources: [],
     };
   }
 
-  public componentDidMount() {
+  public async componentDidMount() {
     this.sourceService.sourcesChanged.on(this, sources => {
       this.setState({
         sources: sources
       });
     });
-    this.sourceService.previewChanged.on(this, source => {
+    this.sourceService.previewChanged.on(this, event => {
       this.setState({
-        previewSource: source,
+        previewSource: event.current,
       })
     });
-    this.sourceService.programChanged.on(this, transition => {
+    this.sourceService.programChanged.on(this, event => {
       this.setState({
-        programTransition: transition,
+        programTransition: event.current,
       })
+    });
+    this.setState({
+      sources: await this.sourceService.getSources(),
+      previewSource: await this.sourceService.getPreviewSource(),
+      programTransition: await this.sourceService.getProgramTransition(),
     });
   }
 
@@ -78,7 +81,7 @@ export class Sources extends React.Component<SourcesProps, SourcesState> {
         <div className={`SourceView-list sources${this.state.sourceCount}`}>
           {
             sequence(0, this.state.sourceCount - 1).map(index => {
-              const source = this.state.sources[index];
+              const source = this.state.sources.find(s => s.index === index);
               const isPreview = !!source && this.state.previewSource?.id === source?.id;
               const isProgram = !!source && this.state.programTransition?.source?.id === source?.id;
               return (

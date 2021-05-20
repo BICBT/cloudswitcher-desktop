@@ -1,16 +1,16 @@
 import './DialogWindow.scss';
 import React, { ComponentType } from 'react';
-import { TitleBar } from '../../shared/TitleBar/TitleBar';
-import { DialogService } from '../../../service/dialogService';
 import { Container } from 'typedi';
-import { AddSourceDialog } from '../AddSourceDialog/AddSourceDialog';
-import { OutputSettingDialog } from '../OutputSettingDialog/OutputSettingDialog';
 import { DialogComponent, DialogProps } from '../../../common/types';
+import { TitleBar } from '../../shared/TitleBar/TitleBar';
+import { DialogService } from '../../../service/DialogService';
+import { SourceDialog } from '../SourceDialog/SourceDialog';
+import { PreferenceDialog } from '../PreferenceDialog/PreferenceDialog';
 import { CGDesignerDialog } from '../CGDesignerDialog/CGDesignerDialog';
 
-const dialogComponents: Record<DialogComponent, ComponentType<DialogProps<any>>> = {
-  'AddSourceDialog': AddSourceDialog,
-  'OutputSettingDialog': OutputSettingDialog,
+const dialogComponents: Record<DialogComponent, ComponentType<DialogProps<any, any>>> = {
+  'SourceDialog': SourceDialog,
+  'PreferenceDialog': PreferenceDialog,
   'CGDesignerDialog': CGDesignerDialog,
 };
 
@@ -18,7 +18,7 @@ type DialogWindowState = {
   sessionId?: string;
   title?: string
   component?: DialogComponent;
-  defaultValue?: any;
+  default?: any;
 };
 
 export class DialogWindow extends React.Component<{}, DialogWindowState> {
@@ -35,7 +35,7 @@ export class DialogWindow extends React.Component<{}, DialogWindowState> {
         sessionId: request.sessionId,
         title: request.title,
         component: request.component,
-        defaultValue: request.defaultValue,
+        default: request.default,
       });
     });
   }
@@ -60,7 +60,7 @@ export class DialogWindow extends React.Component<{}, DialogWindowState> {
           <DialogComponent
             onModalCancel={() => this.close(undefined)}
             onModalDone={result => this.close(result)}
-            defaultValue={this.state.defaultValue}
+            default={this.state.default}
           />
         }
       </div>
