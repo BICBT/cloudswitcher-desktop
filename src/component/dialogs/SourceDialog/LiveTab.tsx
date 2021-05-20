@@ -13,6 +13,7 @@ export interface LiveState {
   customPreviewUrl: string | null;
   hardwareDecoder?: boolean;
   streamType?: StreamType;
+  showValidation: boolean;
 }
 
 export interface LiveTabProps {
@@ -32,6 +33,7 @@ export function initLiveState(value: SourceDialogDefault): LiveState {
     customPreviewUrl: value.source?.customPreviewUrl || null,
     hardwareDecoder: value.source?.hardwareDecoder,
     streamType: value.source?.url ? getStreamType(value.source?.url) : StreamType.rtmp,
+    showValidation: false,
   };
 }
 
@@ -47,7 +49,10 @@ export class LiveTab extends React.Component<LiveTabProps> {
   public render() {
     return (
       <Form className='LiveTab' layout="vertical">
-        <Form.Item label="Name">
+        <Form.Item
+          validateStatus={this.props.state.showValidation && !this.props.state.name ? 'error' : undefined }
+          help={this.props.state.showValidation && !this.props.state.name ? `Name can't be empty` : undefined }
+          label="Name">
           <Input value={this.props.state.name} onChange={e => this.handleNameChanged(e.target.value)} />
         </Form.Item>
         <Form.Item label="Stream Type">
@@ -56,7 +61,10 @@ export class LiveTab extends React.Component<LiveTabProps> {
             <Select.Option value="srt">SRT</Select.Option>
           </Select>
         </Form.Item>
-        <Form.Item label={
+        <Form.Item
+          validateStatus={this.props.state.showValidation && !this.props.state.url ? 'error' : undefined }
+          help={this.props.state.showValidation && !this.props.state.url ? `Url can't be empty` : undefined }
+          label={
           <div className="StreamUrlLabel">
             <span>Stream Url</span>
             <Tooltip title="Copy stream url to your camera encoder">
@@ -66,7 +74,14 @@ export class LiveTab extends React.Component<LiveTabProps> {
         }>
           <Input value={this.props.state.url} onChange={e => this.handleUrlChanged(e.target.value)} />
         </Form.Item>
-        <Form.Item label="Preview Url (Optional)">
+        <Form.Item label={
+          <div className="PreviewUrlLabel">
+            <span>Preview Url (Optional)</span>
+            <Tooltip title="Set preview url if you already have a low bitrate preview stream">
+              <i className="fas fa-info-circle"/>
+            </Tooltip>
+          </div>
+        }>
           <Input value={this.props.state.customPreviewUrl || undefined} onChange={e => this.handlePreviewUrlChanged(e.target.value)} />
         </Form.Item>
         <Form.Item>

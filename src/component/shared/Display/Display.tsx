@@ -35,9 +35,9 @@ export class Display extends React.Component<DisplayProps, DisplayState> {
   }
 
   public async componentDidMount() {
+    const scaleFactor = getCurrentDisplay().scaleFactor;
+    await this.obsService.createOBSDisplay(this.name, this.electronWindowId, scaleFactor, this.props.displayId);
     if (this.ref.current) {
-      const scaleFactor = getCurrentDisplay().scaleFactor;
-      await this.obsService.createOBSDisplay(this.name, this.electronWindowId, scaleFactor, this.props.displayId);
       await this.trackElement(this.ref.current);
     }
   }
