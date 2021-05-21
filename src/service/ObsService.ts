@@ -106,6 +106,11 @@ export class ObsService {
   }
 
   @ExecuteInMainProcess()
+  public async getSourceServerTimestamp(sourceId: string): Promise<string> {
+    return obs.getSourceServerTimestamp(sourceId, sourceId);
+  }
+
+  @ExecuteInMainProcess()
   public async deleteSource(sourceId: string) {
     obs.removeScene(sourceId);
   }
