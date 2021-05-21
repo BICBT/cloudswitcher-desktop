@@ -98,4 +98,10 @@ h1, h2, h3, h4, h5, h6 {
   .ant-tabs-ink-bar {
     background-color: var(--active-tab);
   }
+  .ant-form-item-has-error .ant-input,
+  .ant-form-item-has-error .ant-input-affix-wrapper,
+  .ant-form-item-has-error .ant-input:hover,
+  .ant-form-item-has-error .ant-input-affix-wrapper:hover {
+    background-color: var(--background);
+  }
 }
