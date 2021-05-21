@@ -65,11 +65,12 @@ export class SwitcherService {
   }
 
   @ExecuteInMainProcess()
-  public async switch(source: Source, transitionType: TransitionType, transitionMs: number) {
+  public async switch(source: Source, transitionType: TransitionType, transitionMs: number, timestamp: string) {
     await axios.post(replaceUrlParams(SWITCH_URL, { baseUrl: this.switcher?.baseUrl, sourceId: source.id }), {
       transitionType: transitionType,
       transitionMs: transitionMs,
-    })
+      timestamp: timestamp,
+    });
   }
 
   @ExecuteInMainProcess()

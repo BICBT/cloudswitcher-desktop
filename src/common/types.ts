@@ -116,7 +116,6 @@ export interface Transition {
   id: string;
   type: TransitionType;
   source: Source;
-  timestamp: number;
 }
 
 export interface Bounds {
