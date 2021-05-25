@@ -13,7 +13,7 @@ export interface ProgramChangedEvent {
 
 export interface PreviewChangedEvent {
   previous?: Source;
-  current: Source;
+  current?: Source;
 }
 
 function getSource(response: SourceResponse): Source {
@@ -65,7 +65,7 @@ export class SourceService {
   }
 
   @ExecuteInMainProcess()
-  public async preview(source: Source): Promise<void> {
+  public async preview(source: Source | undefined): Promise<void> {
     const previous = this.previewSource;
     this.previewSource = source;
     this.previewChanged.emit({ previous: previous, current: this.previewSource });
@@ -138,6 +138,9 @@ export class SourceService {
     await this.obsService.deleteSource(sourceId);
     this.sources.splice(index, 1);
     this.sourcesChanged.emit(this.sources);
+    if (sourceId === this.previewSource?.id) {
+      await this.preview(undefined);
+    }
   }
 
   @ExecuteInMainProcess()
