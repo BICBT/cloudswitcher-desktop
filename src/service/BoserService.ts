@@ -39,7 +39,9 @@ export class BoserService {
       if (previous) {
         this.boser.write(Buffer.from([0x55, 0x0e, previous.index + 33, 0x00, 0x0d, 0x0a]));
       }
-      this.boser.write(Buffer.from([0x55, 0x0e, current.index + 33, 0x02, 0x0d, 0x0a]));
+      if (current) {
+        this.boser.write(Buffer.from([0x55, 0x0e, current.index + 33, 0x02, 0x0d, 0x0a]));
+      }
       this.previewSource = current;
     });
     this.sourceService.programChanged.on(this, ({ previous, current }) => {

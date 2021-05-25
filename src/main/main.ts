@@ -63,6 +63,14 @@ async function startApp() {
     app.exit(0);
   });
 
+  if (isDev) {
+    mainWindow?.webContents.on('before-input-event', (event, input) => {
+      if (input.type === 'keyDown' && input.key === 'F12') {
+        openDevTools();
+      }
+    });
+  }
+
   // dialog window
   dialogWindow = new BrowserWindow({
     title: title,
@@ -108,13 +116,6 @@ async function initialize() {
       });
     }
   });
-  if (isDev) {
-    mainWindow?.webContents.on('before-input-event', (event, input) => {
-      if (input.type === 'keyDown' && input.key === 'F12') {
-        openDevTools();
-      }
-    });
-  }
 
   initialized = true;
   mainWindow?.webContents.send('initialized');

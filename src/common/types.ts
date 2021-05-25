@@ -212,15 +212,20 @@ export interface LoginResponse {
   token: string;
 }
 
+export enum SwitcherType {
+  hd = 'hd',
+  '4k'  = '4k'
+}
+
+export enum Region {
+  beijing = 'beijing',
+}
+
 export interface Switcher {
   id: string;
   name: string;
-  bitrate: number;
-  code: string;
-  format: string;
-  region: string;
-  recordingenable: boolean;
-  switcherstatus:string;
+  type: SwitcherType;
+  region: Region;
   host: string;
   baseUrl: string;
 }
