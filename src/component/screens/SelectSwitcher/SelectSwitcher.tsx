@@ -2,9 +2,8 @@ import './SelectSwitcher.scss';
 import React from 'react';
 import { Table, Space, Divider, Button } from 'antd';
 import axios from 'axios';
-import "antd/dist/antd.css";
 import { SWITCHER_BASE_URL } from '../../../common/constant';
-import { Switcher } from '../../../common/types';
+import { Region, Switcher, SwitcherType } from '../../../common/types';
 import { ipcRenderer, remote } from 'electron';
 import { Container } from 'typedi';
 import { SwitcherService } from '../../../service/SwitcherService';
@@ -18,27 +17,35 @@ export interface SwitcherPageProps {
 export interface SwitcherPageState {
     loading: boolean;
     data: Switcher[];
-    keyIndex: number;
     selectedSwitcherIds: string[];
+}
+
+const Types: Record<SwitcherType, string> = {
+    [SwitcherType.hd]: '高清',
+    [SwitcherType['4k']]: '4K',
+};
+
+const Regions: Record<Region, string> = {
+    [Region.beijing]: '北京',
 }
 
 export class SelectSwitcher extends React.Component<SwitcherPageProps, SwitcherPageState>{
     private readonly switcherService = Container.get(SwitcherService);
     private columns = [
         {
+            key: 'name',
             title: '导播台名称',
             dataIndex: 'name',
-            key: 'name',
         },
         {
+            key: 'type',
             title: '类型',
-            dataIndex: 'format',
-            key: 'format'
+            render: (text: unknown, switcher: Switcher) => <span>{Types[switcher.type] ?? switcher.type}</span>
         },
         {
+            key: 'region',
             title: '地域',
-            dataIndex: 'region',
-            key: 'region'
+            render: (text: unknown, switcher: Switcher) => <span>{Regions[switcher.region] ?? switcher.region}</span>
         },
     ];
 
@@ -47,7 +54,6 @@ export class SelectSwitcher extends React.Component<SwitcherPageProps, SwitcherP
         this.state = {
             loading: false,
             data: [],
-            keyIndex: 0,
             selectedSwitcherIds: [],
         };
         this.startClick = this.startClick.bind(this);
@@ -119,7 +125,7 @@ export class SelectSwitcher extends React.Component<SwitcherPageProps, SwitcherP
         this.setState({
             loading: true,
         });
-        const data = (await axios.get(`${SWITCHER_BASE_URL}/v1/switchers?switcherstatus=started`)).data as Switcher[];
+        const data = (await axios.get(`${SWITCHER_BASE_URL}/v1/switchers?status=started`)).data as Switcher[];
         this.setState({
             loading: false,
             data: data,
