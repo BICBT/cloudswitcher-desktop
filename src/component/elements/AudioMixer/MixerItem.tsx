@@ -5,19 +5,17 @@ import { Box, Slider, SliderFilledTrack, SliderThumb, SliderTrack } from '@chakr
 export interface MixerItemProps {
   index: number;
   pgm: boolean;
-  volume: number
+  volume: number;
+  selectingVolume: number;
   audioLock: boolean;
   monitor: boolean;
   disabled: boolean;
   active: boolean;
   muted: boolean;
+  handleVolumeChanging: (volume: number) => void;
   handleVolumeChanged: (volume: number) => void;
   handleMonitorChanged: (monitor: boolean) => void;
   handleAudioLockChanged: (audioLock: boolean) => void;
-}
-
-export interface MixerItemState {
-  selectingVolume: number;
 }
 
 export const MIN_VOLUME = -60;
@@ -34,13 +32,7 @@ const MixerThumb = () => {
   );
 };
 
-export class MixerItem extends React.Component<MixerItemProps, MixerItemState> {
-  public constructor(props: MixerItemProps) {
-    super(props);
-    this.state = {
-      selectingVolume: props.volume,
-    };
-  }
+export class MixerItem extends React.Component<MixerItemProps> {
 
   public render() {
     return (
@@ -84,7 +76,7 @@ export class MixerItem extends React.Component<MixerItemProps, MixerItemState> {
             isDisabled={this.props.disabled}
             min={MIN_VOLUME}
             max={MAX_VOLUME}
-            value={this.state.selectingVolume}
+            value={this.props.selectingVolume}
             orientation="vertical"
             focusThumbOnChange={false}
             onChange={volume => this.handleVolumeChange(volume)}
@@ -97,7 +89,7 @@ export class MixerItem extends React.Component<MixerItemProps, MixerItemState> {
             </SliderThumb>
           </Slider>
           <div className='slider-right'>
-            <span className='current-value'>{this.state.selectingVolume}dB</span>
+            <span className='current-value'>{this.props.selectingVolume}dB</span>
           </div>
         </div>
         <div className='bottom-bar'>
@@ -122,9 +114,7 @@ export class MixerItem extends React.Component<MixerItemProps, MixerItemState> {
 
   private handleVolumeChange(volume: number): void {
     if (!this.props.disabled) {
-      this.setState({
-        selectingVolume: volume,
-      });
+      this.props.handleVolumeChanging(volume);
     }
   }
 
@@ -136,10 +126,7 @@ export class MixerItem extends React.Component<MixerItemProps, MixerItemState> {
 
   private handleMuteClicked(): void {
     if (!this.props.disabled) {
-      // this will call handleVolumeChangeEnd after selectingVolume is changed
-      this.setState({
-        selectingVolume: MIN_VOLUME,
-      });
+      this.props.handleVolumeChanged(MIN_VOLUME);
     }
   }
 }
