@@ -77,6 +77,10 @@ export function replaceUrlParams(url: string, params: object) {
   return url;
 }
 
+export function replaceItem<T>(array: T[], newItem: T, find: (oldItem: T) => boolean): T[] {
+  return array.map(oldItem => find(oldItem) ? newItem : oldItem);
+}
+
 export function isLocal() {
   return !(app || remote.app).isPackaged;
 }
