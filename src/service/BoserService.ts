@@ -79,7 +79,8 @@ export class BoserService {
           }
           break;
         case 0x31:
-          await this.audioService.updateVolume(Math.round(Number(receivedata[3]) * 60 / 100 - 60));
+          const volume = Math.round(Number(receivedata[3]) * 60 / 100 - 60);
+          await this.audioService.updateVolume(volume);
           this.boser.write(receivedata);
           break;
         case 0x32:

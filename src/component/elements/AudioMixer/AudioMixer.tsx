@@ -1,7 +1,7 @@
 import './AudioMixer.scss';
 import React from 'react';
 import { Container } from 'typedi';
-import { sequence } from '../../../common/util';
+import { replaceItem, sequence } from '../../../common/util';
 import { SOURCE_COUNT } from '../../../common/constant';
 import { MIN_VOLUME, MixerItem } from './MixerItem';
 import { Checkbox } from '@chakra-ui/react';
@@ -10,9 +10,31 @@ import { SourceService } from '../../../service/SourceService';
 import { Source } from '../../../common/types';
 import { Audio } from 'obs-node';
 
+interface MixerSource extends Source {
+  selectingVolume: number;
+}
+
+interface MixerAudio extends Audio {
+  selectingVolume: number;
+}
+
+function getMixerAudio(audio: Audio): MixerAudio {
+  return {
+    ...audio,
+    selectingVolume: audio.volume,
+  };
+}
+
+function getMixerSource(source: Source): MixerSource {
+  return {
+    ...source,
+    selectingVolume: source.volume,
+  };
+}
+
 export interface AudioMixerState {
-  audio?: Audio;
-  sources?: Source[];
+  audio?: MixerAudio;
+  sources: MixerSource[];
   activeSource?: Source;
 }
 
@@ -22,42 +44,36 @@ export class AudioMixer extends React.Component<{}, AudioMixerState> {
 
   public constructor(props: {}) {
     super(props);
-    this.state = {};
+    this.state = {
+      sources: [],
+    };
   }
 
   public async componentDidMount() {
     this.audioService.audioChanged.on(this, audio => {
       this.setState({
-        audio: audio,
+        audio: getMixerAudio(audio),
       });
-      this.forceUpdate();
-    })
+    });
     this.sourceService.sourcesChanged.on(this, sources => {
       this.setState({
-        sources: sources,
+        sources: sources.map(getMixerSource),
       });
-      this.forceUpdate();
     });
     this.sourceService.sourceChanged.on(this, source => {
-      const sources = [...this.state.sources || []];
-      const index = sources.findIndex(s => s.id === source.id);
-      if (index > -1) {
-        sources.splice(index, 1, source);
-        this.setState({
-          sources: sources,
-        });
-        this.forceUpdate();
-      }
+      this.setState({
+        sources: replaceItem(this.state.sources, getMixerSource(source), s => s.id === source.id),
+      });
     });
     this.sourceService.programChanged.on(this, e => {
       this.setState({
         activeSource: e.current.source,
       });
-      this.forceUpdate();
     });
+    const audio = await this.audioService.getAudio();
     this.setState({
-      audio: await this.audioService.getAudio(),
-      sources: await this.sourceService.getSources(),
+      audio: audio && getMixerAudio(audio),
+      sources: (await this.sourceService.getSources()).map(getMixerSource),
       activeSource: (await this.sourceService.getProgramTransition())?.source,
     });
   }
@@ -80,20 +96,21 @@ export class AudioMixer extends React.Component<{}, AudioMixerState> {
         </Checkbox>
         <div className='AudioMixerItems'>
           {
-            this.state.sources &&
             sequence(0, SOURCE_COUNT - 1).map(index => {
-              const source = (this.state.sources || []).find(s => s.index === index);
+              const source = this.state.sources.find(s => s.index === index);
               return (
                 <MixerItem
                   key={source?.id ?? index}
                   index={index}
                   pgm={false}
                   volume={source?.volume ?? MIN_VOLUME}
+                  selectingVolume={source?.selectingVolume ?? MIN_VOLUME}
                   audioLock={source?.audioLock ?? false}
                   monitor={source?.monitor ?? false}
                   disabled={!source}
                   active={source ? this.checkSourceActive(source) : false}
                   muted={source?.volume === MIN_VOLUME}
+                  handleVolumeChanging={volume => source && this.handleSourceVolumeChanging(source, volume)}
                   handleVolumeChanged={volume => source && this.handleSourceVolumeChanged(source, volume)}
                   handleMonitorChanged={monitor => source && this.handleSourceMonitorChanged(source, monitor)}
                   handleAudioLockChanged={audioLock => source && this.handleSourceAudioLockChanged(source, audioLock)}
@@ -108,11 +125,13 @@ export class AudioMixer extends React.Component<{}, AudioMixerState> {
               index={-1}
               pgm={true}
               volume={this.state.audio?.volume ?? MIN_VOLUME}
+              selectingVolume={this.state.audio?.selectingVolume ?? MIN_VOLUME}
               audioLock={false}
               monitor={false}
               disabled={!this.state.audio}
               active={false}
               muted={this.state.audio?.volume === MIN_VOLUME}
+              handleVolumeChanging={volume => this.handleAudioVolumeChanging(volume)}
               handleVolumeChanged={volume => this.handleAudioVolumeChanged(volume)}
               handleMonitorChanged={() => {}}
               handleAudioLockChanged={() => {}}
@@ -132,6 +151,12 @@ export class AudioMixer extends React.Component<{}, AudioMixerState> {
     await this.audioService.updateMode(follow ? 'follow' : 'standalone');
   }
 
+  private handleSourceVolumeChanging(source: Source, volume: number): void {
+    this.setState({
+      sources: replaceItem(this.state.sources, { ...source, selectingVolume: volume }, s => s.id === source.id),
+    });
+  }
+
   private async handleSourceVolumeChanged(source: Source, volume: number): Promise<void> {
     await this.sourceService.updateVolume(source, volume);
   }
@@ -142,6 +167,17 @@ export class AudioMixer extends React.Component<{}, AudioMixerState> {
 
   private async handleSourceAudioLockChanged(source: Source, audioLock: boolean): Promise<void> {
     await this.sourceService.updateAudioLock(source, audioLock);
+  }
+
+  private handleAudioVolumeChanging(volume: number): void {
+    if (this.state.audio) {
+      this.setState({
+        audio: {
+          ...this.state.audio,
+          selectingVolume: volume,
+        },
+      });
+    }
   }
 
   private async handleAudioVolumeChanged(volume: number): Promise<void> {
