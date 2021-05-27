@@ -158,6 +158,7 @@ export interface Overlay {
   name: string;
   type: OverlayType;
   status: OverlayStatus;
+  preview: boolean;
 }
 
 export interface CG extends Overlay {

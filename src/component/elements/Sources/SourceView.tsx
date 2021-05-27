@@ -62,7 +62,7 @@ export class SourceView extends React.Component<SourceViewProps, SourceViewState
               <DisplayView
                 key={`${this.state.source.id}-${this.state.displayKey}`}
                 sourceId={this.state.source.id}
-                displayId={this.state.source.id}
+                displayIds={[this.state.source.id]}
               />
             }
           </div>

@@ -39,11 +39,17 @@ export class CGTable extends React.Component<unknown, CGTableState> {
     {
       key: 'upDown',
       align: 'right',
-      width: 125,
+      width: 300,
       render: (cg: CG) => (
-        <button className="UpDown-button  button button--default" onClick={() => this.handleUpDownClicked(cg)}>
-          { cg.status === 'down' ? 'Up' : 'Down' }
-        </button>
+          <div className='button-cg'>
+            <i className={`Preview-button icon-button fas fa-eye ${cg.preview ? 'selected' : ''}`}
+               title="Show Preview"
+               onClick={() => this.togglePreview(cg)}
+            />
+            <button className="UpDown-button  button button--default" onClick={() => this.handleUpDownClicked(cg)}>
+              {cg.status === 'down' ? 'Up' : 'Down'}
+            </button>
+          </div>
       ),
     }
   ];
@@ -120,6 +126,10 @@ export class CGTable extends React.Component<unknown, CGTableState> {
         await this.cgService.updateCG(result.cg);
       }
     }
+  }
+
+  private async togglePreview(cg: CG): Promise<void> {
+    await this.cgService.previewCG(cg, !cg.preview);
   }
 
   private async handleUpDownClicked(cg: CG) {
