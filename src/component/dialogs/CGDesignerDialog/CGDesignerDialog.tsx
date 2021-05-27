@@ -123,6 +123,7 @@ export class CGDesignerDialog extends React.Component<CGDesignerDialogProps, CGD
         baseWidth: CANVAS_WIDTH,
         baseHeight: CANVAS_HEIGHT,
         items: this.designerRef.current.getCGItems(),
+        preview: this.cg?.preview ?? false,
       },
     });
   }
