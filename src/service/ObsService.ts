@@ -67,9 +67,9 @@ export class ObsService {
   }
 
   @ExecuteInMainProcess()
-  public async createOBSDisplay(name: string, electronWindowId: number, scaleFactor: number, sourceId: string): Promise<void> {
+  public async createOBSDisplay(name: string, electronWindowId: number, scaleFactor: number, displayIds: string[]): Promise<void> {
     const electronWindow = BrowserWindow.fromId(electronWindowId);
-    return obs.createDisplay(name, electronWindow.getNativeWindowHandle(), scaleFactor, sourceId);
+    return obs.createDisplay(name, electronWindow.getNativeWindowHandle(), scaleFactor, displayIds);
   }
 
   @ExecuteInMainProcess()
