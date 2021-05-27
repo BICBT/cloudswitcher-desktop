@@ -102,6 +102,7 @@ export interface Output {
 }
 
 export interface Preview  {
+  type: StreamType;
   encoding: Encoding;
 }
 
@@ -246,5 +247,6 @@ export interface UpdateOutputRequest {
 }
 
 export interface UpdatePreviewRequest {
+  type: StreamType;
   encoding: Encoding;
 }
