@@ -3,7 +3,7 @@ import { ObsService } from './ObsService';
 import { AddSourceRequest, Source, SourceResponse, Transition, TransitionType, UpdateSourceRequest } from '../common/types';
 import { ExecuteInMainProcess, IpcEvent } from '../common/ipc';
 import * as obs from 'obs-node';
-import { isMainProcess, notNull } from '../common/util';
+import { isMainProcess, notNull, replaceItem } from '../common/util';
 import { SwitcherService } from './SwitcherService';
 
 export interface ProgramChangedEvent {
@@ -113,30 +113,24 @@ export class SourceService {
 
   @ExecuteInMainProcess()
   public async updateSource(sourceId: string, request: UpdateSourceRequest): Promise<void> {
-    const index = this.sources.findIndex(s => s.id === sourceId);
-    if (index === -1) {
+    const previous = this.findSource(sourceId);
+    if (!previous) {
       throw new Error(`Can't find source: ${sourceId}`);
     }
-    const lastSource = this.sources[index];
-    const source = getSource(await this.switcherService.updateSource(lastSource, request));
-    this.sources[index] = source;
+    const source = getSource(await this.switcherService.updateSource(previous, request));
     await this.obsService.updateSource(source.id, source.name, source.previewUrl);
-    this.sourcesChanged.emit(this.sources);
+    this.sources = replaceItem(this.sources, source, s => s.id === sourceId);
     this.sourceChanged.emit(source);
-    if (lastSource.previewUrl !== source.previewUrl) {
+    if (previous.previewUrl !== source.previewUrl) {
       this.sourcePreviewChanged.emit(source);
     }
   }
 
   @ExecuteInMainProcess()
   public async deleteSource(sourceId: string): Promise<void> {
-    const index = this.sources.findIndex(s => s.id === sourceId);
-    if (index === -1) {
-      throw new Error(`Can't find source: ${sourceId}`);
-    }
     await this.switcherService.deleteSource(sourceId);
     await this.obsService.deleteSource(sourceId);
-    this.sources.splice(index, 1);
+    this.sources = this.sources.filter(s => s.id !== sourceId);
     this.sourcesChanged.emit(this.sources);
     if (sourceId === this.previewSource?.id) {
       await this.preview(undefined);
@@ -177,8 +171,15 @@ export class SourceService {
 
   @ExecuteInMainProcess()
   public async notifyPreviewChanged(): Promise<void> {
+    const newSources = await this.switcherService.getSources();
     for (const source of this.sources) {
-      await this.obsService.restartSource(source.id);
+      const newSource = newSources.find(s => s.id === source.id);
+      if (newSource && source.previewUrl !== newSource.previewUrl) {
+        source.previewUrl = newSource.previewUrl;
+        await this.obsService.updateSource(source.id, source.name, source.previewUrl);
+      } else {
+        await this.obsService.restartSource(source.id);
+      }
       this.sourcePreviewChanged.emit(source);
     }
   }

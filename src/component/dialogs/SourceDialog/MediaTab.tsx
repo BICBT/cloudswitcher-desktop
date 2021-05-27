@@ -62,6 +62,7 @@ export class MediaTab extends React.Component<MediaTabProps, MediaTabState> {
   public componentWillUnmount() {
     if (this.player) {
       this.player.dispose();
+      this.player = undefined;
     }
   }
 
