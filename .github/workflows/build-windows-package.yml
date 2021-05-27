@@ -46,10 +46,10 @@ jobs:
 
       - name: Download ossutil and copy package to the latest folder
         run: |
-          curl -kL https://gosspublic.alicdn.com/ossutil/1.7.3/ossutil64.zip?spm=a2c63.p38356.a3.5.7ae22454Qs1qHC&file=ossutil64.zip -o ossutil64.zip
-          7z x ossutil64.zip -o"ossutil64"
-          ossutil64/ossutil64.exe config -e ${{ env.OSS_REGION }}.aliyuncs.com -i ${{ env.OSS_ACCESS_KEY }} -k ${{ env.OSS_SECRET_KEY }}
-          ossutil64/ossutil64.exe cp \
+          curl -kL "https://gosspublic.alicdn.com/ossutil/1.7.3/ossutil64.zip?spm=a2c63.p38356.a3.5.7ae22454Qs1qHC&file=ossutil64.zip" -o ossutil64.zip
+          7z x ossutil64.zip -o"ossutil"
+          ossutil/ossutil64/ossutil64.exe config -e ${{ env.OSS_REGION }}.aliyuncs.com -i ${{ env.OSS_ACCESS_KEY }} -k ${{ env.OSS_SECRET_KEY }}
+          ossutil/ossutil64/ossutil64.exe cp \
             oss://${{ env.OSS_BUCKET }}/desktop/${{ env.VERSION }}/win/cloudswitcher-desktop.exe \
             oss://${{ env.OSS_BUCKET }}/desktop/latest/win/cloudswitcher-desktop.exe
         shell: bash
