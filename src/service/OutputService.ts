@@ -16,7 +16,8 @@ export class OutputService {
     if (!isMainProcess()) {
       return;
     }
-    await this.refreshOutput();
+    this.output = await this.switcherService.getOutput();
+    await this.obsService.createSource(this.output.id, 'output', this.output.previewUrl);
   }
 
   @ExecuteInMainProcess()
@@ -27,20 +28,21 @@ export class OutputService {
   @ExecuteInMainProcess()
   public async updateOutput(request: UpdateOutputRequest): Promise<void> {
     await this.switcherService.updateOutput(request);
-    await this.refreshOutput();
+    this.output = await this.switcherService.getOutput();
+    await this.obsService.updateSource(this.output.id, 'output', this.output.previewUrl);
   }
 
   @ExecuteInMainProcess()
   public async notifyPreviewChanged(): Promise<void> {
     if (this.output) {
-      await this.obsService.restartSource(this.output.id);
+      const newOutput = await this.switcherService.getOutput();
+      if (this.output.previewUrl !== newOutput.previewUrl) {
+        this.output.previewUrl = newOutput.previewUrl;
+        await this.obsService.updateSource(this.output.id, 'output', this.output.previewUrl);
+      } else {
+        await this.obsService.restartSource(this.output.id);
+      }
       this.outputChanged.emit(this.output);
     }
-  }
-
-  private async refreshOutput(): Promise<void> {
-    this.output = await this.switcherService.getOutput()
-    await this.obsService.createSource(this.output.id, 'output', this.output.previewUrl);
-    this.outputChanged.emit(this.output);
   }
 }

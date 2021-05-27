@@ -1,7 +1,7 @@
 import React from 'react';
 import { Tabs } from 'antd';
 import { ModalLayout } from '../../shared/ModalLayout/ModalLayout';
-import { DialogProps, Encoding, Output, Preview } from '../../../common/types';
+import { DialogProps, Encoding, Output, Preview, StreamType } from '../../../common/types';
 import { initOutputTabState, OutputTab, OutputTabState } from './OutputTab';
 import { initPreviewTabState, PreviewTab, PreviewTabState } from './PreviewTab';
 
@@ -17,6 +17,7 @@ export interface PreferenceDialogResult {
   };
   outputChanged: boolean;
   preview: {
+    type: StreamType;
     encoding: Encoding;
   }
   previewChanged: boolean;
@@ -83,6 +84,7 @@ export class PreferenceDialog extends React.Component<PreferenceDialogProps, Pre
       },
       outputChanged: this.state.outputChanged,
       preview: {
+        type: this.state.preview.type,
         encoding: this.state.preview.encoding,
       },
       previewChanged: this.state.previewChanged,
