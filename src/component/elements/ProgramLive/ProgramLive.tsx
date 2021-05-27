@@ -46,7 +46,7 @@ export class ProgramLive extends React.Component<{}, ProgramLiveState> {
               <DisplayView
                 key={`${this.state.output.id}-${this.state.displayKey}`}
                 sourceId={this.state.output.id}
-                displayId={this.state.output.id}
+                displayIds={[this.state.output.id]}
               />
             }
           </div>

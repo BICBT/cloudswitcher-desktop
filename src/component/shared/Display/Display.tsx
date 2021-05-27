@@ -8,7 +8,7 @@ import { ObsService } from '../../../service/ObsService';
 import { Bounds } from '../../../common/types';
 
 type DisplayProps = {
-  displayId: string;
+  displayIds: string[];
 };
 
 type DisplayState = {
@@ -36,7 +36,7 @@ export class Display extends React.Component<DisplayProps, DisplayState> {
 
   public async componentDidMount() {
     const scaleFactor = getCurrentDisplay().scaleFactor;
-    await this.obsService.createOBSDisplay(this.name, this.electronWindowId, scaleFactor, this.props.displayId);
+    await this.obsService.createOBSDisplay(this.name, this.electronWindowId, scaleFactor, this.props.displayIds);
     if (this.ref.current) {
       await this.trackElement(this.ref.current);
     }

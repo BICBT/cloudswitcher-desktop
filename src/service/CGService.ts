@@ -81,4 +81,14 @@ export class CGService {
     existing.status = 'down';
     this.cgsChanged.emit(this.cgs);
   }
+
+    @ExecuteInMainProcess()
+    public async previewCG(cg: CG, preview: boolean) {
+        const existing = this.cgs.find(c => c.id === cg.id);
+        if (!existing) {
+            throw new Error(`Can't find cg ${cg.id}`);
+        }
+        existing.preview = preview;
+        this.cgsChanged.emit(this.cgs);
+    }
 }

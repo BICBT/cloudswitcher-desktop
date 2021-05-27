@@ -3,19 +3,27 @@ import React from 'react';
 import { Container } from 'typedi';
 import { SourceService } from '../../../service/SourceService';
 import { DisplayView } from '../../shared/Display/DisplayView';
-import { Source } from '../../../common/types';
+import {Overlay, Source} from '../../../common/types';
+import {CGService} from "../../../service/CGService";
 
 type PreviewState = {
   previewSource?: Source;
+  overlayIds: string[];
   displayKey: number;
 };
 
+export function getPreviewOverlayIds(overlays: Overlay[]): string[] {
+  return overlays.filter(overlay => overlay.preview).map(overlay => overlay.id);
+}
+
 export class Preview extends React.Component<{}, PreviewState> {
   private readonly sourceService: SourceService = Container.get(SourceService);
+  private readonly cgService: CGService = Container.get(CGService);
 
   constructor(props: {}) {
     super(props);
     this.state = {
+      overlayIds: [],
       displayKey: 0,
     };
   }
@@ -33,14 +41,22 @@ export class Preview extends React.Component<{}, PreviewState> {
         });
       }
     });
+    this.cgService.cgsChanged.on(this, cgs => {
+      this.setState({
+        overlayIds: getPreviewOverlayIds(cgs),
+        displayKey: this.state.displayKey + 1,
+      });
+    });
     this.setState({
       previewSource: await this.sourceService.getPreviewSource(),
+      overlayIds: getPreviewOverlayIds(await this.cgService.getCGs()),
     });
   }
 
   public componentWillUnmount() {
     this.sourceService.previewChanged.off(this);
     this.sourceService.sourcePreviewChanged.off(this);
+    this.cgService.cgsChanged.off(this);
   }
 
   public render() {
@@ -53,7 +69,7 @@ export class Preview extends React.Component<{}, PreviewState> {
               <DisplayView
                 key={`${this.state.previewSource.id}-${this.state.displayKey}`}
                 sourceId={this.state.previewSource.id}
-                displayId={this.state.previewSource.id}
+                displayIds={[this.state.previewSource.id, ...this.state.overlayIds]}
               />
             }
           </div>

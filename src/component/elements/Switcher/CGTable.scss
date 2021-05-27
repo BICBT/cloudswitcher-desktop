@@ -21,6 +21,13 @@
     overflow: auto;
   }
 
+  .Preview-button {
+    margin-right: 20px;
+    &.selected {
+      color: var(--title)
+    }
+  }
+
   .UpDown-button  {
     width: 60px;
   }
