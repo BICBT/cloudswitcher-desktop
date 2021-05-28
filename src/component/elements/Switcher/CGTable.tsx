@@ -39,7 +39,7 @@ export class CGTable extends React.Component<unknown, CGTableState> {
     {
       key: 'upDown',
       align: 'right',
-      width: 300,
+      width: 125,
       render: (cg: CG) => (
           <div className='button-cg'>
             <i className={`Preview-button icon-button fas fa-eye ${cg.preview ? 'selected' : ''}`}

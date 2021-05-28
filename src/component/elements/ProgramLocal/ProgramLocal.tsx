@@ -3,8 +3,8 @@ import React from 'react';
 import { Container } from 'typedi';
 import { SourceService } from '../../../service/SourceService';
 import { DisplayView } from '../../shared/Display/DisplayView';
-import {Overlay, Transition} from '../../../common/types';
-import {CGService} from "../../../service/CGService";
+import { Overlay, Transition } from '../../../common/types';
+import { CGService } from "../../../service/CGService";
 
 type ProgramLocalState = {
   programTransition?: Transition;
@@ -37,7 +37,6 @@ export class ProgramLocal extends React.Component<{}, ProgramLocalState> {
     this.cgService.cgsChanged.on(this, cgs => {
       this.setState({
         overlayIds: getUpOverlayIds(cgs),
-        displayKey: this.state.displayKey + 1,
       });
     });
     this.sourceService.sourcePreviewChanged.on(this, source => {
@@ -67,7 +66,7 @@ export class ProgramLocal extends React.Component<{}, ProgramLocalState> {
             {
               this.state.programTransition &&
               <DisplayView
-                key={`${this.state.programTransition.source.id}-${this.state.displayKey}`}
+                key={this.state.displayKey}
                 sourceId={this.state.programTransition.source.id}
                 displayIds={[this.state.programTransition.id, ...this.state.overlayIds]}
               />

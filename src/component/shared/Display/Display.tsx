@@ -2,7 +2,7 @@ import './Display.scss';
 import * as uuid from 'uuid';
 import React, { RefObject } from 'react';
 import electron from "electron";
-import { getCurrentDisplay, isMac } from '../../../common/util';
+import { arraysEquals, getCurrentDisplay, isMac } from '../../../common/util';
 import { Container } from 'typedi';
 import { ObsService } from '../../../service/ObsService';
 import { Bounds } from '../../../common/types';
@@ -36,9 +36,15 @@ export class Display extends React.Component<DisplayProps, DisplayState> {
 
   public async componentDidMount() {
     const scaleFactor = getCurrentDisplay().scaleFactor;
-    await this.obsService.createOBSDisplay(this.name, this.electronWindowId, scaleFactor, this.props.displayIds);
+    await this.obsService.createDisplay(this.name, this.electronWindowId, scaleFactor, this.props.displayIds);
     if (this.ref.current) {
       await this.trackElement(this.ref.current);
+    }
+  }
+
+  public async componentDidUpdate(prevProps: Readonly<DisplayProps>, prevState: Readonly<DisplayState>) {
+    if (!arraysEquals(this.props.displayIds, prevProps.displayIds)) {
+      await this.obsService.updateDisplay(this.name, this.props.displayIds);
     }
   }
 
@@ -46,7 +52,7 @@ export class Display extends React.Component<DisplayProps, DisplayState> {
     if (this.trackingInterval) {
       clearInterval(this.trackingInterval);
     }
-    await this.obsService.destroyOBSDisplay(this.name)
+    await this.obsService.destroyDisplay(this.name)
   }
 
   public render() {
@@ -97,7 +103,7 @@ export class Display extends React.Component<DisplayProps, DisplayState> {
     this.currentPosition.y = y;
     this.currentPosition.width = width;
     this.currentPosition.height = height;
-    await this.obsService.moveOBSDisplay(this.name, x, y, width, height);
+    await this.obsService.moveDisplay(this.name, x, y, width, height);
   }
 
   private async showFullscreen() {
