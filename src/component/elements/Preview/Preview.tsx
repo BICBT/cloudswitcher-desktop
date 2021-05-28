@@ -3,8 +3,8 @@ import React from 'react';
 import { Container } from 'typedi';
 import { SourceService } from '../../../service/SourceService';
 import { DisplayView } from '../../shared/Display/DisplayView';
-import {Overlay, Source} from '../../../common/types';
-import {CGService} from "../../../service/CGService";
+import { Overlay, Source } from '../../../common/types';
+import { CGService } from "../../../service/CGService";
 
 type PreviewState = {
   previewSource?: Source;
@@ -44,7 +44,6 @@ export class Preview extends React.Component<{}, PreviewState> {
     this.cgService.cgsChanged.on(this, cgs => {
       this.setState({
         overlayIds: getPreviewOverlayIds(cgs),
-        displayKey: this.state.displayKey + 1,
       });
     });
     this.setState({
@@ -67,7 +66,7 @@ export class Preview extends React.Component<{}, PreviewState> {
             {
               this.state.previewSource &&
               <DisplayView
-                key={`${this.state.previewSource.id}-${this.state.displayKey}`}
+                key={this.state.displayKey}
                 sourceId={this.state.previewSource.id}
                 displayIds={[this.state.previewSource.id, ...this.state.overlayIds]}
               />
