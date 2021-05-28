@@ -67,19 +67,24 @@ export class ObsService {
   }
 
   @ExecuteInMainProcess()
-  public async createOBSDisplay(name: string, electronWindowId: number, scaleFactor: number, displayIds: string[]): Promise<void> {
+  public async createDisplay(name: string, electronWindowId: number, scaleFactor: number, sourceIds: string[]): Promise<void> {
     const electronWindow = BrowserWindow.fromId(electronWindowId);
-    return obs.createDisplay(name, electronWindow.getNativeWindowHandle(), scaleFactor, displayIds);
+    return obs.createDisplay(name, electronWindow.getNativeWindowHandle(), scaleFactor, sourceIds);
   }
 
   @ExecuteInMainProcess()
-  public async moveOBSDisplay(name: string, x: number, y: number, width: number, height: number): Promise<void> {
+  public async moveDisplay(name: string, x: number, y: number, width: number, height: number): Promise<void> {
     return obs.moveDisplay(name, x, y, width, height);
   }
 
   @ExecuteInMainProcess()
-  public async destroyOBSDisplay(name: string): Promise<void> {
+  public async destroyDisplay(name: string): Promise<void> {
     return obs.destroyDisplay(name);
+  }
+
+  @ExecuteInMainProcess()
+  public async updateDisplay(name: string, sourceIds: string[]): Promise<void> {
+    return obs.updateDisplay(name, sourceIds);
   }
 
   @ExecuteInMainProcess()
