@@ -26,6 +26,7 @@
     "@emotion/react": "^11.1.2",
     "@emotion/styled": "^11.0.0",
     "@fortawesome/fontawesome-free": "^5.14.0",
+    "@sentry/electron": "^2.4.1",
     "antd": "^4.12.3",
     "atem": "^0.1.8",
     "axios": "^0.19.2",

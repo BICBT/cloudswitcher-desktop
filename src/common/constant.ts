@@ -17,3 +17,5 @@ export const SWITCHER_BASE_URL = process.env.REACT_APP_SWITCHER_BASE_URL || '';
 export const MEDIA_BASE_URL = process.env.REACT_APP_MEDIA_BASE_URL || '';
 
 export const SOURCE_COUNT = 12;
+
+export const SENTRY_DSN = 'https://e198225ab25c41f6ac2660f9e72c715d@o789714.ingest.sentry.io/5800033';

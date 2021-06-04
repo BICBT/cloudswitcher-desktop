@@ -6,14 +6,23 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { ipcRenderer } from 'electron';
 import * as serviceWorker from './serviceWorker';
-import { App } from './App';
 import { ChakraProvider } from '@chakra-ui/react';
 import { HashRouter } from "react-router-dom";
 import axios from "axios";
 import { Container } from 'typedi';
+import isDev from 'electron-is-dev';
+import * as Sentry from '@sentry/electron';
+import { App } from './App';
 import { DialogService } from './service/DialogService';
 import { IpcService } from './service/IpcService';
 import { StorageService } from './service/StorageService';
+import { SENTRY_DSN } from './common/constant';
+
+Sentry.init({
+  dsn: SENTRY_DSN,
+  debug: true,
+  environment: isDev ? 'dev' : 'prod',
+});
 
 const dialogService = Container.get(DialogService);
 const ipcService = Container.get(IpcService);
