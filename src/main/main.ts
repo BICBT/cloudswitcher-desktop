@@ -1,9 +1,19 @@
 import 'reflect-metadata';
 import * as path from 'path';
 import * as os from 'os';
+import { Container } from 'typedi';
 import { app, BrowserWindow, ipcMain } from 'electron';
 import isDev from 'electron-is-dev';
-import { Container } from 'typedi';
+import * as Sentry from '@sentry/electron';
+import { SENTRY_DSN } from '../common/constant';
+
+// Add sentry before any application code
+Sentry.init({
+  dsn: SENTRY_DSN,
+  debug: true,
+  environment: isDev ? 'dev' : 'prod',
+});
+
 import { isMac } from '../common/util';
 import { SourceService } from '../service/SourceService';
 import { ObsService } from '../service/ObsService';
