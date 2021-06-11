@@ -5,7 +5,7 @@ import { Container } from 'typedi';
 import { app, BrowserWindow, ipcMain } from 'electron';
 import isDev from 'electron-is-dev';
 import * as Sentry from '@sentry/electron';
-import { SENTRY_DSN } from '../common/constant';
+import { ENV, SENTRY_DSN } from '../common/constant';
 
 // Add sentry before any application code
 Sentry.init({
@@ -23,7 +23,12 @@ import { CGService } from '../service/CGService';
 import { IpcService } from '../service/IpcService';
 import { OutputService } from '../service/OutputService';
 
-const title = `Cloud Switcher`;
+let title = `Cloud Switcher`;
+if (ENV === 'dev') {
+  title += ' (Development)'
+} else if (ENV === 'test') {
+  title += ' (Test)'
+}
 const loadUrl = isDev ? 'http://localhost:3000' : `file://${path.join(__dirname, '../index.html')}`;
 
 let mainWindow: BrowserWindow | undefined;
