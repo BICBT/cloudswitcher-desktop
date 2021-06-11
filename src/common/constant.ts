@@ -1,6 +1,7 @@
 import * as path from 'path';
 import isDev from 'electron-is-dev';
 import * as dotenv from 'dotenv';
+import { Environment } from './types';
 import { isLocal } from './util';
 
 // load env files for production package
@@ -9,6 +10,8 @@ if (!isDev) {
   console.log(`Load config from ${p}`);
   dotenv.config({ path: p });
 }
+
+export const ENV = (process.env.REACT_APP_ENV || 'dev') as Environment;
 
 export const AUTH_BASE_URL = process.env.REACT_APP_AUTH_BASE_URL || '';
 
