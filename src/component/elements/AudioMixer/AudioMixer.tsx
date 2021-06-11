@@ -7,8 +7,7 @@ import { MIN_VOLUME, MixerItem } from './MixerItem';
 import { Checkbox } from '@chakra-ui/react';
 import { AudioService } from '../../../service/AudioService';
 import { SourceService } from '../../../service/SourceService';
-import { Source } from '../../../common/types';
-import { Audio } from 'obs-node';
+import { Source, Audio } from '../../../common/types';
 
 interface MixerSource extends Source {
   selectingVolume: number;
@@ -127,13 +126,13 @@ export class AudioMixer extends React.Component<{}, AudioMixerState> {
               volume={this.state.audio?.volume ?? MIN_VOLUME}
               selectingVolume={this.state.audio?.selectingVolume ?? MIN_VOLUME}
               audioLock={false}
-              monitor={false}
+              monitor={this.state.audio?.monitor}
               disabled={!this.state.audio}
               active={false}
               muted={this.state.audio?.volume === MIN_VOLUME}
               handleVolumeChanging={volume => this.handleAudioVolumeChanging(volume)}
               handleVolumeChanged={volume => this.handleAudioVolumeChanged(volume)}
-              handleMonitorChanged={() => {}}
+              handleMonitorChanged={monitor => this.handleAudioMonitorChanged(monitor)}
               handleAudioLockChanged={() => {}}
             />
           }
@@ -182,5 +181,9 @@ export class AudioMixer extends React.Component<{}, AudioMixerState> {
 
   private async handleAudioVolumeChanged(volume: number): Promise<void> {
     await this.audioService.updateVolume(volume);
+  }
+
+  private async handleAudioMonitorChanged(monitor: boolean): Promise<void> {
+    await this.audioService.monitor(monitor);
   }
 }

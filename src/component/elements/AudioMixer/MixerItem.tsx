@@ -39,7 +39,6 @@ export class MixerItem extends React.Component<MixerItemProps> {
       <div className='MixerItem'>
         <div className='toolbar'>
           {
-            !this.props.pgm &&
             <i className={`icon-button ${this.props.disabled ? 'disabled' : ''} ${this.props.monitor ? 'active' : ''}`}
                onClick={() => this.handleMonitorClicked()}>
               {
