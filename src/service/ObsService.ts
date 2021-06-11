@@ -28,12 +28,9 @@ export class ObsService {
     if (!isMainProcess()) {
       return;
     }
-    if (isDev || isLocal()) {
-      obs.setFontPath(path.resolve(process.cwd(), 'src/fonts'));
-    } else {
-      obs.setFontPath(path.resolve(process.resourcesPath, 'fonts'));
-    }
+    const fontPath = isDev || isLocal() ? path.resolve(process.cwd(), 'src/fonts') : path.resolve(process.resourcesPath, 'fonts');
     obs.startup({
+      fontDirectory: fontPath,
       video: OBS_VIDEO_SETTINGS,
       audio: OBS_AUDIO_SETTINGS,
     });

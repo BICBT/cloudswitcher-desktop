@@ -1,3 +1,5 @@
+export type Environment = 'dev' | 'test' | 'prod';
+
 export type AudioMode = 'follow' | 'standalone';
 
 export enum RateControl {
