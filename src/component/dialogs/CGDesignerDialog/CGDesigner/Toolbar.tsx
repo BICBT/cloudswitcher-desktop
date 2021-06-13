@@ -187,7 +187,7 @@ export class Toolbar extends Component<ToolbarProps, ToolbarState> {
   togglePreview = async () => {
     if (this.state.showPreview) {
       this.props.canvas.backgroundImage = undefined;
-      this.props.canvas.renderAll();
+      this.props.canvas.requestRenderAll();
     } else {
       const previewSource = await this.sourceSource.getPreviewSource();
       if (previewSource) {
@@ -195,7 +195,7 @@ export class Toolbar extends Component<ToolbarProps, ToolbarState> {
         fabric.Image.fromURL(`data:image/png;base64,${imageBase64}`, (image) => {
           image.scaleToWidth(this.props.canvas.width ?? 0);
           this.props.canvas.backgroundImage = image;
-          this.props.canvas.renderAll();
+          this.props.canvas.requestRenderAll();
         });
       }
     }
@@ -232,14 +232,14 @@ export class Toolbar extends Component<ToolbarProps, ToolbarState> {
     this.props.canvas.getActiveObjects().forEach(o => {
       this.props.canvas.bringToFront(o);
     });
-    this.props.canvas.renderAll();
+    this.props.canvas.requestRenderAll();
   };
 
   sendBackwards = () => {
     this.props.canvas.getActiveObjects().forEach(o => {
       this.props.canvas.sendBackwards(o);
     });
-    this.props.canvas.renderAll();
+    this.props.canvas.requestRenderAll();
   };
 
   deleteObject = () => {
@@ -259,9 +259,10 @@ export class Toolbar extends Component<ToolbarProps, ToolbarState> {
       if (object && object.type === 'text') {
         const text = object as fabric.Textbox;
         text.setOptions(options);
+        text.setSelectionStyles(options, 0); // fix fabricjs bug
       }
     });
-    this.props.canvas.renderAll();
+    this.props.canvas.requestRenderAll();
     this.forceUpdate();
   }
 
@@ -284,7 +285,7 @@ export class Toolbar extends Component<ToolbarProps, ToolbarState> {
     } else if ((!isMac() && input.key === 'Delete') || (isMac() && input.key === 'Backspace')) {
       this.deleteObject();
     }
-    this.props.canvas?.renderAll();
+    this.props.canvas?.requestRenderAll();
     this.forceUpdate();
   }
 
@@ -307,7 +308,7 @@ export class Toolbar extends Component<ToolbarProps, ToolbarState> {
   private copy() {
     this.copiedObjects.length = 0;
     (this.props.canvas?.getActiveObjects() || []).forEach(o => {
-      this.copiedObjects.push(fabric.util.object.clone(o));
+      this.copiedObjects.push(o);
     });
   }
 
@@ -315,14 +316,15 @@ export class Toolbar extends Component<ToolbarProps, ToolbarState> {
     const copiedObjects = [...this.copiedObjects];
     this.copiedObjects.length = 0;
     copiedObjects.forEach(o => {
-      const copied = fabric.util.object.clone(o);
-      copied.left = (o.left ?? 0) + 10;
-      copied.top = (o.top ?? 0) + 10;
-      this.copiedObjects.push(copied);
-      this.props.canvas?.add(copied);
-      this.props.canvas?.setActiveObject(copied);
-      this.props.canvas?.renderAll();
+      o.clone((copied: fabric.Object) => {
+        copied.left = (o.left ?? 0) + 10;
+        copied.top = (o.top ?? 0) + 10;
+        this.copiedObjects.push(copied);
+        this.props.canvas?.add(copied);
+        this.props.canvas?.setActiveObject(copied);
+      });
     });
+    this.props.canvas?.requestRenderAll();
   }
 
   private isEditing(): boolean {

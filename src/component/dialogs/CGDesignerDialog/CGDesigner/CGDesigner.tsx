@@ -39,7 +39,7 @@ export class CGDesigner extends React.Component<CGDesignerProps, CGDesignerState
   public getCGItems(): CGItem[] {
     const items: CGItem[] = [];
     if (this.state.canvas) {
-      this.state.canvas.discardActiveObject().renderAll();
+      this.state.canvas.discardActiveObject().requestRenderAll();
       this.state.canvas.getObjects().forEach(o => {
         if (o.type === 'image') {
           const image: CGImage = {
@@ -160,7 +160,7 @@ export class CGDesigner extends React.Component<CGDesignerProps, CGDesignerState
         this.addText(text.x, text.y, text.width, text.height, text.content, text.fontSize, text.fontFamily, abgrToHex(text.colorABGR));
       }
     }
-    this.state.canvas?.discardActiveObject().renderAll();
+    this.state.canvas?.discardActiveObject().requestRenderAll();
   }
 
   private addText(x: number, y: number, width: number, height: number, content: string, fontSize: number, fontFamily: string, textColor: string) {
@@ -174,6 +174,7 @@ export class CGDesigner extends React.Component<CGDesignerProps, CGDesignerState
       fontFamily: fontFamily,
       fill: textColor,
       padding: 0,
+      objectCaching: false,
     });
     text.setControlsVisibility({
       tl: false,
@@ -186,7 +187,7 @@ export class CGDesigner extends React.Component<CGDesignerProps, CGDesignerState
     });
     this.state.canvas?.add(text);
     this.state.canvas?.setActiveObject(text);
-    this.state.canvas?.renderAll();
+    this.state.canvas?.requestRenderAll();
   };
 
   private async addImage(x: number, y: number, width: number, url: string): Promise<fabric.Image> {
