@@ -93,7 +93,6 @@ export interface Encoding {
   videoBitrateKbps: number;
   samplerate: number;
   audioBitrateKbps: number;
-  hardwareEnable: boolean;
 }
 
 export interface Output {
