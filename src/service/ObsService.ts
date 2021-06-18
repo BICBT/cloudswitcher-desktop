@@ -48,7 +48,6 @@ export class ObsService {
       name: name,
       type: 'live',
       url: url,
-      hardwareDecoder: true,
       bufferingMb: 0,
     });
   }
