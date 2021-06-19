@@ -1,6 +1,6 @@
 import React from 'react';
 import { Encoding, Preset, Profile, RateControl, Tune } from '../../../common/types';
-import { Checkbox, Form, Input, Select } from 'antd';
+import { Form, Input, Select } from 'antd';
 
 export interface EncodingViewProps {
   encoding: Encoding;
@@ -76,11 +76,6 @@ export class EncodingView extends React.Component<EncodingViewProps> {
         <Form.Item label="Audio Bitrate (kbps)">
           <Input value={this.props.encoding.audioBitrateKbps} onChange={e => this.handleAudioBitrateChanged(e.target.value)} />
         </Form.Item>
-        <Form.Item>
-          <Checkbox checked={this.props.encoding.hardwareEnable} onChange={e => this.handleHardwareEnableChanged(e.target.checked)}>
-            GPU Enable
-          </Checkbox>
-        </Form.Item>
       </div>
     );
   }
@@ -154,13 +149,6 @@ export class EncodingView extends React.Component<EncodingViewProps> {
     this.props.handleEncodingChanged({
       ...this.props.encoding,
       audioBitrateKbps: Number(bitrate),
-    });
-  }
-
-  private handleHardwareEnableChanged(hardwareEnable: boolean) {
-    this.props.handleEncodingChanged({
-      ...this.props.encoding,
-      hardwareEnable: hardwareEnable,
     });
   }
 }
