@@ -41,7 +41,7 @@
     "fs-extra": "^9.0.0",
     "moment": "^2.27.0",
     "nan": "^2.14.0",
-    "obs-node": "git+https://github.com/BICBT/obs-node.git#v1.1.13",
+    "obs-node": "git+https://github.com/BICBT/obs-node.git#v1.1.14",
     "react": "^16.13.1",
     "react-color": "^2.19.3",
     "react-data-table-component": "^6.11.0",
