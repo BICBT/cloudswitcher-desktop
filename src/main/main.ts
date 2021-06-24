@@ -22,6 +22,7 @@ import { BoserService } from '../service/BoserService';
 import { CGService } from '../service/CGService';
 import { IpcService } from '../service/IpcService';
 import { OutputService } from '../service/OutputService';
+import { UpdateService } from "../service/UpdateService";
 
 let title = `Cloud Switcher`;
 if (ENV === 'dev') {
@@ -42,6 +43,7 @@ const outputService = Container.get(OutputService);
 const audioService = Container.get(AudioService);
 const boserService = Container.get(BoserService);
 const cgService = Container.get(CGService);
+const updateService = Container.get(UpdateService);
 let initialized = false;
 
 function openDevTools() {
@@ -57,13 +59,15 @@ async function startApp() {
   }
 
   await ipcService.initialize();
+  await updateService.initialize();
 
   // main window
   mainWindow = new BrowserWindow({
     title: title,
     maximizable: true,
-    width: 450,
-    height: 550,
+    width: 500,
+    height: 600,
+    show: false,
     webPreferences: {
       nodeIntegration: true,
       enableRemoteModule: true,

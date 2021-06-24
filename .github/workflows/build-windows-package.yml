@@ -13,7 +13,6 @@ env:
   OSS_REGION: ${{ secrets.OSS_REGION }}
   OSS_ACCESS_KEY: ${{ secrets.OSS_ACCESS_KEY }}
   OSS_SECRET_KEY: ${{ secrets.OSS_SECRET_KEY }}
-  VERSION: ${{ github.sha }}
 
 jobs:
   build:
@@ -35,21 +34,21 @@ jobs:
         run: npm ci
         shell: bash
 
-      - name: Update VERSION for releases
-        if: startsWith(github.ref, 'refs/tags/')
-        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
-        shell: bash
-
       - name: Build and publish windows package
         run: npm run package:windows:${{ github.ref == 'refs/heads/master' && 'prod' || 'test' }}
         shell: bash
+
+      - name: Get package version
+        id: package-version
+        uses: martinbeentjes/npm-get-version-action@master
 
       - name: Download ossutil and copy package to the latest folder
         run: |
           curl -kL "https://gosspublic.alicdn.com/ossutil/1.7.3/ossutil64.zip?spm=a2c63.p38356.a3.5.7ae22454Qs1qHC&file=ossutil64.zip" -o ossutil64.zip
           7z x ossutil64.zip -o"ossutil"
           ossutil/ossutil64/ossutil64.exe config -e ${{ env.OSS_REGION }}.aliyuncs.com -i ${{ env.OSS_ACCESS_KEY }} -k ${{ env.OSS_SECRET_KEY }}
-          ossutil/ossutil64/ossutil64.exe cp -f \
-            oss://${{ env.OSS_BUCKET }}/desktop/${{ env.VERSION }}/win/cloudswitcher-desktop.exe \
-            oss://${{ env.OSS_BUCKET }}/desktop/latest/win/cloudswitcher-desktop.exe
+          ossutil/ossutil64/ossutil64.exe cp -f "dist/cloudswitcher-desktop Setup {{ steps.package-version.outputs.current-version }}.exe" "oss://${{ env.OSS_BUCKET }}/desktop/win/cloudswitcher-desktop Setup {{ steps.package-version.outputs.current-version }}.exe"
+          ossutil/ossutil64/ossutil64.exe cp -f "dist/cloudswitcher-desktop Setup {{ steps.package-version.outputs.current-version }}.exe.blockmap" "oss://${{ env.OSS_BUCKET }}/desktop/win/cloudswitcher-desktop Setup {{ steps.package-version.outputs.current-version }}.exe.blockmap"
+          ossutil/ossutil64/ossutil64.exe cp -f "dist/latest.yml" "oss://${{ env.OSS_BUCKET }}/desktop/win/latest.yml"
+          ossutil/ossutil64/ossutil64.exe cp -f "oss://${{ env.OSS_BUCKET }}/desktop/win/cloudswitcher-desktop Setup {{ steps.package-version.outputs.current-version }}.exe" "oss://${{ env.OSS_BUCKET }}/desktop/win/latest/cloudswitcher-desktop.exe"
         shell: bash
