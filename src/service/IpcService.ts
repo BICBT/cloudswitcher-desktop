@@ -11,6 +11,7 @@ import { OutputService } from './OutputService';
 import { AudioService } from './AudioService';
 import { PreviewService } from './PreviewService';
 import { StorageService } from './StorageService';
+import { UpdateService } from "./UpdateService";
 
 interface Resolver {
   resolve: (result: any)  => void;
@@ -26,6 +27,7 @@ const IpcServices: Record<string, object> = {
   'AudioService': Container.get(AudioService),
   'PreviewService': Container.get(PreviewService),
   'StorageService': Container.get(StorageService),
+  'UpdateService': Container.get(UpdateService),
 };
 
 @Service()

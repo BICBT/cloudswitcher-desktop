@@ -7,11 +7,13 @@ import { DialogService } from '../../../service/DialogService';
 import { SourceDialog } from '../SourceDialog/SourceDialog';
 import { PreferenceDialog } from '../PreferenceDialog/PreferenceDialog';
 import { CGDesignerDialog } from '../CGDesignerDialog/CGDesignerDialog';
+import { UpdateDialog } from "../UpdateDialog/UpdateDialog";
 
 const dialogComponents: Record<DialogComponent, ComponentType<DialogProps<any, any>>> = {
   'SourceDialog': SourceDialog,
   'PreferenceDialog': PreferenceDialog,
   'CGDesignerDialog': CGDesignerDialog,
+  'UpdateDialog': UpdateDialog,
 };
 
 type DialogWindowState = {
@@ -73,7 +75,8 @@ export class DialogWindow extends React.Component<{}, DialogWindowState> {
       sessionId: undefined,
       title: undefined,
       component: undefined,
+    }, () => {
+      this.dialogService.closeDialog(sessionId, result);
     });
-    this.dialogService.closeDialog(sessionId, result);
   }
 }

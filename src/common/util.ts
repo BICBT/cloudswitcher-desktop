@@ -94,3 +94,7 @@ export function arraysEquals<T>(a1: T[], a2: T[]): boolean {
   }
   return true;
 }
+
+export function getPackageVersion(): string {
+  return process.env.npm_package_version || (app || remote.app).getVersion();
+}

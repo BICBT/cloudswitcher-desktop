@@ -142,7 +142,8 @@ export interface DialogProps<Default, Result> {
 export type DialogComponent =
   | 'SourceDialog'
   | 'PreferenceDialog'
-  | 'CGDesignerDialog';
+  | 'CGDesignerDialog'
+  | 'UpdateDialog';
 
 export interface DialogOptions {
   title: string;
