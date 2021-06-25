@@ -48,8 +48,8 @@ jobs:
           curl -kL "https://gosspublic.alicdn.com/ossutil/1.7.3/ossutil64.zip?spm=a2c63.p38356.a3.5.7ae22454Qs1qHC&file=ossutil64.zip" -o ossutil64.zip
           7z x ossutil64.zip -o"ossutil"
           ossutil/ossutil64/ossutil64.exe config -e ${{ env.OSS_REGION }}.aliyuncs.com -i ${{ env.OSS_ACCESS_KEY }} -k ${{ env.OSS_SECRET_KEY }}
-          ossutil/ossutil64/ossutil64.exe cp -f "dist/cloudswitcher-desktop Setup {{ env.VERSION }}.exe" "oss://${{ env.OSS_BUCKET }}/desktop/win/cloudswitcher-desktop Setup {{ env.VERSION }}.exe"
-          ossutil/ossutil64/ossutil64.exe cp -f "dist/cloudswitcher-desktop Setup {{ env.VERSION }}.exe.blockmap" "oss://${{ env.OSS_BUCKET }}/desktop/win/cloudswitcher-desktop Setup {{ env.VERSION }}.exe.blockmap"
+          ossutil/ossutil64/ossutil64.exe cp -f "dist/cloudswitcher-desktop Setup ${{ env.VERSION }}.exe" "oss://${{ env.OSS_BUCKET }}/desktop/win/cloudswitcher-desktop Setup ${{ env.VERSION }}.exe"
+          ossutil/ossutil64/ossutil64.exe cp -f "dist/cloudswitcher-desktop Setup ${{ env.VERSION }}.exe.blockmap" "oss://${{ env.OSS_BUCKET }}/desktop/win/cloudswitcher-desktop Setup ${{ env.VERSION }}.exe.blockmap"
           ossutil/ossutil64/ossutil64.exe cp -f "dist/latest.yml" "oss://${{ env.OSS_BUCKET }}/desktop/win/latest.yml"
-          ossutil/ossutil64/ossutil64.exe cp -f "oss://${{ env.OSS_BUCKET }}/desktop/win/cloudswitcher-desktop Setup {{ env.VERSION }}.exe" "oss://${{ env.OSS_BUCKET }}/desktop/win/latest/cloudswitcher-desktop.exe"
+          ossutil/ossutil64/ossutil64.exe cp -f "oss://${{ env.OSS_BUCKET }}/desktop/win/cloudswitcher-desktop Setup ${{ env.VERSION }}.exe" "oss://${{ env.OSS_BUCKET }}/desktop/win/latest/cloudswitcher-desktop.exe"
         shell: bash
