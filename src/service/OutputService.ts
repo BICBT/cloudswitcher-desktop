@@ -30,6 +30,7 @@ export class OutputService {
     await this.switcherService.updateOutput(request);
     this.output = await this.switcherService.getOutput();
     await this.obsService.updateSource(this.output.id, 'output', this.output.previewUrl);
+    await this.notifyPreviewChanged();
   }
 
   @ExecuteInMainProcess()

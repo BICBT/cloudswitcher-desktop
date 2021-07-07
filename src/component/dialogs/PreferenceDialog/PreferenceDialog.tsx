@@ -14,6 +14,7 @@ export interface PreferenceDialogResult {
   output: {
     url: string;
     encoding: Encoding;
+    delaySec: number;
   };
   outputChanged: boolean;
   preview: {
@@ -81,6 +82,7 @@ export class PreferenceDialog extends React.Component<PreferenceDialogProps, Pre
       output: {
         url: this.state.output.url,
         encoding: this.state.output.encoding,
+        delaySec: this.state.output.delaySec,
       },
       outputChanged: this.state.outputChanged,
       preview: {
