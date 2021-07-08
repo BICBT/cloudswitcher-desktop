@@ -100,6 +100,7 @@ export interface Output {
   url: string;
   encoding: Encoding;
   previewUrl: string;
+  delaySec: number;
 }
 
 export interface Preview  {
@@ -247,6 +248,7 @@ export enum StreamType {
 export interface UpdateOutputRequest {
   url: string;
   encoding: Encoding;
+  delaySec: number;
 }
 
 export interface UpdatePreviewRequest {

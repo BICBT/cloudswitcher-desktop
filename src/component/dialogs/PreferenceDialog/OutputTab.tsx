@@ -6,6 +6,7 @@ import { Encoding, Output } from '../../../common/types';
 export interface OutputTabState {
   url: string;
   encoding: Encoding;
+  delaySec: number;
 }
 
 export interface OutputTabProps {
@@ -17,6 +18,7 @@ export function initOutputTabState(output: Output): OutputTabState {
   return {
     url: output.url,
     encoding: output.encoding,
+    delaySec: output.delaySec,
   };
 }
 
@@ -33,6 +35,9 @@ export class OutputTab extends React.Component<OutputTabProps> {
             encoding={this.props.state.encoding}
             handleEncodingChanged={encoding => this.handleEncodingChanged(encoding)}
           />
+          <Form.Item label="Output Delay (second)">
+            <Input value={this.props.state.delaySec} onChange={e => this.handleOutputDelayChanged(e.target.value)} />
+          </Form.Item>
         </Form>
       </div>
     );
@@ -49,6 +54,13 @@ export class OutputTab extends React.Component<OutputTabProps> {
     this.props.handleStateChanged({
       ...this.props.state,
       encoding: encoding,
+    });
+  }
+
+  private handleOutputDelayChanged(delay: string) {
+    this.props.handleStateChanged({
+      ...this.props.state,
+      delaySec: Number(delay),
     });
   }
 }
