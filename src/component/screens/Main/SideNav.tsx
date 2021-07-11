@@ -9,11 +9,13 @@ import { PreferenceDialogDefault, PreferenceDialogResult } from '../../dialogs/P
 import { OutputService } from '../../../service/OutputService';
 import { notNull } from '../../../common/util';
 import { PreviewService } from '../../../service/PreviewService';
+import { SourceService } from '../../../service/SourceService';
 
 export class SideNav extends React.Component {
   private readonly dialogService = Container.get(DialogService);
   private readonly outputService = Container.get(OutputService);
   private readonly previewService = Container.get(PreviewService);
+  private readonly sourceService = Container.get(SourceService);
 
   public render() {
     return (
@@ -75,21 +77,40 @@ export class SideNav extends React.Component {
   }
 
   private async onPreferenceClicked() {
+    const [output, preview, sources ] = await Promise.all([
+      this.outputService.getOutput().then(notNull),
+      this.previewService.getPreview(),
+      this.sourceService.getSources(),
+    ]);
     const result = await this.dialogService.showDialog<PreferenceDialogDefault, PreferenceDialogResult>({
       title: 'Preference',
       component: 'PreferenceDialog',
       width: 800,
       height: 600,
     }, {
-      output: notNull(await this.outputService.getOutput()),
-      preview: await this.previewService.getPreview(),
+      output: output,
+      preview: preview,
+      sources: sources,
     });
     if (result) {
+      // update output
       if (result.outputChanged) {
         await this.outputService.updateOutput(result.output);
       }
+      // update preview
       if (result.previewChanged) {
         await this.previewService.updatePreview(result.preview);
+      }
+      // update audio
+      if (result.audioChanged) {
+        if (result.audio.outputMixers !== output.mixers) {
+          await this.outputService.updateOutput({ mixers: result.audio.outputMixers });
+        }
+        await Promise.all(
+          result.audio.sourceMixers
+            .filter(({ source, mixers }) => source.mixers !== mixers)
+            .map(({ source, mixers }) => this.sourceService.updateSource(source.id, { mixers: mixers }))
+        );
       }
     }
   }

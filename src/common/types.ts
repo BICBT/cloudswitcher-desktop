@@ -51,6 +51,7 @@ export interface SourceResponse {
   volume: number;
   audioLock: boolean;
   previewUrl: string;
+  mixers: number;
 }
 
 export interface Source extends SourceResponse {
@@ -78,6 +79,7 @@ export interface UpdateSourceRequest {
   hardwareDecoder?: boolean;
   volume?: number;
   audioLock?: boolean;
+  mixers?: number;
 }
 
 export interface Encoding {
@@ -101,6 +103,7 @@ export interface Output {
   encoding: Encoding;
   previewUrl: string;
   delaySec: number;
+  mixers: number;
 }
 
 export interface Preview  {
@@ -246,9 +249,10 @@ export enum StreamType {
 }
 
 export interface UpdateOutputRequest {
-  url: string;
-  encoding: Encoding;
-  delaySec: number;
+  url?: string;
+  encoding?: Encoding;
+  delaySec?: number;
+  mixers?: number;
 }
 
 export interface UpdatePreviewRequest {

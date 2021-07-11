@@ -1,13 +1,15 @@
 import React from 'react';
 import { Tabs } from 'antd';
 import { ModalLayout } from '../../shared/ModalLayout/ModalLayout';
-import { DialogProps, Encoding, Output, Preview, StreamType } from '../../../common/types';
+import { DialogProps, Encoding, Output, Preview, Source, StreamType } from '../../../common/types';
 import { initOutputTabState, OutputTab, OutputTabState } from './OutputTab';
 import { initPreviewTabState, PreviewTab, PreviewTabState } from './PreviewTab';
+import { AudioTab, AudioTabState, initAudioTabState } from './AudioTab';
 
 export interface PreferenceDialogDefault {
   output: Output;
   preview: Preview;
+  sources: Source[];
 }
 
 export interface PreferenceDialogResult {
@@ -22,6 +24,11 @@ export interface PreferenceDialogResult {
     encoding: Encoding;
   }
   previewChanged: boolean;
+  audio: {
+    outputMixers: number;
+    sourceMixers: { source: Source; mixers: number; }[];
+  };
+  audioChanged: boolean;
 }
 
 type PreferenceDialogProps = DialogProps<PreferenceDialogDefault, PreferenceDialogResult>;
@@ -31,6 +38,8 @@ interface PreferenceDialogState {
   outputChanged: boolean;
   preview: PreviewTabState;
   previewChanged: boolean;
+  audio: AudioTabState;
+  audioChanged: boolean;
 }
 
 export class PreferenceDialog extends React.Component<PreferenceDialogProps, PreferenceDialogState> {
@@ -41,6 +50,8 @@ export class PreferenceDialog extends React.Component<PreferenceDialogProps, Pre
       outputChanged: false,
       preview: initPreviewTabState(this.props.default.preview),
       previewChanged: false,
+      audio: initAudioTabState(this.props.default.output, this.props.default.sources),
+      audioChanged: false,
     };
   }
 
@@ -57,6 +68,9 @@ export class PreferenceDialog extends React.Component<PreferenceDialogProps, Pre
           </Tabs.TabPane>
           <Tabs.TabPane tab="Preview" key="preview">
             <PreviewTab state={this.state.preview} handleStateChanged={state => this.handlePreviewTabStateChanged(state)} />
+          </Tabs.TabPane>
+          <Tabs.TabPane tab="Audio" key="audio">
+            <AudioTab state={this.state.audio} handleStateChanged={state => this.handleAudioTabStateChanged(state)} />
           </Tabs.TabPane>
         </Tabs>
       </ModalLayout>
@@ -77,6 +91,13 @@ export class PreferenceDialog extends React.Component<PreferenceDialogProps, Pre
     });
   }
 
+  private handleAudioTabStateChanged(state: AudioTabState): void {
+    this.setState({
+      audio: state,
+      audioChanged: true,
+    });
+  }
+
   private onModalDone(): void {
     this.props.onModalDone({
       output: {
@@ -90,6 +111,11 @@ export class PreferenceDialog extends React.Component<PreferenceDialogProps, Pre
         encoding: this.state.preview.encoding,
       },
       previewChanged: this.state.previewChanged,
+      audio: {
+        outputMixers: this.state.audio.outputMixers,
+        sourceMixers: this.state.audio.sourceMixers,
+      },
+      audioChanged: this.state.audioChanged,
     });
   }
 }
