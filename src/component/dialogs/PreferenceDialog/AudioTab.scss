@@ -1,0 +1,9 @@
+.AudioTab {
+  .SourceMixer {
+    margin: 10px 0;
+    > span {
+      color: var(--paragraph);
+      margin-right: 20px;
+    }
+  }
+}
